@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜數字遊戲</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input {
+            padding: 12px;
+            margin: 10px;
+            width: 120px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+        #range {
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #2c3e50;
+        }
+        #message {
+            color: #2c3e50;
+            margin: 20px 0;
+            font-size: 1.2em;
+            min-height: 30px;
+        }
+        .god-mode {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .button-container {
+            margin-top: 30px;
+        }
+        #exitGodMode {
+            background-color: #e74c3c;
+            display: none;
+        }
+        #exitGodMode:hover {
+            background-color: #c0392b;
+        }
+        #restart {
+            background-color: #3498db;
+            display: none;
+        }
+        #restart:hover {
+            background-color: #2980b9;
+        }
+        .god-mode-input {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+        }
+        .god-mode-input input {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        .god-mode-input button {
+            background-color: #e74c3c;
+        }
+        .god-mode-input button:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>猜數字遊戲</h1>
+        <p>請猜一個介於 <span id="min">1</span> 到 <span id="max">100</span> 之間的數字</p>
+        <div id="range">範圍：1 ~ 100</div>
+        <div class="input-group">
+            <input type="number" id="guess" min="1" max="100" placeholder="輸入你的猜測">
+            <button onclick="checkGuess()">猜猜看</button>
+        </div>
+        <div id="message"></div>
+        <div id="godModeMessage" class="god-mode" style="display: none;"></div>
+        <div class="god-mode-input" id="godModeInput">
+            <input type="number" id="godModeNumber" min="1" max="100" placeholder="輸入目標數字">
+            <button onclick="setTargetNumber()">設定目標數字</button>
+            <button onclick="showAnswer()">查看答案</button>
+        </div>
+        <div class="button-container">
+            <button id="exitGodMode" onclick="exitGodMode()">離開 God Mode</button>
+            <button id="restart" onclick="restartGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        let min = 1;
+        let max = 100;
+        let targetNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        let godMode = false;
+
+        function checkGuess() {
+            const guessInput = document.getElementById('guess');
+            const guess = parseInt(guessInput.value);
+            const message = document.getElementById('message');
+            const range = document.getElementById('range');
+            const godModeMessage = document.getElementById('godModeMessage');
+            const exitGodModeBtn = document.getElementById('exitGodMode');
+
+            // 檢查是否為 God Mode 啟動碼
+            if (guess === 5487 && !godMode) {
+                godMode = true;
+                godModeMessage.style.display = 'block';
+                godModeMessage.textContent = 'God Mode 已啟動！';
+                exitGodModeBtn.style.display = 'inline-block';
+                document.getElementById('godModeInput').style.display = 'block';
+                guessInput.value = '';
+                return;
+            }
+
+            if (isNaN(guess) || guess < min || guess > max) {
+                message.textContent = `請輸入一個介於 ${min} 到 ${max} 之間的數字`;
+                return;
+            }
+
+            attempts++;
+
+            if (guess === targetNumber) {
+                message.textContent = `恭喜你猜對了！總共猜了 ${attempts} 次`;
+                guessInput.disabled = true;
+                document.querySelector('button').disabled = true;
+                document.getElementById('restart').style.display = 'inline-block';
+            } else if (guess < targetNumber) {
+                min = guess + 1;
+                document.getElementById('min').textContent = min;
+                message.textContent = '太小了！';
+                range.textContent = `範圍：${min} ~ ${max}`;
+            } else {
+                max = guess - 1;
+                document.getElementById('max').textContent = max;
+                message.textContent = '太大了！';
+                range.textContent = `範圍：${min} ~ ${max}`;
+            }
+
+            guessInput.value = '';
+            guessInput.focus();
+        }
+
+        function setTargetNumber() {
+            const godModeNumber = document.getElementById('godModeNumber');
+            const number = parseInt(godModeNumber.value);
+            
+            if (isNaN(number) || number < 1 || number > 100) {
+                alert('請輸入 1-100 之間的數字');
+                return;
+            }
+
+            if (confirm(`是否確認目標數字為 ${number}？`)) {
+                targetNumber = number;
+                document.getElementById('godModeMessage').textContent = `目標數字已設定為 ${targetNumber}`;
+                godModeNumber.value = '';
+                resetGame();
+            }
+        }
+
+        function showAnswer() {
+            if (godMode) {
+                alert(`目標數字是：${targetNumber}`);
+            }
+        }
+
+        function exitGodMode() {
+            godMode = false;
+            targetNumber = Math.floor(Math.random() * 100) + 1;
+            document.getElementById('godModeMessage').style.display = 'none';
+            document.getElementById('exitGodMode').style.display = 'none';
+            document.getElementById('godModeInput').style.display = 'none';
+            document.getElementById('message').textContent = '已離開 God Mode，遊戲重新開始！';
+            resetGame();
+        }
+
+        function restartGame() {
+            resetGame();
+            document.getElementById('restart').style.display = 'none';
+        }
+
+        function resetGame() {
+            min = 1;
+            max = 100;
+            attempts = 0;
+            if (!godMode) {
+                targetNumber = Math.floor(Math.random() * 100) + 1;
+            }
+            document.getElementById('min').textContent = min;
+            document.getElementById('max').textContent = max;
+            document.getElementById('range').textContent = '範圍：1 ~ 100';
+            document.getElementById('message').textContent = '';
+            document.getElementById('guess').disabled = false;
+            document.querySelector('button').disabled = false;
+            document.getElementById('guess').value = '';
+            document.getElementById('guess').focus();
+        }
+
+        // 按Enter鍵也可以猜測
+        document.getElementById('guess').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        document.getElementById('godModeNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                setTargetNumber();
+            }
+        });
+    </script>
+</body>
+</html> 
