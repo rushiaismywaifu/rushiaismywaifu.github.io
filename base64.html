@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 加密解密工具 - 賽博風格</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', 'Orbitron', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 賽博背景效果 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%2300ffff" stroke-width="0.5" opacity="0.1"/><line x1="0" y1="0" x2="100" y2="100" stroke="%2300ffff" stroke-width="0.5" opacity="0.1"/><line x1="100" y1="0" x2="0" y2="100" stroke="%2300ffff" stroke-width="0.5" opacity="0.1"/></svg>');
+            z-index: -1;
+        }
+
+        .cyber-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            overflow: hidden;
+        }
+
+        .cyber-rain::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(10, 10, 20, 0.8);
+            border-radius: 5px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.3),
+                0 0 40px rgba(138, 43, 226, 0.2),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.8) 0%, rgba(0, 255, 255, 0.8) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
+        }
+
+        /* 修改日期時間和語言選擇器的容器 */
+        .datetime-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .datetime-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 10px 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .current-time {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        }
+
+        .current-date {
+            font-size: 1rem;
+            opacity: 0.9;
+            color: #e0e0e0;
+        }
+
+        /* 修改語言選擇器樣式 */
+        .language-selector {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: #00ffff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .language-selector:hover {
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .language-selector select {
+            background: transparent;
+            border: none;
+            color: #00ffff;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+        }
+
+        .language-selector select option {
+            background: #1a1a2e;
+            color: #00ffff;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 
+                0 0 10px rgba(0, 255, 255, 0.7),
+                0 0 20px rgba(0, 255, 255, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 
+                    0 0 10px rgba(0, 255, 255, 0.7),
+                    0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            to {
+                text-shadow: 
+                    0 0 15px rgba(0, 255, 255, 0.9),
+                    0 0 25px rgba(0, 255, 255, 0.7),
+                    0 0 35px rgba(138, 43, 226, 0.5);
+            }
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 5px;
+            padding: 5px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.8) 0%, rgba(0, 255, 255, 0.8) 100%);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab:hover::before {
+            opacity: 0.3;
+        }
+
+        .tab.active {
+            color: white;
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.5),
+                inset 0 0 10px rgba(0, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.8) 0%, rgba(0, 255, 255, 0.8) 100%);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #00ffff;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .textarea-container {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: rgba(10, 10, 20, 0.7);
+            color: #e0e0e0;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: rgba(0, 255, 255, 0.7);
+            background: rgba(20, 20, 40, 0.8);
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.3),
+                inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.8rem;
+            color: #00ffff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid;
+            border-radius: 3px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(0);
+        }
+
+        .btn-primary {
+            border-color: rgba(0, 255, 255, 0.7);
+            color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            border-color: rgba(138, 43, 226, 0.7);
+            color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(138, 43, 226, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 0 20px rgba(138, 43, 226, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-success {
+            border-color: rgba(0, 255, 127, 0.7);
+            color: #00ff7f;
+            box-shadow: 0 0 10px rgba(0, 255, 127, 0.3);
+        }
+
+        .btn-success:hover {
+            background: rgba(0, 255, 127, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 127, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 5px;
+            border-left: 4px solid rgba(0, 255, 255, 0.7);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-section h3 {
+            margin-bottom: 15px;
+            color: #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-content {
+            background: rgba(10, 10, 20, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            min-height: 60px;
+            position: relative;
+            color: #e0e0e0;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: rgba(20, 20, 40, 0.9);
+            color: #00ff7f;
+            border-radius: 5px;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 127, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border: 1px solid rgba(0, 255, 127, 0.5);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            color: #ff4d4d;
+            border-color: rgba(255, 77, 77, 0.5);
+            box-shadow: 
+                0 0 20px rgba(255, 77, 77, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-upload {
+            margin-top: 15px;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .file-upload label:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .datetime-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .language-selector {
+                width: 100%;
+            }
+            
+            .current-time {
+                font-size: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-rain"></div>
+    
+    <div class="container">
+        <div class="header">
+            <!-- 修改日期時間和語言選擇器的容器結構 -->
+            <div class="datetime-container">
+                <div class="datetime-display">
+                    <div class="current-time" id="currentTime"></div>
+                    <div class="current-date" id="currentDate"></div>
+                </div>
+                <div class="language-selector">
+                    <select id="languageSelect" onchange="changeLanguage()">
+                        <option value="zh-TW">繁體中文</option>
+                        <option value="zh-CN">简体中文</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="ru">Русский</option>
+                    </select>
+                </div>
+            </div>
+            
+            <h1 data-i18n="title">🔐 BASE64 加密解密工具</h1>
+            <p data-i18n="subtitle">快速、安全、易用的 BASE64 編碼解碼工具</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('encode')" data-i18n="encodeTab">📝 編碼 (加密)</button>
+                <button class="tab" onclick="switchTab('decode')" data-i18n="decodeTab">🔓 解碼 (解密)</button>
+            </div>
+
+            <!-- 編碼標籤頁 -->
+            <div id="encode" class="tab-content active">
+                <div class="input-group">
+                    <label for="encodeInput" data-i18n="encodeLabel">輸入要編碼的文字：</label>
+                    <div class="textarea-container">
+                        <textarea id="encodeInput" data-i18n-placeholder="encodePlaceholder" placeholder="請輸入要編碼的文字內容..." oninput="updateCharCount('encodeInput', 'encodeCount')"></textarea>
+                        <span class="char-count" id="encodeCount">0 字符</span>
+                    </div>
+                    <div class="file-upload">
+                        <input type="file" id="encodeFile" onchange="handleFileUpload('encode')">
+                        <label for="encodeFile" data-i18n="encodeFileLabel">📁 或選擇檔案進行編碼</label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="encodeText()">
+                        <span>🔐</span>
+                        <span data-i18n="encodeButton">編碼</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearInput('encodeInput', 'encodeResult')">
+                        <span>🗑️</span>
+                        <span data-i18n="clearButton">清除</span>
+                    </button>
+                </div>
+
+                <div class="result-section" id="encodeResultSection" style="display: none;">
+                    <h3>
+                        <span>✅</span>
+                        <span data-i18n="encodeResultTitle">編碼結果：</span>
+                    </h3>
+                    <div class="result-content" id="encodeResult"></div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="copyToClipboard('encodeResult')">
+                            <span>📋</span>
+                            <span data-i18n="copyButton">複製結果</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadResult('encodeResult', 'encoded.txt')">
+                            <span>💾</span>
+                            <span data-i18n="downloadButton">下載檔案</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 解碼標籤頁 -->
+            <div id="decode" class="tab-content">
+                <div class="input-group">
+                    <label for="decodeInput" data-i18n="decodeLabel">輸入要解碼的 BASE64 文字：</label>
+                    <div class="textarea-container">
+                        <textarea id="decodeInput" data-i18n-placeholder="decodePlaceholder" placeholder="請輸入要解碼的 BASE64 編碼內容..." oninput="updateCharCount('decodeInput', 'decodeCount')"></textarea>
+                        <span class="char-count" id="decodeCount">0 字符</span>
+                    </div>
+                    <div class="file-upload">
+                        <input type="file" id="decodeFile" onchange="handleFileUpload('decode')">
+                        <label for="decodeFile" data-i18n="decodeFileLabel">📁 或選擇檔案進行解碼</label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="decodeText()">
+                        <span>🔓</span>
+                        <span data-i18n="decodeButton">解碼</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearInput('decodeInput', 'decodeResult')">
+                        <span>🗑️</span>
+                        <span data-i18n="clearButton">清除</span>
+                    </button>
+                </div>
+
+                <div class="result-section" id="decodeResultSection" style="display: none;">
+                    <h3>
+                        <span>✅</span>
+                        <span data-i18n="decodeResultTitle">解碼結果：</span>
+                    </h3>
+                    <div class="result-content" id="decodeResult"></div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="copyToClipboard('decodeResult')">
+                            <span>📋</span>
+                            <span data-i18n="copyButton">複製結果</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadResult('decodeResult', 'decoded.txt')">
+                            <span>💾</span>
+                            <span data-i18n="downloadButton">下載檔案</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 翻譯對象
+        const translations = {
+            'zh-TW': {
+                title: '🔐 BASE64 加密解密工具',
+                subtitle: '快速、安全、易用的 BASE64 編碼解碼工具',
+                encodeTab: '📝 編碼 (加密)',
+                decodeTab: '🔓 解碼 (解密)',
+                encodeLabel: '輸入要編碼的文字：',
+                encodePlaceholder: '請輸入要編碼的文字內容...',
+                encodeFileLabel: '📁 或選擇檔案進行編碼',
+                encodeButton: '編碼',
+                clearButton: '清除',
+                encodeResultTitle: '編碼結果：',
+                copyButton: '複製結果',
+                downloadButton: '下載檔案',
+                decodeLabel: '輸入要解碼的 BASE64 文字：',
+                decodePlaceholder: '請輸入要解碼的 BASE64 編碼內容...',
+                decodeFileLabel: '📁 或選擇檔案進行解碼',
+                decodeButton: '解碼',
+                decodeResultTitle: '解碼結果：',
+                charCount: '字符',
+                encodeSuccess: '編碼成功！',
+                decodeSuccess: '解碼成功！',
+                encodeError: '請輸入要編碼的文字',
+                decodeError: '請輸入要解碼的 BASE64 文字',
+                decodeFormatError: '解碼失敗：請檢查輸入的 BASE64 格式是否正確',
+                cleared: '已清除',
+                copySuccess: '已複製到剪貼簿！',
+                copyError: '沒有內容可複製',
+                downloadSuccess: '檔案下載中...',
+                downloadError: '沒有內容可下載',
+                fileLoadedEncode: '檔案已載入，可以點擊編碼按鈕',
+                fileLoadedDecode: '檔案已載入，可以點擊解碼按鈕'
+            },
+            'zh-CN': {
+                title: '🔐 BASE64 加密解密工具',
+                subtitle: '快速、安全、易用的 BASE64 编码解码工具',
+                encodeTab: '📝 编码 (加密)',
+                decodeTab: '🔓 解码 (解密)',
+                encodeLabel: '输入要编码的文本：',
+                encodePlaceholder: '请输入要编码的文本内容...',
+                encodeFileLabel: '📁 或选择文件进行编码',
+                encodeButton: '编码',
+                clearButton: '清除',
+                encodeResultTitle: '编码结果：',
+                copyButton: '复制结果',
+                downloadButton: '下载文件',
+                decodeLabel: '输入要解码的 BASE64 文本：',
+                decodePlaceholder: '请输入要解码的 BASE64 编码内容...',
+                decodeFileLabel: '📁 或选择文件进行解码',
+                decodeButton: '解码',
+                decodeResultTitle: '解码结果：',
+                charCount: '字符',
+                encodeSuccess: '编码成功！',
+                decodeSuccess: '解码成功！',
+                encodeError: '请输入要编码的文本',
+                decodeError: '请输入要解码的 BASE64 文本',
+                decodeFormatError: '解码失败：请检查输入的 BASE64 格式是否正确',
+                cleared: '已清除',
+                copySuccess: '已复制到剪贴板！',
+                copyError: '没有内容可复制',
+                downloadSuccess: '文件下载中...',
+                downloadError: '没有内容可下载',
+                fileLoadedEncode: '文件已加载，可以点击编码按钮',
+                fileLoadedDecode: '文件已加载，可以点击解码按钮'
+            },
+            'en': {
+                title: '🔐 BASE64 ENCODER/DECODER',
+                subtitle: 'FAST, SECURE, AND EASY-TO-USE BASE64 ENCODING/DECODING TOOL',
+                encodeTab: '📝 ENCODE (ENCRYPT)',
+                decodeTab: '🔓 DECODE (DECRYPT)',
+                encodeLabel: 'ENTER TEXT TO ENCODE:',
+                encodePlaceholder: 'PLEASE ENTER THE TEXT CONTENT TO ENCODE...',
+                encodeFileLabel: '📁 OR SELECT A FILE TO ENCODE',
+                encodeButton: 'ENCODE',
+                clearButton: 'CLEAR',
+                encodeResultTitle: 'ENCODED RESULT:',
+                copyButton: 'COPY RESULT',
+                downloadButton: 'DOWNLOAD FILE',
+                decodeLabel: 'ENTER BASE64 TEXT TO DECODE:',
+                decodePlaceholder: 'PLEASE ENTER THE BASE64 ENCODED CONTENT TO DECODE...',
+                decodeFileLabel: '📁 OR SELECT A FILE TO DECODE',
+                decodeButton: 'DECODE',
+                decodeResultTitle: 'DECODED RESULT:',
+                charCount: 'CHARACTERS',
+                encodeSuccess: 'ENCODING SUCCESSFUL!',
+                decodeSuccess: 'DECODING SUCCESSFUL!',
+                encodeError: 'PLEASE ENTER TEXT TO ENCODE',
+                decodeError: 'PLEASE ENTER BASE64 TEXT TO DECODE',
+                decodeFormatError: 'DECODING FAILED: PLEASE CHECK IF THE BASE64 FORMAT IS CORRECT',
+                cleared: 'CLEARED',
+                copySuccess: 'COPIED TO CLIPBOARD!',
+                copyError: 'NO CONTENT TO COPY',
+                downloadSuccess: 'FILE DOWNLOADING...',
+                downloadError: 'NO CONTENT TO DOWNLOAD',
+                fileLoadedEncode: 'FILE LOADED, CLICK THE ENCODE BUTTON',
+                fileLoadedDecode: 'FILE LOADED, CLICK THE DECODE BUTTON'
+            },
+            'ja': {
+                title: '🔐 BASE64 暗号化・復号化ツール',
+                subtitle: '高速、安全、使いやすい BASE64 エンコード・デコードツール',
+                encodeTab: '📝 エンコード (暗号化)',
+                decodeTab: '🔓 デコード (復号化)',
+                encodeLabel: 'エンコードするテキストを入力：',
+                encodePlaceholder: 'エンコードするテキスト内容を入力してください...',
+                encodeFileLabel: '📁 またはファイルを選択してエンコード',
+                encodeButton: 'エンコード',
+                clearButton: 'クリア',
+                encodeResultTitle: 'エンコード結果：',
+                copyButton: '結果をコピー',
+                downloadButton: 'ファイルをダウンロード',
+                decodeLabel: 'デコードする BASE64 テキストを入力：',
+                decodePlaceholder: 'デコードする BASE64 エンコード内容を入力してください...',
+                decodeFileLabel: '📁 またはファイルを選択してデコード',
+                decodeButton: 'デコード',
+                decodeResultTitle: 'デコード結果：',
+                charCount: '文字',
+                encodeSuccess: 'エンコードが成功しました！',
+                decodeSuccess: 'デコードが成功しました！',
+                encodeError: 'エンコードするテキストを入力してください',
+                decodeError: 'デコードする BASE64 テキストを入力してください',
+                decodeFormatError: 'デコードに失敗しました：BASE64 形式が正しいか確認してください',
+                cleared: 'クリアされました',
+                copySuccess: 'クリップボードにコピーしました！',
+                copyError: 'コピーするコンテンツがありません',
+                downloadSuccess: 'ファイルをダウンロード中...',
+                downloadError: 'ダウンロードするコンテンツがありません',
+                fileLoadedEncode: 'ファイルが読み込まれました。エンコードボタンをクリックしてください',
+                fileLoadedDecode: 'ファイルが読み込まれました。デコードボタンをクリックしてください'
+            },
+            'ru': {
+                title: '🔐 BASE64 ШИФРАТОР/ДЕШИФРАТОР',
+                subtitle: 'БЫСТРЫЙ, БЕЗОПАСНЫЙ И ПРОСТОЙ В ИСПОЛЬЗОВАНИИ ИНСТРУМЕНТ КОДИРОВАНИЯ/ДЕКОДИРОВАНИЯ BASE64',
+                encodeTab: '📝 КОДИРОВАТЬ (ШИФРОВАТЬ)',
+                decodeTab: '🔓 ДЕКОДИРОВАТЬ (ДЕШИФРОВАТЬ)',
+                encodeLabel: 'ВВЕДИТЕ ТЕКСТ ДЛЯ КОДИРОВАНИЯ:',
+                encodePlaceholder: 'ПОЖАЛУЙСТА, ВВЕДИТЕ ТЕКСТОВОЕ СОДЕРЖАНИЕ ДЛЯ КОДИРОВАНИЯ...',
+                encodeFileLabel: '📁 ИЛИ ВЫБЕРИТЕ ФАЙЛ ДЛЯ КОДИРОВАНИЯ',
+                encodeButton: 'КОДИРОВАТЬ',
+                clearButton: 'ОЧИСТИТЬ',
+                encodeResultTitle: 'РЕЗУЛЬТАТ КОДИРОВАНИЯ:',
+                copyButton: 'СКОПИРОВАТЬ РЕЗУЛЬТАТ',
+                downloadButton: 'СКАЧАТЬ ФАЙЛ',
+                decodeLabel: 'ВВЕДИТЕ BASE64 ТЕКСТ ДЛЯ ДЕКОДИРОВАНИЯ:',
+                decodePlaceholder: 'ПОЖАЛУЙСТА, ВВЕДИТЕ BASE64 ЗАКОДИРОВАННОЕ СОДЕРЖАНИЕ ДЛЯ ДЕКОДИРОВАНИЯ...',
+                decodeFileLabel: '📁 ИЛИ ВЫБЕРИТЕ ФАЙЛ ДЛЯ ДЕКОДИРОВАНИЯ',
+                decodeButton: 'ДЕКОДИРОВАТЬ',
+                decodeResultTitle: 'РЕЗУЛЬТАТ ДЕКОДИРОВАНИЯ:',
+                charCount: 'СИМВОЛОВ',
+                encodeSuccess: 'КОДИРОВАНИЕ УСПЕШНО!',
+                decodeSuccess: 'ДЕКОДИРОВАНИЕ УСПЕШНО!',
+                encodeError: 'ПОЖАЛУЙСТА, ВВЕДИТЕ ТЕКСТ ДЛЯ КОДИРОВАНИЯ',
+                decodeError: 'ПОЖАЛУЙСТА, ВВЕДИТЕ BASE64 ТЕКСТ ДЛЯ ДЕКОДИРОВАНИЯ',
+                decodeFormatError: 'ОШИБКА ДЕКОДИРОВАНИЯ: ПОЖАЛУЙСТА, ПРОВЕРЬТЕ ПРАВИЛЬНОСТЬ ФОРМАТА BASE64',
+                cleared: 'ОЧИЩЕНО',
+                copySuccess: 'СКОПИРОВАНО В БУФЕР ОБМЕНА!',
+                copyError: 'НЕТ СОДЕРЖАНИЯ ДЛЯ КОПИРОВАНИЯ',
+                downloadSuccess: 'ФАЙЛ СКАЧИВАЕТСЯ...',
+                downloadError: 'НЕТ СОДЕРЖАНИЯ ДЛЯ СКАЧИВАНИЯ',
+                fileLoadedEncode: 'ФАЙЛ ЗАГРУЖЕН, НАЖМИТЕ КНОПКУ КОДИРОВАНИЯ',
+                fileLoadedDecode: 'ФАЙЛ ЗАГРУЖЕН, НАЖМИТЕ КНОПКУ ДЕКОДИРОВАНИЯ'
+            }
+        };
+
+        let currentLanguage = 'zh-TW';
+
+        // 更新日期時間顯示
+        function updateDateTime() {
+            const now = new Date();
+            
+            // 根據語言設置日期時間格式
+            const timeOptions = {
+                'zh-TW': { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
+                'zh-CN': { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
+                'en': { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true },
+                'ja': { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false },
+                'ru': { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+            };
+            
+            const dateOptions = {
+                'zh-TW': { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
+                'zh-CN': { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
+                'en': { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
+                'ja': { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' },
+                'ru': { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }
+            };
+            
+            const timeFormatter = new Intl.DateTimeFormat(currentLanguage, timeOptions[currentLanguage]);
+            const dateFormatter = new Intl.DateTimeFormat(currentLanguage, dateOptions[currentLanguage]);
+            
+            document.getElementById('currentTime').textContent = timeFormatter.format(now);
+            document.getElementById('currentDate').textContent = dateFormatter.format(now);
+        }
+
+        // 切換語言
+        function changeLanguage() {
+            const select = document.getElementById('languageSelect');
+            currentLanguage = select.value;
+            localStorage.setItem('selectedLanguage', currentLanguage);
+            applyTranslations();
+            updateDateTime(); // 更新日期時間格式
+        }
+
+        // 應用翻譯
+        function applyTranslations() {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+
+            // 更新placeholder
+            const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+            placeholderElements.forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (translations[currentLanguage][key]) {
+                    element.placeholder = translations[currentLanguage][key];
+                }
+            });
+
+            // 更新字符計數文本
+            updateCharCount('encodeInput', 'encodeCount');
+            updateCharCount('decodeInput', 'decodeCount');
+        }
+
+        // 切換標籤頁
+        function switchTab(tabName) {
+            // 隱藏所有標籤內容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有標籤的激活狀態
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 顯示選中的標籤內容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活對應的標籤按鈕
+            event.target.classList.add('active');
+        }
+
+        // 更新字符計數
+        function updateCharCount(inputId, countId) {
+            const input = document.getElementById(inputId);
+            const count = document.getElementById(countId);
+            const charText = translations[currentLanguage].charCount || '字符';
+            count.textContent = `${input.value.length} ${charText}`;
+        }
+
+        // Base64 編碼
+        function encodeText() {
+            const input = document.getElementById('encodeInput').value.trim();
+            
+            if (!input) {
+                showNotification(translations[currentLanguage].encodeError, 'error');
+                return;
+            }
+
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(input)));
+                document.getElementById('encodeResult').textContent = encoded;
+                document.getElementById('encodeResultSection').style.display = 'block';
+                showNotification(translations[currentLanguage].encodeSuccess);
+            } catch (error) {
+                showNotification('編碼失敗：' + error.message, 'error');
+            }
+        }
+
+        // Base64 解碼
+        function decodeText() {
+            const input = document.getElementById('decodeInput').value.trim();
+            
+            if (!input) {
+                showNotification(translations[currentLanguage].decodeError, 'error');
+                return;
+            }
+
+            try {
+                const decoded = decodeURIComponent(escape(atob(input)));
+                document.getElementById('decodeResult').textContent = decoded;
+                document.getElementById('decodeResultSection').style.display = 'block';
+                showNotification(translations[currentLanguage].decodeSuccess);
+            } catch (error) {
+                showNotification(translations[currentLanguage].decodeFormatError, 'error');
+            }
+        }
+
+        // 清除輸入和結果
+        function clearInput(inputId, resultId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(resultId).textContent = '';
+            document.getElementById(resultId + 'Section').style.display = 'none';
+            
+            // 更新字符計數
+            const countId = inputId === 'encodeInput' ? 'encodeCount' : 'decodeCount';
+            updateCharCount(inputId, countId);
+            
+            showNotification(translations[currentLanguage].cleared);
+        }
+
+        // 複製到剪貼簿
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            if (!text) {
+                showNotification(translations[currentLanguage].copyError, 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(translations[currentLanguage].copySuccess);
+            }).catch(() => {
+                // 降級方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification(translations[currentLanguage].copySuccess);
+            });
+        }
+
+        // 下載結果
+        function downloadResult(elementId, filename) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            if (!text) {
+                showNotification(translations[currentLanguage].downloadError, 'error');
+                return;
+            }
+
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification(translations[currentLanguage].downloadSuccess);
+        }
+
+        // 處理文件上傳
+        function handleFileUpload(type) {
+            const fileInput = document.getElementById(type + 'File');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                if (type === 'encode') {
+                    document.getElementById('encodeInput').value = content;
+                    updateCharCount('encodeInput', 'encodeCount');
+                    showNotification(translations[currentLanguage].fileLoadedEncode);
+                } else {
+                    document.getElementById('decodeInput').value = content;
+                    updateCharCount('decodeInput', 'decodeCount');
+                    showNotification(translations[currentLanguage].fileLoadedDecode);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 顯示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show';
+            
+            if (type === 'error') {
+                notification.classList.add('error');
+            }
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 鍵盤快捷鍵支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter 或 Cmd+Enter 執行操作
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab.id === 'encode') {
+                    encodeText();
+                } else {
+                    decodeText();
+                }
+            }
+            
+            // Ctrl+L 或 Cmd+L 清除內容
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab.id === 'encode') {
+                    clearInput('encodeInput', 'encodeResult');
+                } else {
+                    clearInput('decodeInput', 'decodeResult');
+                }
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 從localStorage載入語言設置
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                currentLanguage = savedLanguage;
+                document.getElementById('languageSelect').value = currentLanguage;
+            }
+            
+            // 應用翻譯
+            applyTranslations();
+            
+            // 初始化字符計數
+            updateCharCount('encodeInput', 'encodeCount');
+            updateCharCount('decodeInput', 'decodeCount');
+            
+            // 啟動日期時間更新
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        });
+    </script>
+</body>
+</html>
