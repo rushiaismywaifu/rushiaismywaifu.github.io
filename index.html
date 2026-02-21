@@ -11,85 +11,34 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Rushia My Beloved">
     <style>
-      .bili-short-url-box {
+      /* 簡單增加一點樣式讓新功能好看一點 */
+      .bili-shortener {
+        border: 2px dashed #fb7299;
+        padding: 15px;
         margin: 20px 0;
-        padding: 20px;
-        border: 2px solid #00a1d6;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #f0f8ff, #e8f4fd);
-        max-width: 620px;
-        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        background-color: #fff;
+        border-radius: 8px;
       }
-      .bili-short-url-box h3 {
-        margin: 0 0 6px 0;
-        color: #00a1d6;
+      .bili-shortener input[type="text"] {
+        width: 60%;
+        padding: 5px;
       }
-      .bili-short-url-box .desc {
-        margin: 0 0 12px 0;
-        color: #555;
-        font-size: 14px;
-      }
-      .bili-short-url-box .input-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .bili-short-url-box input[type="text"] {
-        flex: 1;
-        min-width: 200px;
-        padding: 10px 12px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 14px;
-        outline: none;
-        transition: border-color .3s;
-      }
-      .bili-short-url-box input[type="text"]:focus {
-        border-color: #00a1d6;
-      }
-      .gen-btn {
-        padding: 10px 20px;
-        background: #00a1d6;
-        color: #fff;
+      .bili-shortener button {
+        background-color: #fb7299;
+        color: white;
         border: none;
-        border-radius: 6px;
+        padding: 5px 10px;
         cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        transition: background .3s;
-        white-space: nowrap;
-      }
-      .gen-btn:hover { background: #0087b3; }
-      .gen-btn:disabled { background: #aaa; cursor: not-allowed; }
-      #shortUrlResult {
-        display: none;
-        margin-top: 12px;
-        padding: 12px;
-        background: #fff;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-        word-break: break-all;
-        line-height: 1.7;
-        font-size: 14px;
-      }
-      #shortUrlResult a {
-        color: #00a1d6;
-        font-weight: bold;
-        text-decoration: none;
-      }
-      #shortUrlResult a:hover { text-decoration: underline; }
-      .copy-btn {
-        padding: 4px 12px;
-        background: #fb7299;
-        color: #fff;
-        border: none;
         border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        margin-left: 8px;
-        transition: background .3s;
       }
-      .copy-btn:hover { background: #e0527a; }
+      .bili-shortener button:hover {
+        background-color: #ff85ad;
+      }
+      #shortResult {
+        font-weight: bold;
+        color: #00a1d6;
+        margin-top: 10px;
+      }
     </style>
   </head>
   <body>
@@ -97,6 +46,17 @@
     <p style="text-align:center">x <sup>2</sup>+2x+1=0 </p>
     <p>左邊</p>
     <hr />
+    
+    <!-- 新增的功能區塊開始 -->
+    <div class="bili-shortener">
+      <h3>📺 Bilibili 短網址生成器 (b23.tv)</h3>
+      <p>請輸入 B站 網址 (例如: https://www.bilibili.com/opus/1170602437564694531)：</p>
+      <input type="text" id="longUrl" placeholder="貼上長網址..." />
+      <button onclick="generateShortLink()" id="genBtn">生成短鏈</button>
+      <div id="shortResult"></div>
+    </div>
+    <!-- 新增的功能區塊結束 -->
+
     <p style="text-align:right">右邊</p>
     <p><input name="我是按鈕" type="radio" value="YES" />YES </p>
     <p><input maxlength="10" name="文字" type="email" value="0" /></p>
@@ -111,135 +71,80 @@
         <option value="-5">ghi</option>
       </select></p>
     <p><input name="按鈕嗎" type="button" value="20" /></p>
-
-    <hr />
-
-    <!-- ===== Bilibili 短網址產生器 ===== -->
-    <div class="bili-short-url-box">
-      <h3>🔗 Bilibili 短網址產生器</h3>
-      <p class="desc">輸入任意 Bilibili 站內網址，產生 b23.tv 短網址</p>
-      <div class="input-row">
-        <input type="text" id="biliUrlInput"
-               placeholder="例：https://www.bilibili.com/video/BV1GJ411x7h7"
-               onkeydown="if(event.key==='Enter')generateShortUrl();" />
-        <button class="gen-btn" id="genBtn" onclick="generateShortUrl()">產生短網址</button>
-      </div>
-      <div id="shortUrlResult"></div>
-    </div>
-    <!-- ===== 結束 ===== -->
-
     <p><img alt="" src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png" style="float:left; height:1667px; width:2277px" /></p>
     <p style="text-align:right">&nbsp;</p>
 
+    <!-- JavaScript 邏輯 -->
     <script>
-    async function generateShortUrl() {
-      var input    = document.getElementById('biliUrlInput');
-      var result   = document.getElementById('shortUrlResult');
-      var btn      = document.getElementById('genBtn');
-      var url      = input.value.trim();
+      async function generateShortLink() {
+        const urlInput = document.getElementById('longUrl').value;
+        const resultDiv = document.getElementById('shortResult');
+        const btn = document.getElementById('genBtn');
 
-      result.style.display = 'block';
+        // 簡單驗證是否為 Bilibili 網址
+        if (!urlInput.includes('bilibili.com')) {
+          resultDiv.innerText = "❌ 請輸入有效的 Bilibili 網址 (需包含 bilibili.com)";
+          return;
+        }
 
-      /* --- 基本驗證 --- */
-      if (!url) {
-        result.innerHTML = '<span style="color:#e74c3c">⚠️ 請輸入 Bilibili 網址</span>';
-        return;
-      }
-      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-      if (!/bilibili\.com/i.test(url)) {
-        result.innerHTML = '<span style="color:#e74c3c">⚠️ 網址域名必須為 *.bilibili.com</span>';
-        return;
-      }
+        btn.disabled = true;
+        resultDiv.innerText = "⏳ 生成中...";
 
-      /* --- 載入狀態 --- */
-      btn.disabled = true;
-      btn.textContent = '處理中…';
-      result.innerHTML = '<span style="color:#666">⏳ 產生中，請稍候…</span>';
+        // 準備 API 參數 (根據您提供的 API 文件)
+        const params = new URLSearchParams();
+        params.append('build', '6114514');
+        params.append('buvid', 'qwq');
+        params.append('oid', urlInput); // 將輸入的網址作為 oid
+        params.append('platform', 'unix');
+        params.append('share_channel', 'COPY');
+        params.append('share_id', 'public.webview.0.0.pv'); // 針對通用連結的 share_id
+        params.append('share_mode', '4');
 
-      /* --- 組裝 POST body --- */
-      var params = new URLSearchParams({
-        platform:      'unix',
-        share_channel: 'COPY',
-        share_id:      'public.webview.0.0.pv',
-        share_mode:    '4',
-        oid:           url,
-        buvid:         'qwq',
-        build:         '6114514'
-      });
+        // 定義 API 端點
+        // 由於 GitHub Pages 強制 HTTPS，我們優先使用官方 HTTPS 接口
+        // 並加上 corsproxy.io 嘗試繞過瀏覽器的跨域限制
+        const targetApi = 'https://api.bilibili.com/x/share/click';
+        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetApi);
 
-      var fetchOpts = {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body:    params.toString()
-      };
-
-      /* --- 依序嘗試多個端點 --- */
-      var endpoints = [
-        'https://api.biliapi.net/x/share/click',
-        'https://api.bilibili.com/x/share/click'
-      ];
-
-      var data = null;
-      for (var i = 0; i < endpoints.length; i++) {
         try {
-          var resp = await fetch(endpoints[i], fetchOpts);
-          data = await resp.json();
-          if (data && data.code === 0) break;
-        } catch (e) {
-          continue;           // 該端點不可用，換下一個
+          const response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params
+          });
+
+          if (!response.ok) {
+            throw new Error(`網路錯誤: ${response.status}`);
+          }
+
+          const json = await response.json();
+
+          if (json.code === 0 && json.data && json.data.content) {
+            // API 回傳的 content 通常包含標題和連結，例如：
+            // "【標題...】 https://b23.tv/xxxxx"
+            // 我們使用 Regex 提取出 https://b23.tv/xxxxx
+            const content = json.data.content;
+            const match = content.match(/https:\/\/b23\.tv\/[a-zA-Z0-9]+/);
+            
+            if (match) {
+              const shortUrl = match[0];
+              resultDiv.innerHTML = `✅ 成功：<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+            } else {
+              resultDiv.innerText = "⚠️ API 回傳成功，但無法解析出短網址。原始回傳：" + content;
+            }
+          } else {
+            resultDiv.innerText = "❌ 生成失敗，API 訊息：" + (json.message || "未知錯誤");
+          }
+
+        } catch (error) {
+          console.error(error);
+          resultDiv.innerText = "❌ 發生錯誤 (可能是跨域 CORS 阻擋)：" + error.message;
+        } finally {
+          btn.disabled = false;
         }
       }
-
-      /* --- 恢復按鈕 --- */
-      btn.disabled = false;
-      btn.textContent = '產生短網址';
-
-      /* --- 顯示結果 --- */
-      if (data && data.code === 0 && data.data && data.data.content) {
-        var content = data.data.content;
-        var match   = content.match(/(https?:\/\/b23\.tv\/\S+)/);
-
-        if (match) {
-          var short = match[1];
-          result.innerHTML =
-            '✅ 短網址：<a href="' + short + '" target="_blank">' + short + '</a>' +
-            ' <button class="copy-btn" onclick="copyText(\'' + short + '\',this)">📋 複製</button>' +
-            '<br><small style="color:#888">📝 ' + escapeHtml(content) + '</small>';
-        } else {
-          result.innerHTML = '✅ 回傳內容：' + escapeHtml(content);
-        }
-      } else {
-        result.innerHTML =
-          '<span style="color:#e74c3c">❌ 產生失敗<br>' +
-          '可能原因：網址格式不正確、API 暫時不可用、或瀏覽器跨域 (CORS) 限制。</span>';
-      }
-    }
-
-    /* 複製到剪貼簿 */
-    function copyText(text, btnEl) {
-      navigator.clipboard.writeText(text).then(function () {
-        btnEl.textContent = '✅ 已複製';
-        setTimeout(function () { btnEl.textContent = '📋 複製'; }, 2000);
-      }).catch(function () {
-        var ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        btnEl.textContent = '✅ 已複製';
-        setTimeout(function () { btnEl.textContent = '📋 複製'; }, 2000);
-      });
-    }
-
-    /* 防 XSS 跳脫 */
-    function escapeHtml(str) {
-      var d = document.createElement('div');
-      d.appendChild(document.createTextNode(str));
-      return d.innerHTML;
-    }
     </script>
   </body>
 </html>
