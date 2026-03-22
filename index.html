@@ -2,7 +2,8 @@
 <html prefix="og: http://ogp.me/ns#">
   <head>
     <meta charset="utf-8">
-    <title>測試網頁</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試網頁 | Rushia</title>
     <link rel="icon" href="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/favicon.ico" type="image/x-icon">
     <meta property="og:title" content="Rushia我婆">
     <meta property="og:description" content="雖然她死ㄌ">
@@ -10,15 +11,93 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/image.png">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Rushia My Beloved">
+    
     <style>
+      /* 全域設定 */
+      body {
+        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      }
+
+      h2 {
+        color: #fb7299; /* 採用 B站/粉色系 */
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        margin-top: 30px;
+      }
+
+      /* === 導��按鈕網格設計 === */
+      .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        background: #fff;
+        color: #fb7299;
+        text-decoration: none;
+        border: 2px solid #fb7299;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+      .nav-btn:hover {
+        background: #fb7299;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(251, 114, 153, 0.3);
+      }
+
+      /* === 測試區塊設定 === */
+      .test-area {
+        background: #fdfdfd;
+        border: 1px dashed #ccc;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .test-area audio {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      /* === 響應式圖片 === */
+      .responsive-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        display: block;
+        margin: 20px auto;
+      }
+
+      /* === 原有短網址產生器 CSS 調整 === */
       .bili-short-url-box {
         margin: 20px 0;
         padding: 20px;
         border: 2px solid #00a1d6;
         border-radius: 10px;
         background: linear-gradient(135deg, #f0f8ff, #e8f4fd);
-        max-width: 620px;
-        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        max-width: 100%;
       }
       .bili-short-url-box h3 {
         margin: 0 0 6px 0;
@@ -93,48 +172,79 @@
     </style>
   </head>
   <body>
-    <p>&nbsp;嗨， <u><em><strong>test</strong></em></u>&nbsp; <s>Hello world!</s></p>
-    <p style="text-align:center">x <sup>2</sup>+2x+1=0 </p>
-    <p>左邊</p>
-    <hr />
-    <p style="text-align:right">右邊</p>
-    <p><input name="我是按鈕" type="radio" value="YES" />YES </p>
-    <p><input maxlength="10" name="文字" type="email" value="0" /></p>
-    <a href="https://rushiaismywaifu.github.io/project-1" target="_blank">往project-1</a><br />
-    <a href="/PageTest" target="_blank">往PageTest</a><br />
-    <a href="/aboutme" target="_blank">往aboutme</a><br />
-    <a href="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3">ayame</a>
-    <audio src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3" controls></audio>
-    <p><select multiple="true" name="欄位">
-        <option value="50">abc</option>
-        <option value="0">def</option>
-        <option value="-5">ghi</option>
-      </select></p>
-    <p><input name="按鈕嗎" type="button" value="20" /></p>
 
-    <hr />
-
-    <!-- ===== Bilibili 短網址產生器 ===== -->
-    <div class="bili-short-url-box">
-      <h3>🔗 Bilibili 短網址產生器</h3>
-      <p class="desc">輸入任意 Bilibili 站內網址，產生 b23.tv 短網址</p>
-      <div class="input-row">
-        <input type="text" id="biliUrlInput"
-               placeholder="例：https://www.bilibili.com/video/BV1GJ411x7h7"
-               onkeydown="if(event.key==='Enter')generateShortUrl();" />
-        <button class="gen-btn" id="genBtn" onclick="generateShortUrl()">產生短網址</button>
+    <div class="container">
+      <h1 style="text-align: center; color: #333;">Welcome to My Site 🦋</h1>
+      
+      <!-- ===== 1. 導航區域 ===== -->
+      <h2>🧭 網站導覽</h2>
+      <div class="nav-grid">
+        <a class="nav-btn" href="/Sus" target="_blank">Sus</a>
+        <a class="nav-btn" href="/credentials" target="_blank">Credentials</a>
+        <a class="nav-btn" href="/guess" target="_blank">Guess Game</a>
+        <a class="nav-btn" href="/minimalist-notes" target="_blank">Notes</a>
+        <a class="nav-btn" href="/music-player" target="_blank">Music Player</a>
+        <a class="nav-btn" href="/ayame" target="_blank">Ayame</a>
+        <a class="nav-btn" href="/base64" target="_blank">Base64</a>
+        <a class="nav-btn" href="/ui_shigure" target="_blank">UI Shigure</a>
+        <a class="nav-btn" href="/PageTest" target="_blank">Page Test</a>
+        <a class="nav-btn" href="/timeis" target="_blank">Time Is</a>
+        <a class="nav-btn" href="/project-1" target="_blank">Project-1</a>
+        <a class="nav-btn" href="/aboutme" target="_blank">About Me</a>
       </div>
-      <div id="shortUrlResult"></div>
+
+      <!-- ===== 2. 工具區域 ===== -->
+      <h2>🛠️ 實用工具</h2>
+      <div class="bili-short-url-box">
+        <h3>🔗 Bilibili 短網址產生器</h3>
+        <p class="desc">輸入任意 Bilibili 站內網址，產生 b23.tv 短網址</p>
+        <div class="input-row">
+          <input type="text" id="biliUrlInput"
+                 placeholder="例：https://www.bilibili.com/video/BV1GJ411x7h7"
+                 onkeydown="if(event.key==='Enter')generateShortUrl();" />
+          <button class="gen-btn" id="genBtn" onclick="generateShortUrl()">產生短網址</button>
+        </div>
+        <div id="shortUrlResult"></div>
+      </div>
+
+      <!-- ===== 3. 測試與實驗區域 ===== -->
+      <h2>🧪 實驗與測試區塊</h2>
+      <div class="test-area">
+        <p>&nbsp;嗨， <u><em><strong>test</strong></em></u>&nbsp; <s>Hello world!</s></p>
+        <p style="text-align:center">x <sup>2</sup>+2x+1=0 </p>
+        
+        <div style="display: flex; justify-content: space-between;">
+          <p>左邊</p>
+          <p>右邊</p>
+        </div>
+        <hr />
+        
+        <!-- 音檔測試 -->
+        <p><strong>🎵 音檔測試: Ayame</strong></p>
+        <audio src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3" controls></audio>
+        
+        <!-- 表單測試 -->
+        <p><label><input name="我是按鈕" type="radio" value="YES" /> YES 測試選項</label></p>
+        <p><input maxlength="10" name="文字" type="email" value="" placeholder="測試信箱輸入框" style="padding: 5px;"/></p>
+        <p>
+          <select multiple="true" name="欄位" style="padding: 5px;">
+            <option value="50">abc</option>
+            <option value="0">def</option>
+            <option value="-5">ghi</option>
+          </select>
+        </p>
+        <p><input name="按鈕嗎" type="button" value="點擊測試按鈕" style="padding: 5px 15px;"/></p>
+      </div>
+
+      <!-- ===== 4. 畫廊/圖片區域 ===== -->
+      <h2>🖼️ 圖片展示</h2>
+      <!-- 移除了原本的 inline style，改用響應式 CSS 類別 -->
+      <img alt="Display Image" src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png" class="responsive-img" />
+
     </div>
-    <!-- ===== 結束 ===== -->
 
-    <p><img alt="" src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png" style="float:left; height:1667px; width:2277px" /></p>
-    <p style="text-align:right">&nbsp;</p>
-
+    <!-- ===== JS 腳本維持原樣 ===== -->
     <script>
-    /*
-     * ★★★ 把這裡換成你自己部署的 Cloudflare Worker 網址 ★★★
-     */
     var WORKER_URL = 'https://soft-boat-f648.csgtung88.workers.dev';
 
     async function generateShortUrl() {
@@ -145,7 +255,6 @@
 
       result.style.display = 'block';
 
-      /* 基本驗證 */
       if (!url) {
         result.innerHTML = '<span style="color:#e74c3c">⚠️ 請輸入 Bilibili 網址</span>';
         return;
@@ -156,12 +265,10 @@
         return;
       }
 
-      /* 載入狀態 */
       btn.disabled = true;
       btn.textContent = '處理中…';
       result.innerHTML = '<span style="color:#666">⏳ 產生中，請稍候…</span>';
 
-      /* 組裝 POST body */
       var params = new URLSearchParams({
         platform:      'unix',
         share_channel: 'COPY',
