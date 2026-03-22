@@ -11,22 +11,100 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Rushia My Beloved">
     <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #fafafa;
+        color: #333;
+      }
+
+      /* ===== 導航區塊 ===== */
+      .nav-section {
+        max-width: 700px;
+        margin: 20px 0;
+        padding: 24px;
+        border: 2px solid #fb7299;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #fff5f8, #fff0f5);
+        box-shadow: 0 4px 16px rgba(251,114,153,.12);
+      }
+      .nav-section h3 {
+        margin: 0 0 6px 0;
+        color: #fb7299;
+        font-size: 20px;
+      }
+      .nav-section .nav-desc {
+        margin: 0 0 16px 0;
+        color: #888;
+        font-size: 13px;
+      }
+      .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      .nav-grid a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 14px;
+        background: #fff;
+        border: 1px solid #f0d0da;
+        border-radius: 10px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all .25s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .nav-grid a::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px; height: 100%;
+        background: #fb7299;
+        transform: scaleY(0);
+        transition: transform .25s ease;
+        border-radius: 0 4px 4px 0;
+      }
+      .nav-grid a:hover {
+        border-color: #fb7299;
+        background: #fff5f8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(251,114,153,.15);
+      }
+      .nav-grid a:hover::before {
+        transform: scaleY(1);
+      }
+      .nav-grid a .nav-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+        width: 24px;
+        text-align: center;
+      }
+
+      /* ===== Bilibili 短網址 ===== */
       .bili-short-url-box {
         margin: 20px 0;
-        padding: 20px;
+        padding: 24px;
         border: 2px solid #00a1d6;
-        border-radius: 10px;
+        border-radius: 14px;
         background: linear-gradient(135deg, #f0f8ff, #e8f4fd);
-        max-width: 620px;
-        font-family: Arial, "Microsoft JhengHei", sans-serif;
+        max-width: 700px;
+        box-shadow: 0 4px 16px rgba(0,161,214,.1);
       }
       .bili-short-url-box h3 {
         margin: 0 0 6px 0;
         color: #00a1d6;
+        font-size: 20px;
       }
       .bili-short-url-box .desc {
-        margin: 0 0 12px 0;
-        color: #555;
+        margin: 0 0 14px 0;
+        color: #666;
         font-size: 14px;
       }
       .bili-short-url-box .input-row {
@@ -37,39 +115,41 @@
       .bili-short-url-box input[type="text"] {
         flex: 1;
         min-width: 200px;
-        padding: 10px 12px;
+        padding: 10px 14px;
         border: 1px solid #ccc;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 14px;
         outline: none;
-        transition: border-color .3s;
+        transition: border-color .3s, box-shadow .3s;
       }
       .bili-short-url-box input[type="text"]:focus {
         border-color: #00a1d6;
+        box-shadow: 0 0 0 3px rgba(0,161,214,.15);
       }
       .gen-btn {
-        padding: 10px 20px;
+        padding: 10px 22px;
         background: #00a1d6;
         color: #fff;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
         font-weight: bold;
-        transition: background .3s;
+        transition: background .3s, transform .15s;
         white-space: nowrap;
       }
-      .gen-btn:hover { background: #0087b3; }
-      .gen-btn:disabled { background: #aaa; cursor: not-allowed; }
+      .gen-btn:hover { background: #0087b3; transform: translateY(-1px); }
+      .gen-btn:active { transform: translateY(0); }
+      .gen-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
       #shortUrlResult {
         display: none;
         margin-top: 12px;
-        padding: 12px;
+        padding: 14px;
         background: #fff;
-        border-radius: 6px;
+        border-radius: 8px;
         border: 1px solid #ddd;
         word-break: break-all;
-        line-height: 1.7;
+        line-height: 1.8;
         font-size: 14px;
       }
       #shortUrlResult a {
@@ -83,34 +163,122 @@
         background: #fb7299;
         color: #fff;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
         font-size: 13px;
         margin-left: 8px;
         transition: background .3s;
       }
       .copy-btn:hover { background: #e0527a; }
+
+      /* ===== 其他區塊 ===== */
+      .content-section {
+        max-width: 700px;
+        margin: 20px 0;
+        padding: 24px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .content-section h3 {
+        margin: 0 0 12px 0;
+        color: #555;
+      }
+
+      hr {
+        border: none;
+        border-top: 2px dashed #ddd;
+        margin: 24px 0;
+        max-width: 700px;
+      }
+
+      /* ===== 底部圖片 ===== */
+      .bottom-img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-top: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      }
     </style>
   </head>
   <body>
+
     <p>&nbsp;嗨， <u><em><strong>test</strong></em></u>&nbsp; <s>Hello world!</s></p>
-    <p style="text-align:center">x <sup>2</sup>+2x+1=0 </p>
-    <p>左邊</p>
+    <p style="text-align:center">x <sup>2</sup>+2x+1=0</p>
+
     <hr />
-    <p style="text-align:right">右邊</p>
-    <p><input name="我是按鈕" type="radio" value="YES" />YES </p>
-    <p><input maxlength="10" name="文字" type="email" value="0" /></p>
-    <a href="https://rushiaismywaifu.github.io/project-1" target="_blank">往project-1</a><br />
-    <a href="/PageTest" target="_blank">往PageTest</a><br />
-    <a href="/aboutme" target="_blank">往aboutme</a><br />
-    <a href="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3">ayame</a>
-    <audio src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3" controls></audio>
-    <p><select multiple="true" name="欄位">
-        <option value="50">abc</option>
-        <option value="0">def</option>
-        <option value="-5">ghi</option>
-      </select></p>
-    <p><input name="按鈕嗎" type="button" value="20" /></p>
+
+    <!-- ===== 導航區塊 ===== -->
+    <div class="nav-section">
+      <h3>📌 頁面導航</h3>
+      <p class="nav-desc">點��下方按鈕前往各子頁面（新分頁開啟）</p>
+      <div class="nav-grid">
+        <a href="/aboutme" target="_blank">
+          <span class="nav-icon">👤</span> About Me
+        </a>
+        <a href="/project-1" target="_blank">
+          <span class="nav-icon">🚀</span> Project-1
+        </a>
+        <a href="/PageTest" target="_blank">
+          <span class="nav-icon">🧪</span> PageTest
+        </a>
+        <a href="/Sus" target="_blank">
+          <span class="nav-icon">📮</span> Sus
+        </a>
+        <a href="/credentials" target="_blank">
+          <span class="nav-icon">🔑</span> Credentials
+        </a>
+        <a href="/guess" target="_blank">
+          <span class="nav-icon">🎲</span> Guess
+        </a>
+        <a href="/minimalist-notes" target="_blank">
+          <span class="nav-icon">📝</span> Notes
+        </a>
+        <a href="/music-player" target="_blank">
+          <span class="nav-icon">🎵</span> Music Player
+        </a>
+        <a href="/ayame" target="_blank">
+          <span class="nav-icon">🌸</span> Ayame
+        </a>
+        <a href="/base64" target="_blank">
+          <span class="nav-icon">🔣</span> Base64
+        </a>
+        <a href="/ui_shigure" target="_blank">
+          <span class="nav-icon">🎨</span> UI Shigure
+        </a>
+        <a href="/timeis" target="_blank">
+          <span class="nav-icon">⏰</span> Time Is
+        </a>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ===== 小元件測試 ===== -->
+    <div class="content-section">
+      <h3>🛠️ 表單元件測試</h3>
+      <p><input name="我是按鈕" type="radio" value="YES" /> YES</p>
+      <p><input maxlength="10" name="文字" type="email" value="0" /></p>
+      <p>
+        <select multiple="true" name="欄位">
+          <option value="50">abc</option>
+          <option value="0">def</option>
+          <option value="-5">ghi</option>
+        </select>
+      </p>
+      <p><input name="按鈕嗎" type="button" value="20" /></p>
+    </div>
+
+    <!-- ===== 音訊 ===== -->
+    <div class="content-section">
+      <h3>🎧 Ayame 音訊</h3>
+      <audio src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3" controls style="width:100%;"></audio>
+      <p style="margin-top:8px;">
+        <a href="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3" style="color:#00a1d6;">⬇️ 下載 ayame.mp3</a>
+      </p>
+    </div>
 
     <hr />
 
@@ -126,15 +294,16 @@
       </div>
       <div id="shortUrlResult"></div>
     </div>
-    <!-- ===== 結束 ===== -->
 
-    <p><img alt="" src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png" style="float:left; height:1667px; width:2277px" /></p>
-    <p style="text-align:right">&nbsp;</p>
+    <hr />
+
+    <!-- ===== 底部圖片 ===== -->
+    <p>
+      <img alt="底部圖片" class="bottom-img"
+           src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png" />
+    </p>
 
     <script>
-    /*
-     * ★★★ 把這裡換成你自己部署的 Cloudflare Worker 網址 ★★★
-     */
     var WORKER_URL = 'https://soft-boat-f648.csgtung88.workers.dev';
 
     async function generateShortUrl() {
@@ -145,7 +314,6 @@
 
       result.style.display = 'block';
 
-      /* 基本驗證 */
       if (!url) {
         result.innerHTML = '<span style="color:#e74c3c">⚠️ 請輸入 Bilibili 網址</span>';
         return;
@@ -156,12 +324,10 @@
         return;
       }
 
-      /* 載入狀態 */
       btn.disabled = true;
       btn.textContent = '處理中…';
       result.innerHTML = '<span style="color:#666">⏳ 產生中，請稍候…</span>';
 
-      /* 組裝 POST body */
       var params = new URLSearchParams({
         platform:      'unix',
         share_channel: 'COPY',
@@ -180,7 +346,6 @@
         });
 
         var data = await resp.json();
-
         btn.disabled = false;
         btn.textContent = '產生短網址';
 
@@ -202,7 +367,6 @@
             '<span style="color:#e74c3c">❌ 產生失敗：' +
             escapeHtml(data.message || JSON.stringify(data)) + '</span>';
         }
-
       } catch (e) {
         btn.disabled = false;
         btn.textContent = '產生短網址';
