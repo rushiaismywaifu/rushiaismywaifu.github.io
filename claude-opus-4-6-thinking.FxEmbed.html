@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X/Twitter 推文媒體檢視器</title>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #15202b;
+            color: #e7e9ea;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 16px 60px;
+        }
+
+        /* ===== Header ===== */
+        header {
+            text-align: center;
+            padding: 32px 0 24px;
+        }
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1d9bf0, #1df0c8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p {
+            color: #8899a6;
+            margin-top: 6px;
+            font-size: 0.95rem;
+        }
+
+        /* ===== Input Section ===== */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-section input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #38444d;
+            background: #192734;
+            color: #e7e9ea;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .input-section input:focus {
+            border-color: #1d9bf0;
+        }
+        .input-section input::placeholder {
+            color: #8899a6;
+        }
+        .btn-primary {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #1d9bf0;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .2s, transform .1s;
+        }
+        .btn-primary:hover { background: #1a8cd8; }
+        .btn-primary:active { transform: scale(.97); }
+        .btn-primary:disabled {
+            background: #38444d;
+            cursor: not-allowed;
+        }
+
+        /* ===== Messages ===== */
+        .error-msg {
+            background: #67000d;
+            border: 1px solid #a1243b;
+            color: #fca5a5;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: .95rem;
+            animation: fadeIn .3s;
+        }
+        .error-msg.visible { display: block; }
+
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            display: none;
+        }
+        .loading.visible { display: block; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #38444d;
+            border-top-color: #1d9bf0;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== Result ===== */
+        #result {
+            display: none;
+            animation: fadeIn .4s;
+        }
+        #result.visible { display: block; }
+
+        .card {
+            background: #192734;
+            border: 1px solid #38444d;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        /* Tweet Info */
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .avatar {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #38444d;
+        }
+        .author-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .author-handle {
+            color: #8899a6;
+            font-size: .9rem;
+        }
+        .tweet-text {
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+        .tweet-date {
+            color: #8899a6;
+            font-size: .85rem;
+            margin-bottom: 12px;
+        }
+        .tweet-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            color: #8899a6;
+            font-size: .9rem;
+        }
+        .tweet-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tweet-stats .stat-num {
+            color: #e7e9ea;
+            font-weight: 700;
+        }
+
+        /* ===== Media Section ===== */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge {
+            background: #1d9bf0;
+            color: #fff;
+            font-size: .75rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .no-media {
+            text-align: center;
+            color: #8899a6;
+            padding: 30px 0;
+            font-size: .95rem;
+        }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid;
+            gap: 8px;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .media-grid.count-1 { grid-template-columns: 1fr; }
+        .media-grid.count-2 { grid-template-columns: 1fr 1fr; }
+        .media-grid.count-3 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        .media-grid.count-3 .media-item:first-child {
+            grid-row: 1 / 3;
+        }
+        .media-grid.count-4 {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .media-item {
+            position: relative;
+            background: #0d1117;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            min-height: 160px;
+            max-height: 520px;
+        }
+        .media-grid.count-1 .media-item img,
+        .media-grid.count-1 .media-item video {
+            max-height: 600px;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .media-overlay {
+            position: absolute;
+            top: 8px; right: 8px;
+            display: flex;
+            gap: 6px;
+        }
+        .media-badge {
+            background: rgba(0,0,0,.72);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .btn-download {
+            position: absolute;
+            bottom: 8px; right: 8px;
+            background: rgba(0,0,0,.72);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .8rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity .2s;
+            text-decoration: none;
+        }
+        .media-item:hover .btn-download { opacity: 1; }
+
+        /* GIF badge */
+        .gif-indicator {
+            position: absolute;
+            bottom: 8px; left: 8px;
+            background: rgba(0,0,0,.72);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        /* ===== URL Copy Section ===== */
+        .url-copy-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .url-copy-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #38444d;
+            background: #0d1117;
+            color: #1d9bf0;
+            font-size: .92rem;
+            outline: none;
+            cursor: text;
+        }
+        .btn-copy {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid #38444d;
+            background: transparent;
+            color: #e7e9ea;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s;
+        }
+        .btn-copy:hover {
+            background: #22303c;
+            border-color: #1d9bf0;
+        }
+        .btn-copy.copied {
+            background: #00ba7c;
+            border-color: #00ba7c;
+            color: #fff;
+        }
+
+        /* ===== External Media ===== */
+        .external-media {
+            margin-top: 10px;
+        }
+        .external-media iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+            border-radius: 14px;
+        }
+
+        /* ===== Lightbox ===== */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.92);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        .lightbox.visible {
+            display: flex;
+            animation: fadeIn .2s;
+        }
+        .lightbox img {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: rgba(255,255,255,.15);
+            border: none;
+            color: #fff;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 500px) {
+            .input-section { flex-direction: column; }
+            .btn-primary { width: 100%; }
+            .tweet-stats { gap: 12px; }
+            .url-copy-row { flex-direction: column; }
+            .btn-copy { width: 100%; text-align: center; }
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center;
+            color: #8899a6;
+            font-size: .8rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #38444d;
+        }
+        .footer a {
+            color: #1d9bf0;
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>𝕏 推文媒體檢視器</h1>
+            <p>貼上推文連結，即可檢視、下載圖片與影片</p>
+        </header>
+
+        <!-- Input -->
+        <div class="input-section">
+            <input type="text" id="urlInput" placeholder="貼上推文連結，例如 https://x.com/user/status/123456..." autocomplete="off" spellcheck="false">
+            <button class="btn-primary" id="fetchBtn" onclick="handleFetch()">取得媒體</button>
+        </div>
+
+        <!-- Error -->
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div style="color:#8899a6">正在取得推文資料…</div>
+        </div>
+
+        <!-- Result -->
+        <div id="result">
+            <!-- Tweet Card -->
+            <div class="card" id="tweetCard">
+                <div class="tweet-header">
+                    <img class="avatar" id="avatar" alt="avatar" src="">
+                    <div>
+                        <div class="author-name" id="authorName"></div>
+                        <div class="author-handle" id="authorHandle"></div>
+                    </div>
+                </div>
+                <div class="tweet-text" id="tweetText"></div>
+                <div class="tweet-date" id="tweetDate"></div>
+                <div class="tweet-stats" id="tweetStats"></div>
+            </div>
+
+            <!-- Media -->
+            <div class="card" id="mediaCard">
+                <div class="section-title">
+                    🖼️ 媒體內容 <span class="badge" id="mediaBadge">0</span>
+                </div>
+                <div id="mediaContainer"></div>
+            </div>
+
+            <!-- Original URL -->
+            <div class="card">
+                <div class="section-title">🔗 原始連結</div>
+                <div class="url-copy-row">
+                    <input type="text" id="originalUrl" readonly>
+                    <button class="btn-copy" id="copyBtn" onclick="copyUrl()">📋 複製</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Powered by <a href="https://github.com/FxEmbed/FxEmbed" target="_blank" rel="noopener">FxTwitter API</a>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <img id="lightboxImg" src="" alt="preview">
+    </div>
+
+    <script>
+    // ===== Supported domains =====
+    const SUPPORTED_DOMAINS = [
+        'x.com', 'twitter.com',
+        'fixupx.com', 'fixvx.com',
+        'fxtwitter.com', 'vxtwitter.com',
+        'xcancel.com', 'nitter.net',
+        'nitter.privacydev.net'
+    ];
+
+    const API_BASE = 'https://api.fxtwitter.com/i/status/';
+
+    // ===== DOM refs =====
+    const $input       = document.getElementById('urlInput');
+    const $fetchBtn     = document.getElementById('fetchBtn');
+    const $error        = document.getElementById('errorMsg');
+    const $loading      = document.getElementById('loading');
+    const $result       = document.getElementById('result');
+    const $avatar       = document.getElementById('avatar');
+    const $authorName   = document.getElementById('authorName');
+    const $authorHandle = document.getElementById('authorHandle');
+    const $tweetText    = document.getElementById('tweetText');
+    const $tweetDate    = document.getElementById('tweetDate');
+    const $tweetStats   = document.getElementById('tweetStats');
+    const $mediaContainer = document.getElementById('mediaContainer');
+    const $mediaBadge   = document.getElementById('mediaBadge');
+    const $originalUrl  = document.getElementById('originalUrl');
+    const $copyBtn      = document.getElementById('copyBtn');
+    const $lightbox     = document.getElementById('lightbox');
+    const $lightboxImg  = document.getElementById('lightboxImg');
+
+    // Enter key
+    $input.addEventListener('keydown', e => { if (e.key === 'Enter') handleFetch(); });
+
+    // ===== Extract Tweet ID =====
+    function extractTweetId(input) {
+        const trimmed = input.trim();
+
+        // Pure numeric ID
+        if (/^\d{10,}$/.test(trimmed)) return trimmed;
+
+        // URL pattern
+        try {
+            const url = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed);
+            const host = url.hostname.replace(/^www\./, '');
+
+            // Check domain
+            if (!SUPPORTED_DOMAINS.some(d => host === d || host.endsWith('.' + d))) {
+                return null;
+            }
+
+            // Match /status/ID or /statuses/ID
+            const match = url.pathname.match(/\/status(?:es)?\/(\d+)/);
+            return match ? match[1] : null;
+        } catch {
+            return null;
+        }
+    }
+
+    // ===== Show / Hide helpers =====
+    function showError(msg) {
+        $error.textContent = msg;
+        $error.classList.add('visible');
+    }
+    function hideError() { $error.classList.remove('visible'); }
+    function showLoading() { $loading.classList.add('visible'); }
+    function hideLoading() { $loading.classList.remove('visible'); }
+    function showResult() { $result.classList.add('visible'); }
+    function hideResult() { $result.classList.remove('visible'); }
+
+    // ===== Format number =====
+    function fmtNum(n) {
+        if (n == null) return '—';
+        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+        return n.toLocaleString();
+    }
+
+    // ===== Format duration =====
+    function fmtDur(sec) {
+        if (!sec) return '';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // ===== Main fetch =====
+    async function handleFetch() {
+        hideError();
+        hideResult();
+
+        const raw = $input.value;
+        if (!raw.trim()) { showError('⚠️ 請輸入推文連結或推文 ID'); return; }
+
+        const tweetId = extractTweetId(raw);
+        if (!tweetId) { showError('⚠️ 無法辨識的連結格式，請確認網址是否正確'); return; }
+
+        $fetchBtn.disabled = true;
+        showLoading();
+
+        try {
+            const resp = await fetch(API_BASE + tweetId);
+            const data = await resp.json();
+
+            if (data.code !== 200 || !data.tweet) {
+                const errMap = {
+                    'PRIVATE_TWEET': '🔒 此推文來自受保護的帳戶，無法存取',
+                    'NOT_FOUND':     '❌ 找不到此推文，可能已被刪除',
+                    'API_FAIL':      '⚠️ API 暫時無法使用，請稍後再試'
+                };
+                showError(errMap[data.message] || `⚠️ 取得推文失敗 (${data.message || resp.status})`);
+                return;
+            }
+
+            renderTweet(data.tweet);
+        } catch (err) {
+            console.error(err);
+            showError('⚠️ 網路錯誤，請檢查連線後重試');
+        } finally {
+            hideLoading();
+            $fetchBtn.disabled = false;
+        }
+    }
+
+    // ===== Render tweet =====
+    function renderTweet(tweet) {
+        // Author
+        const author = tweet.author || {};
+        $avatar.src = author.avatar_url || '';
+        $avatar.onerror = () => { $avatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="%2338444d"/><text x="24" y="30" text-anchor="middle" fill="%238899a6" font-size="20">?</text></svg>'; };
+        $authorName.textContent = author.name || '未知使用者';
+        $authorHandle.textContent = author.screen_name ? `@${author.screen_name}` : '';
+
+        // Text
+        $tweetText.textContent = tweet.text || '';
+
+        // Date
+        $tweetDate.textContent = tweet.created_at || '';
+
+        // Stats
+        $tweetStats.innerHTML = `
+            <span>❤️ <span class="stat-num">${fmtNum(tweet.likes)}</span></span>
+            <span>🔁 <span class="stat-num">${fmtNum(tweet.retweets)}</span></span>
+            <span>💬 <span class="stat-num">${fmtNum(tweet.replies)}</span></span>
+            ${tweet.views != null ? `<span>👁️ <span class="stat-num">${fmtNum(tweet.views)}</span></span>` : ''}
+        `;
+
+        // Original URL
+        const origUrl = tweet.url || `https://x.com/i/status/${tweet.id}`;
+        $originalUrl.value = origUrl;
+        $copyBtn.textContent = '📋 複製';
+        $copyBtn.classList.remove('copied');
+
+        // Media
+        renderMedia(tweet.media);
+
+        showResult();
+    }
+
+    // ===== Render media =====
+    function renderMedia(media) {
+        $mediaContainer.innerHTML = '';
+
+        if (!media) {
+            $mediaBadge.textContent = '0';
+            $mediaContainer.innerHTML = '<div class="no-media">此推文不含媒體內容</div>';
+            return;
+        }
+
+        // Collect all media items in order
+        let items = [];
+
+        if (media.all && media.all.length > 0) {
+            items = media.all;
+        } else {
+            if (media.photos) items.push(...media.photos);
+            if (media.videos) items.push(...media.videos);
+        }
+
+        // External media (YouTube etc.)
+        const hasExternal = media.external;
+
+        if (items.length === 0 && !hasExternal) {
+            $mediaBadge.textContent = '0';
+            $mediaContainer.innerHTML = '<div class="no-media">此推文不含媒體內容</div>';
+            return;
+        }
+
+        $mediaBadge.textContent = items.length + (hasExternal ? 1 : 0);
+
+        if (items.length > 0) {
+            const grid = document.createElement('div');
+            grid.className = `media-grid count-${Math.min(items.length, 4)}`;
+
+            items.forEach((item, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'media-item';
+
+                if (item.type === 'photo') {
+                    // Photo
+                    const img = document.createElement('img');
+                    img.src = item.url;
+                    img.alt = `圖片 ${idx + 1}`;
+                    img.loading = 'lazy';
+                    img.onclick = () => openLightbox(item.url);
+                    wrap.appendChild(img);
+
+                    // Overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'media-overlay';
+                    overlay.innerHTML = `<span class="media-badge">${item.width}×${item.height}</span>`;
+                    wrap.appendChild(overlay);
+
+                    // Download
+                    const dl = document.createElement('a');
+                    dl.className = 'btn-download';
+                    dl.href = item.url;
+                    dl.target = '_blank';
+                    dl.rel = 'noopener';
+                    dl.textContent = '⬇ 下載';
+                    dl.onclick = e => e.stopPropagation();
+                    wrap.appendChild(dl);
+
+                } else if (item.type === 'video' || item.type === 'gif') {
+                    // Video / GIF
+                    const video = document.createElement('video');
+                    video.src = item.url;
+                    video.poster = item.thumbnail_url || '';
+                    video.controls = true;
+                    video.preload = 'metadata';
+                    video.playsInline = true;
+                    if (item.type === 'gif') {
+                        video.autoplay = true;
+                        video.loop = true;
+                        video.muted = true;
+                    }
+                    wrap.appendChild(video);
+
+                    // Overlay badges
+                    const overlay = document.createElement('div');
+                    overlay.className = 'media-overlay';
+                    let badgeText = item.type === 'gif' ? 'GIF' : 'VIDEO';
+                    if (item.duration) badgeText += ` ${fmtDur(item.duration)}`;
+                    overlay.innerHTML = `<span class="media-badge">${badgeText}</span>`;
+                    if (item.width && item.height) {
+                        overlay.innerHTML += `<span class="media-badge">${item.width}×${item.height}</span>`;
+                    }
+                    wrap.appendChild(overlay);
+
+                    // Download
+                    const dl = document.createElement('a');
+                    dl.className = 'btn-download';
+                    dl.href = item.url;
+                    dl.target = '_blank';
+                    dl.rel = 'noopener';
+                    dl.textContent = '⬇ 下載';
+                    dl.onclick = e => e.stopPropagation();
+                    wrap.appendChild(dl);
+                }
+
+                grid.appendChild(wrap);
+            });
+
+            $mediaContainer.appendChild(grid);
+        }
+
+        // External media
+        if (hasExternal) {
+            const ext = media.external;
+            const extDiv = document.createElement('div');
+            extDiv.className = 'external-media';
+            extDiv.style.marginTop = items.length > 0 ? '12px' : '0';
+
+            if (ext.type === 'video' && ext.url) {
+                // Try YouTube embed
+                const ytMatch = ext.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+                if (ytMatch) {
+                    extDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
+                } else {
+                    extDiv.innerHTML = `<a href="${ext.url}" target="_blank" rel="noopener" style="color:#1d9bf0;">🔗 外部媒體連結</a>`;
+                }
+            }
+            $mediaContainer.appendChild(extDiv);
+        }
+    }
+
+    // ===== Copy URL =====
+    function copyUrl() {
+        const url = $originalUrl.value;
+        if (!url) return;
+
+        navigator.clipboard.writeText(url).then(() => {
+            $copyBtn.textContent = '✅ 已複製';
+            $copyBtn.classList.add('copied');
+            setTimeout(() => {
+                $copyBtn.textContent = '📋 複製';
+                $copyBtn.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            // Fallback
+            $originalUrl.select();
+            document.execCommand('copy');
+            $copyBtn.textContent = '✅ 已複製';
+            $copyBtn.classList.add('copied');
+            setTimeout(() => {
+                $copyBtn.textContent = '📋 複製';
+                $copyBtn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // ===== Lightbox =====
+    function openLightbox(src) {
+        $lightboxImg.src = src;
+        $lightbox.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        $lightbox.classList.remove('visible');
+        $lightboxImg.src = '';
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+    </script>
+</body>
+</html>
