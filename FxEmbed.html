@@ -25,7 +25,6 @@
             padding: 24px 16px 60px;
         }
 
-        /* ===== Header ===== */
         header {
             text-align: center;
             padding: 32px 0 24px;
@@ -44,7 +43,6 @@
             font-size: 0.95rem;
         }
 
-        /* ===== Input Section ===== */
         .input-section {
             display: flex;
             gap: 10px;
@@ -61,12 +59,9 @@
             outline: none;
             transition: border-color .2s;
         }
-        .input-section input:focus {
-            border-color: #1d9bf0;
-        }
-        .input-section input::placeholder {
-            color: #8899a6;
-        }
+        .input-section input:focus { border-color: #1d9bf0; }
+        .input-section input::placeholder { color: #8899a6; }
+
         .btn-primary {
             padding: 12px 24px;
             border-radius: 12px;
@@ -81,12 +76,8 @@
         }
         .btn-primary:hover { background: #1a8cd8; }
         .btn-primary:active { transform: scale(.97); }
-        .btn-primary:disabled {
-            background: #38444d;
-            cursor: not-allowed;
-        }
+        .btn-primary:disabled { background: #38444d; cursor: not-allowed; }
 
-        /* ===== Messages ===== */
         .error-msg {
             background: #67000d;
             border: 1px solid #a1243b;
@@ -100,11 +91,7 @@
         }
         .error-msg.visible { display: block; }
 
-        .loading {
-            text-align: center;
-            padding: 40px 0;
-            display: none;
-        }
+        .loading { text-align: center; padding: 40px 0; display: none; }
         .loading.visible { display: block; }
         .spinner {
             width: 40px; height: 40px;
@@ -117,11 +104,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ===== Result ===== */
-        #result {
-            display: none;
-            animation: fadeIn .4s;
-        }
+        #result { display: none; animation: fadeIn .4s; }
         #result.visible { display: block; }
 
         .card {
@@ -132,7 +115,6 @@
             margin-bottom: 16px;
         }
 
-        /* Tweet Info */
         .tweet-header {
             display: flex;
             align-items: center;
@@ -145,14 +127,8 @@
             object-fit: cover;
             background: #38444d;
         }
-        .author-name {
-            font-weight: 700;
-            font-size: 1.05rem;
-        }
-        .author-handle {
-            color: #8899a6;
-            font-size: .9rem;
-        }
+        .author-name { font-weight: 700; font-size: 1.05rem; }
+        .author-handle { color: #8899a6; font-size: .9rem; }
         .tweet-text {
             font-size: 1rem;
             white-space: pre-wrap;
@@ -160,29 +136,11 @@
             margin-bottom: 14px;
             line-height: 1.5;
         }
-        .tweet-date {
-            color: #8899a6;
-            font-size: .85rem;
-            margin-bottom: 12px;
-        }
-        .tweet-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-            color: #8899a6;
-            font-size: .9rem;
-        }
-        .tweet-stats span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .tweet-stats .stat-num {
-            color: #e7e9ea;
-            font-weight: 700;
-        }
+        .tweet-date { color: #8899a6; font-size: .85rem; margin-bottom: 12px; }
+        .tweet-stats { display: flex; flex-wrap: wrap; gap: 18px; color: #8899a6; font-size: .9rem; }
+        .tweet-stats span { display: flex; align-items: center; gap: 5px; }
+        .tweet-stats .stat-num { color: #e7e9ea; font-weight: 700; }
 
-        /* ===== Media Section ===== */
         .section-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -207,7 +165,6 @@
             font-size: .95rem;
         }
 
-        /* Media Grid */
         .media-grid {
             display: grid;
             gap: 8px;
@@ -220,9 +177,7 @@
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
         }
-        .media-grid.count-3 .media-item:first-child {
-            grid-row: 1 / 3;
-        }
+        .media-grid.count-3 .media-item:first-child { grid-row: 1 / 3; }
         .media-grid.count-4 {
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
@@ -247,6 +202,12 @@
         .media-grid.count-1 .media-item img,
         .media-grid.count-1 .media-item video {
             max-height: 600px;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* GIF rendered as <img> */
+        .media-item .gif-img {
             object-fit: contain;
             background: #000;
         }
@@ -284,7 +245,6 @@
         }
         .media-item:hover .btn-download { opacity: 1; }
 
-        /* GIF badge */
         .gif-indicator {
             position: absolute;
             bottom: 8px; left: 8px;
@@ -297,12 +257,7 @@
             border-radius: 8px;
         }
 
-        /* ===== URL Copy Section ===== */
-        .url-copy-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .url-copy-row { display: flex; gap: 10px; align-items: center; }
         .url-copy-row input {
             flex: 1;
             padding: 10px 14px;
@@ -326,20 +281,10 @@
             white-space: nowrap;
             transition: all .2s;
         }
-        .btn-copy:hover {
-            background: #22303c;
-            border-color: #1d9bf0;
-        }
-        .btn-copy.copied {
-            background: #00ba7c;
-            border-color: #00ba7c;
-            color: #fff;
-        }
+        .btn-copy:hover { background: #22303c; border-color: #1d9bf0; }
+        .btn-copy.copied { background: #00ba7c; border-color: #00ba7c; color: #fff; }
 
-        /* ===== External Media ===== */
-        .external-media {
-            margin-top: 10px;
-        }
+        .external-media { margin-top: 10px; }
         .external-media iframe {
             width: 100%;
             aspect-ratio: 16/9;
@@ -347,7 +292,6 @@
             border-radius: 14px;
         }
 
-        /* ===== Lightbox ===== */
         .lightbox {
             display: none;
             position: fixed;
@@ -358,10 +302,7 @@
             align-items: center;
             cursor: zoom-out;
         }
-        .lightbox.visible {
-            display: flex;
-            animation: fadeIn .2s;
-        }
+        .lightbox.visible { display: flex; animation: fadeIn .2s; }
         .lightbox img {
             max-width: 95vw;
             max-height: 95vh;
@@ -383,7 +324,6 @@
             justify-content: center;
         }
 
-        /* ===== Responsive ===== */
         @media (max-width: 500px) {
             .input-section { flex-direction: column; }
             .btn-primary { width: 100%; }
@@ -392,7 +332,6 @@
             .btn-copy { width: 100%; text-align: center; }
         }
 
-        /* ===== Footer ===== */
         .footer {
             text-align: center;
             color: #8899a6;
@@ -401,10 +340,7 @@
             padding-top: 20px;
             border-top: 1px solid #38444d;
         }
-        .footer a {
-            color: #1d9bf0;
-            text-decoration: none;
-        }
+        .footer a { color: #1d9bf0; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
     </style>
 </head>
@@ -415,24 +351,19 @@
             <p>貼上推文連結，即可檢視、下載圖片與影片</p>
         </header>
 
-        <!-- Input -->
         <div class="input-section">
             <input type="text" id="urlInput" placeholder="貼上推文連結，例如 https://x.com/user/status/123456..." autocomplete="off" spellcheck="false">
             <button class="btn-primary" id="fetchBtn" onclick="handleFetch()">取得媒體</button>
         </div>
 
-        <!-- Error -->
         <div class="error-msg" id="errorMsg"></div>
 
-        <!-- Loading -->
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <div style="color:#8899a6">正在取得推文資料…</div>
         </div>
 
-        <!-- Result -->
         <div id="result">
-            <!-- Tweet Card -->
             <div class="card" id="tweetCard">
                 <div class="tweet-header">
                     <img class="avatar" id="avatar" alt="avatar" src="">
@@ -446,7 +377,6 @@
                 <div class="tweet-stats" id="tweetStats"></div>
             </div>
 
-            <!-- Media -->
             <div class="card" id="mediaCard">
                 <div class="section-title">
                     🖼️ 媒體內容 <span class="badge" id="mediaBadge">0</span>
@@ -454,7 +384,6 @@
                 <div id="mediaContainer"></div>
             </div>
 
-            <!-- Original URL -->
             <div class="card">
                 <div class="section-title">🔗 原始連結</div>
                 <div class="url-copy-row">
@@ -469,103 +398,105 @@
         </div>
     </div>
 
-    <!-- Lightbox -->
     <div class="lightbox" id="lightbox" onclick="closeLightbox()">
         <button class="lightbox-close" onclick="closeLightbox()">✕</button>
         <img id="lightboxImg" src="" alt="preview">
     </div>
 
     <script>
-    // ===== Supported domains =====
     const SUPPORTED_DOMAINS = [
-        'x.com', 'twitter.com',
-        'fixupx.com', 'fixvx.com',
-        'fxtwitter.com', 'vxtwitter.com',
-        'xcancel.com', 'nitter.net',
-        'nitter.privacydev.net'
+        'x.com','twitter.com','fixupx.com','fixvx.com',
+        'fxtwitter.com','vxtwitter.com','xcancel.com',
+        'nitter.net','nitter.privacydev.net'
     ];
-
     const API_BASE = 'https://api.fxtwitter.com/i/status/';
 
-    // ===== DOM refs =====
-    const $input       = document.getElementById('urlInput');
-    const $fetchBtn     = document.getElementById('fetchBtn');
-    const $error        = document.getElementById('errorMsg');
-    const $loading      = document.getElementById('loading');
-    const $result       = document.getElementById('result');
-    const $avatar       = document.getElementById('avatar');
-    const $authorName   = document.getElementById('authorName');
-    const $authorHandle = document.getElementById('authorHandle');
-    const $tweetText    = document.getElementById('tweetText');
-    const $tweetDate    = document.getElementById('tweetDate');
-    const $tweetStats   = document.getElementById('tweetStats');
-    const $mediaContainer = document.getElementById('mediaContainer');
-    const $mediaBadge   = document.getElementById('mediaBadge');
-    const $originalUrl  = document.getElementById('originalUrl');
-    const $copyBtn      = document.getElementById('copyBtn');
-    const $lightbox     = document.getElementById('lightbox');
-    const $lightboxImg  = document.getElementById('lightboxImg');
+    const $ = id => document.getElementById(id);
+    const $input       = $('urlInput');
+    const $fetchBtn     = $('fetchBtn');
+    const $error        = $('errorMsg');
+    const $loading      = $('loading');
+    const $result       = $('result');
+    const $avatar       = $('avatar');
+    const $authorName   = $('authorName');
+    const $authorHandle = $('authorHandle');
+    const $tweetText    = $('tweetText');
+    const $tweetDate    = $('tweetDate');
+    const $tweetStats   = $('tweetStats');
+    const $mediaContainer = $('mediaContainer');
+    const $mediaBadge   = $('mediaBadge');
+    const $originalUrl  = $('originalUrl');
+    const $copyBtn      = $('copyBtn');
+    const $lightbox     = $('lightbox');
+    const $lightboxImg  = $('lightboxImg');
 
-    // Enter key
     $input.addEventListener('keydown', e => { if (e.key === 'Enter') handleFetch(); });
 
-    // ===== Extract Tweet ID =====
+    /* ========== URL 轉換工具 ========== */
+
+    /**
+     * 影片：透過 fxtwitter 代理，解決 CORS / 403
+     * video.twimg.com/... → api.fxtwitter.com/2/go?url=...
+     */
+    function proxyVideoUrl(url) {
+        if (!url) return url;
+        if (url.includes('video.twimg.com')) {
+            return 'https://api.fxtwitter.com/2/go?url=' + encodeURIComponent(url);
+        }
+        return url;
+    }
+
+    /**
+     * GIF：轉換成真正的 .gif 圖檔
+     * video.twimg.com/tweet_video/XXX.mp4 → gif.fxtwitter.com/tweet_video/XXX.gif
+     */
+    function convertGifUrl(url) {
+        if (!url) return url;
+        if (url.includes('video.twimg.com/tweet_video/')) {
+            return url
+                .replace('https://video.twimg.com/', 'https://gif.fxtwitter.com/')
+                .replace(/\.mp4(\?.*)?$/, '.gif');
+        }
+        // 如果不符合 tweet_video 模式，退回走代理
+        return proxyVideoUrl(url);
+    }
+
+    /* ========== 解析推文 ID ========== */
     function extractTweetId(input) {
         const trimmed = input.trim();
-
-        // Pure numeric ID
         if (/^\d{10,}$/.test(trimmed)) return trimmed;
-
-        // URL pattern
         try {
             const url = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed);
             const host = url.hostname.replace(/^www\./, '');
-
-            // Check domain
-            if (!SUPPORTED_DOMAINS.some(d => host === d || host.endsWith('.' + d))) {
-                return null;
-            }
-
-            // Match /status/ID or /statuses/ID
+            if (!SUPPORTED_DOMAINS.some(d => host === d || host.endsWith('.' + d))) return null;
             const match = url.pathname.match(/\/status(?:es)?\/(\d+)/);
             return match ? match[1] : null;
-        } catch {
-            return null;
-        }
+        } catch { return null; }
     }
 
-    // ===== Show / Hide helpers =====
-    function showError(msg) {
-        $error.textContent = msg;
-        $error.classList.add('visible');
-    }
-    function hideError() { $error.classList.remove('visible'); }
-    function showLoading() { $loading.classList.add('visible'); }
-    function hideLoading() { $loading.classList.remove('visible'); }
-    function showResult() { $result.classList.add('visible'); }
-    function hideResult() { $result.classList.remove('visible'); }
+    /* ========== UI helpers ========== */
+    function showError(msg) { $error.textContent = msg; $error.classList.add('visible'); }
+    function hideError()    { $error.classList.remove('visible'); }
+    function showLoading()  { $loading.classList.add('visible'); }
+    function hideLoading()  { $loading.classList.remove('visible'); }
+    function showResult()   { $result.classList.add('visible'); }
+    function hideResult()   { $result.classList.remove('visible'); }
 
-    // ===== Format number =====
     function fmtNum(n) {
         if (n == null) return '—';
-        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-        if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+        if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M';
+        if (n >= 1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'') + 'K';
         return n.toLocaleString();
     }
-
-    // ===== Format duration =====
     function fmtDur(sec) {
         if (!sec) return '';
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${s.toString().padStart(2, '0')}`;
+        const m = Math.floor(sec/60), s = Math.floor(sec%60);
+        return `${m}:${s.toString().padStart(2,'0')}`;
     }
 
-    // ===== Main fetch =====
+    /* ========== Fetch ========== */
     async function handleFetch() {
-        hideError();
-        hideResult();
-
+        hideError(); hideResult();
         const raw = $input.value;
         if (!raw.trim()) { showError('⚠️ 請輸入推文連結或推文 ID'); return; }
 
@@ -588,7 +519,6 @@
                 showError(errMap[data.message] || `⚠️ 取得推文失敗 (${data.message || resp.status})`);
                 return;
             }
-
             renderTweet(data.tweet);
         } catch (err) {
             console.error(err);
@@ -599,42 +529,31 @@
         }
     }
 
-    // ===== Render tweet =====
+    /* ========== Render Tweet ========== */
     function renderTweet(tweet) {
-        // Author
         const author = tweet.author || {};
         $avatar.src = author.avatar_url || '';
-        $avatar.onerror = () => { $avatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="%2338444d"/><text x="24" y="30" text-anchor="middle" fill="%238899a6" font-size="20">?</text></svg>'; };
-        $authorName.textContent = author.name || '未知使用者';
+        $avatar.onerror = () => { $avatar.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='24' fill='%2338444d'/><text x='24' y='30' text-anchor='middle' fill='%238899a6' font-size='20'>?</text></svg>"; };
+        $authorName.textContent  = author.name || '未知使用者';
         $authorHandle.textContent = author.screen_name ? `@${author.screen_name}` : '';
-
-        // Text
         $tweetText.textContent = tweet.text || '';
-
-        // Date
         $tweetDate.textContent = tweet.created_at || '';
-
-        // Stats
         $tweetStats.innerHTML = `
             <span>❤️ <span class="stat-num">${fmtNum(tweet.likes)}</span></span>
             <span>🔁 <span class="stat-num">${fmtNum(tweet.retweets)}</span></span>
             <span>💬 <span class="stat-num">${fmtNum(tweet.replies)}</span></span>
             ${tweet.views != null ? `<span>👁️ <span class="stat-num">${fmtNum(tweet.views)}</span></span>` : ''}
         `;
-
-        // Original URL
         const origUrl = tweet.url || `https://x.com/i/status/${tweet.id}`;
         $originalUrl.value = origUrl;
         $copyBtn.textContent = '📋 複製';
         $copyBtn.classList.remove('copied');
 
-        // Media
         renderMedia(tweet.media);
-
         showResult();
     }
 
-    // ===== Render media =====
+    /* ========== Render Media ========== */
     function renderMedia(media) {
         $mediaContainer.innerHTML = '';
 
@@ -644,9 +563,7 @@
             return;
         }
 
-        // Collect all media items in order
         let items = [];
-
         if (media.all && media.all.length > 0) {
             items = media.all;
         } else {
@@ -654,7 +571,6 @@
             if (media.videos) items.push(...media.videos);
         }
 
-        // External media (YouTube etc.)
         const hasExternal = media.external;
 
         if (items.length === 0 && !hasExternal) {
@@ -674,7 +590,7 @@
                 wrap.className = 'media-item';
 
                 if (item.type === 'photo') {
-                    // Photo
+                    /* ===== 圖片 ===== */
                     const img = document.createElement('img');
                     img.src = item.url;
                     img.alt = `圖片 ${idx + 1}`;
@@ -682,13 +598,11 @@
                     img.onclick = () => openLightbox(item.url);
                     wrap.appendChild(img);
 
-                    // Overlay
                     const overlay = document.createElement('div');
                     overlay.className = 'media-overlay';
                     overlay.innerHTML = `<span class="media-badge">${item.width}×${item.height}</span>`;
                     wrap.appendChild(overlay);
 
-                    // Download
                     const dl = document.createElement('a');
                     dl.className = 'btn-download';
                     dl.href = item.url;
@@ -698,36 +612,89 @@
                     dl.onclick = e => e.stopPropagation();
                     wrap.appendChild(dl);
 
-                } else if (item.type === 'video' || item.type === 'gif') {
-                    // Video / GIF
-                    const video = document.createElement('video');
-                    video.src = item.url;
-                    video.poster = item.thumbnail_url || '';
-                    video.controls = true;
-                    video.preload = 'metadata';
-                    video.playsInline = true;
-                    if (item.type === 'gif') {
+                } else if (item.type === 'gif') {
+                    /* ===== GIF：轉成真正 .gif 用 <img> 顯示 ===== */
+                    const gifUrl = convertGifUrl(item.url);
+                    const isRealGif = gifUrl.endsWith('.gif');
+
+                    if (isRealGif) {
+                        // 使用 <img> 顯示 .gif
+                        const img = document.createElement('img');
+                        img.src = gifUrl;
+                        img.alt = 'GIF';
+                        img.className = 'gif-img';
+                        img.loading = 'lazy';
+                        img.onclick = () => openLightbox(gifUrl);
+                        wrap.appendChild(img);
+                    } else {
+                        // 退回 <video> (代理後的 mp4)
+                        const video = document.createElement('video');
+                        video.src = gifUrl;
+                        video.poster = item.thumbnail_url || '';
                         video.autoplay = true;
                         video.loop = true;
                         video.muted = true;
+                        video.playsInline = true;
+                        video.setAttribute('playsinline', '');
+                        wrap.appendChild(video);
                     }
-                    wrap.appendChild(video);
 
-                    // Overlay badges
+                    // GIF badge
                     const overlay = document.createElement('div');
                     overlay.className = 'media-overlay';
-                    let badgeText = item.type === 'gif' ? 'GIF' : 'VIDEO';
-                    if (item.duration) badgeText += ` ${fmtDur(item.duration)}`;
-                    overlay.innerHTML = `<span class="media-badge">${badgeText}</span>`;
+                    overlay.innerHTML = '<span class="media-badge">GIF</span>';
                     if (item.width && item.height) {
                         overlay.innerHTML += `<span class="media-badge">${item.width}×${item.height}</span>`;
                     }
                     wrap.appendChild(overlay);
 
-                    // Download
+                    // 下載
                     const dl = document.createElement('a');
                     dl.className = 'btn-download';
-                    dl.href = item.url;
+                    dl.href = gifUrl;
+                    dl.target = '_blank';
+                    dl.rel = 'noopener';
+                    dl.textContent = '⬇ 下載 GIF';
+                    dl.onclick = e => e.stopPropagation();
+                    wrap.appendChild(dl);
+
+                } else if (item.type === 'video') {
+                    /* ===== 影片：透過代理播放 ===== */
+                    const videoUrl = proxyVideoUrl(item.url);
+
+                    const video = document.createElement('video');
+                    video.src = videoUrl;
+                    video.poster = item.thumbnail_url || '';
+                    video.controls = true;
+                    video.preload = 'metadata';
+                    video.playsInline = true;
+                    video.setAttribute('playsinline', '');
+                    // 載入失敗時的提示
+                    video.onerror = () => {
+                        wrap.innerHTML = `
+                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:20px;color:#8899a6;text-align:center;">
+                                <div style="font-size:2rem;margin-bottom:8px;">⚠️</div>
+                                <div>影片無法播放</div>
+                                <a href="${videoUrl}" target="_blank" rel="noopener" style="color:#1d9bf0;margin-top:8px;">在新分頁開啟</a>
+                            </div>`;
+                    };
+                    wrap.appendChild(video);
+
+                    // Overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'media-overlay';
+                    let label = 'VIDEO';
+                    if (item.duration) label += ` ${fmtDur(item.duration)}`;
+                    overlay.innerHTML = `<span class="media-badge">${label}</span>`;
+                    if (item.width && item.height) {
+                        overlay.innerHTML += `<span class="media-badge">${item.width}×${item.height}</span>`;
+                    }
+                    wrap.appendChild(overlay);
+
+                    // 下載
+                    const dl = document.createElement('a');
+                    dl.className = 'btn-download';
+                    dl.href = videoUrl;
                     dl.target = '_blank';
                     dl.rel = 'noopener';
                     dl.textContent = '⬇ 下載';
@@ -741,7 +708,7 @@
             $mediaContainer.appendChild(grid);
         }
 
-        // External media
+        // External (YouTube 等)
         if (hasExternal) {
             const ext = media.external;
             const extDiv = document.createElement('div');
@@ -749,7 +716,6 @@
             extDiv.style.marginTop = items.length > 0 ? '12px' : '0';
 
             if (ext.type === 'video' && ext.url) {
-                // Try YouTube embed
                 const ytMatch = ext.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
                 if (ytMatch) {
                     extDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
@@ -761,32 +727,24 @@
         }
     }
 
-    // ===== Copy URL =====
+    /* ========== Copy URL ========== */
     function copyUrl() {
         const url = $originalUrl.value;
         if (!url) return;
-
         navigator.clipboard.writeText(url).then(() => {
             $copyBtn.textContent = '✅ 已複製';
             $copyBtn.classList.add('copied');
-            setTimeout(() => {
-                $copyBtn.textContent = '📋 複製';
-                $copyBtn.classList.remove('copied');
-            }, 2000);
+            setTimeout(() => { $copyBtn.textContent = '📋 複製'; $copyBtn.classList.remove('copied'); }, 2000);
         }).catch(() => {
-            // Fallback
             $originalUrl.select();
             document.execCommand('copy');
             $copyBtn.textContent = '✅ 已複製';
             $copyBtn.classList.add('copied');
-            setTimeout(() => {
-                $copyBtn.textContent = '📋 複製';
-                $copyBtn.classList.remove('copied');
-            }, 2000);
+            setTimeout(() => { $copyBtn.textContent = '📋 複製'; $copyBtn.classList.remove('copied'); }, 2000);
         });
     }
 
-    // ===== Lightbox =====
+    /* ========== Lightbox ========== */
     function openLightbox(src) {
         $lightboxImg.src = src;
         $lightbox.classList.add('visible');
@@ -797,9 +755,7 @@
         $lightboxImg.src = '';
         document.body.style.overflow = '';
     }
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeLightbox();
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
     </script>
 </body>
 </html>
