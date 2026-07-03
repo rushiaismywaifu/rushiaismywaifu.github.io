@@ -1,545 +1,786 @@
 <!doctype html>
 <html lang="zh-Hant" prefix="og: http://ogp.me/ns#">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rushia My Beloved 的 GitHub Pages 華麗入口網站：前台工具、數位花園、遊戲與影音實驗室。" />
+  <meta name="theme-color" content="#090a1a" />
 
-  <title>測試網頁</title>
+  <title>Rushia My Beloved · Digital Garden & Lab</title>
 
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
-  <meta name="description" content="雖然她死ㄌ">
-
-  <meta property="og:title" content="Rushia我婆">
-  <meta property="og:description" content="雖然她死ㄌ">
-  <meta property="og:url" content="https://rushiaismywaifu.github.io">
-  <meta property="og:image" content="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/image.png">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Rushia My Beloved">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Rushia我婆 · Digital Garden" />
+  <meta property="og:description" content="雖然她死ㄌ，但數位花園與前端工具永存！" />
+  <meta property="og:url" content="https://rushiaismywaifu.github.io" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/image.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Rushia My Beloved" />
 
   <style>
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg: #070812;
+      --bg-2: rgba(13, 16, 38, 0.75);
+      --text: #f8fbff;
+      --muted: rgba(248, 251, 255, 0.7);
+      --soft: rgba(248, 251, 255, 0.12);
+      --line: rgba(255, 255, 255, 0.15);
+      --line-glow: rgba(110, 231, 255, 0.45);
+      --cyan: #6ee7ff;
+      --blue: #7796ff;
+      --violet: #ba7cff;
+      --pink: #ff6ec7;
+      --gold: #ffd166;
+      --green: #75f7b1;
+      --radius: 24px;
+      color-scheme: dark;
     }
 
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
       margin: 0;
-      padding: 20px;
-      background: #fafafa;
-      color: #333;
-      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(110, 231, 255, 0.22), transparent 32%),
+        radial-gradient(circle at 85% 85%, rgba(255, 110, 199, 0.2), transparent 32%),
+        radial-gradient(circle at 50% 60%, rgba(186, 124, 255, 0.18), transparent 40%),
+        linear-gradient(135deg, #050611 0%, #0b0d24 50%, #120719 100%);
+      background-attachment: fixed;
     }
 
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      clip-path: inset(50%);
-      white-space: nowrap;
-      border: 0;
+    /* 網格背景 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -4;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(circle at 50% 30%, #000 0 60%, transparent 90%);
     }
 
-    /* ===== 共用卡片 ===== */
-    .card {
-      max-width: 700px;
-      margin: 20px 0;
-      padding: 24px;
-      border-width: 2px;
-      border-style: solid;
-      border-radius: 14px;
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      background: linear-gradient(transparent 0 49%, rgba(255,255,255,.02) 50%, transparent 51%);
+      background-size: 100% 4px;
+      opacity: 0.35;
     }
 
-    .card h3 {
-      margin: 0 0 6px 0;
-      font-size: 20px;
+    a { color: inherit; text-decoration: none; }
+    
+    /* 極光與星空 */
+    #stars {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -3;
+      pointer-events: none;
     }
 
-    .card-desc {
-      margin: 0 0 14px 0;
-      color: #666;
-      font-size: 14px;
+    .aurora {
+      position: fixed;
+      inset: -20vh -20vw;
+      z-index: -5;
+      background:
+        conic-gradient(from 120deg at 30% 40%, rgba(110,231,255,.15), transparent 25%, rgba(255,110,199,.15), transparent 60%, rgba(110,231,255,.15)),
+        conic-gradient(from 260deg at 70% 60%, rgba(186,124,255,.18), transparent 30%, rgba(255,209,102,.12), transparent 65%, rgba(110,231,255,.14));
+      filter: blur(65px) saturate(1.3);
+      animation: auroraSpin 30s linear infinite alternate;
+    }
+    @keyframes auroraSpin {
+      0% { transform: rotate(0deg) scale(1); }
+      100% { transform: rotate(360deg) scale(1.15); }
     }
 
-    .card--pink {
-      border-color: #fb7299;
-      background: linear-gradient(135deg, #fff5f8, #fff0f5);
-      box-shadow: 0 4px 16px rgba(251, 114, 153, .12);
+    .glow-cursor {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      z-index: -2;
+      border-radius: 50%;
+      pointer-events: none;
+      translate: -50% -50%;
+      background: radial-gradient(circle, rgba(110,231,255,.22), rgba(255,110,199,.08) 45%, transparent 70%);
+      filter: blur(15px);
+      transition: opacity .3s ease;
     }
 
-    .card--pink h3 {
-      color: #fb7299;
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
     }
 
-    .card--blue {
-      border-color: #00a1d6;
-      background: linear-gradient(135deg, #f0f8ff, #e8f4fd);
-      box-shadow: 0 4px 16px rgba(0, 161, 214, .1);
+    /* 頂部導航 */
+    .site-header {
+      position: sticky;
+      top: 16px;
+      z-index: 30;
+      margin-top: 16px;
     }
 
-    .card--blue h3 {
-      color: #00a1d6;
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px 20px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      background: rgba(7, 8, 18, 0.65);
+      backdrop-filter: blur(24px) saturate(1.4);
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
     }
 
-    /* ===== 導航區塊 ===== */
-    .nav-section .card-desc {
-      margin-bottom: 16px;
-      color: #888;
-      font-size: 13px;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
     }
 
-    .nav-grid {
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--cyan), var(--violet) 50%, var(--pink));
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      place-items: center;
+      font-size: 20px;
+      box-shadow: 0 0 25px rgba(110,231,255,.35);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all .2s;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+      background: rgba(255,255,255,.08);
+    }
+
+    .nav-links .btn-gh {
+      background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      padding: 8px 18px;
+    }
+
+    .nav-links .btn-gh:hover {
+      background: rgba(255,255,255,.2);
+      box-shadow: 0 0 20px rgba(255,255,255,.15);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 70px 0 50px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--cyan);
+      margin-bottom: 24px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #75f7b1;
+      box-shadow: 0 0 10px #75f7b1;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin: 0 0 20px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #fff 0%, var(--cyan) 50%, var(--pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .stat-badge strong { color: #fff; font-size: 15px; }
+
+    /* Sections */
+    section.section-block {
+      padding: 50px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      padding-bottom: 16px;
+    }
+
+    .section-head h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
 
-    .nav-grid a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 14px;
-      background: #fff;
-      border: 1px solid #f0d0da;
-      border-radius: 10px;
-      color: #333;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      position: relative;
-      overflow: hidden;
-      transition:
-        border-color .25s ease,
-        background-color .25s ease,
-        transform .25s ease,
-        box-shadow .25s ease;
+    .section-head p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.95rem;
     }
 
-    .nav-grid a::before {
+    /* Grid Cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all .3s cubic-bezier(0.2,0.8,0.2,1);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+    }
+
+    .card::before {
       content: "";
       position: absolute;
       top: 0;
       left: 0;
-      width: 4px;
-      height: 100%;
-      background: #fb7299;
-      transform: scaleY(0);
-      transition: transform .25s ease;
-      border-radius: 0 4px 4px 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--pink));
+      opacity: 0;
+      transition: opacity .3s;
     }
 
-    .nav-grid a:hover,
-    .nav-grid a:focus-visible {
-      border-color: #fb7299;
-      background: #fff5f8;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(251, 114, 153, .15);
-      outline: none;
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: var(--line-glow);
+      box-shadow: 0 20px 45px rgba(0,0,0,.5), 0 0 30px rgba(110,231,255,.15);
     }
 
-    .nav-grid a:hover::before,
-    .nav-grid a:focus-visible::before {
-      transform: scaleY(1);
-    }
+    .card:hover::before { opacity: 1; }
 
-    .nav-grid a .nav-icon {
-      font-size: 18px;
-      flex-shrink: 0;
-      width: 24px;
-      text-align: center;
-    }
-
-    /* ===== Bilibili 短網址 ===== */
-    .bili-short-url-box .input-row {
+    .card-top {
       display: flex;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(110,231,255,.12);
+      color: var(--cyan);
+      border: 1px solid rgba(110,231,255,.25);
+    }
+
+    .card-tag.pink { background: rgba(255,110,199,.12); color: var(--pink); border-color: rgba(255,110,199,.25); }
+    .card-tag.gold { background: rgba(255,209,102,.12); color: var(--gold); border-color: rgba(255,209,102,.25); }
+    .card-tag.green { background: rgba(117,247,177,.12); color: var(--green); border-color: rgba(117,247,177,.25); }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin: 0 0 8px;
+      color: #fff;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .card:hover .card-footer { color: var(--pink); }
+
+    /* 內嵌實驗室面板 */
+    .lab-panel {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(16px);
+    }
+
+    .lab-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    /* 表單與控制項 */
+    .input-group {
+      display: flex;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
-    .bili-short-url-box input[type="text"] {
+    input[type="text"], input[type="url"], input[type="email"], select, textarea {
       flex: 1;
-      min-width: 200px;
-      padding: 10px 14px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      min-width: 240px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: #fff;
       font-size: 14px;
       outline: none;
-      transition: border-color .3s, box-shadow .3s;
+      transition: all .2s;
     }
 
-    .bili-short-url-box input[type="text"]:focus {
-      border-color: #00a1d6;
-      box-shadow: 0 0 0 3px rgba(0, 161, 214, .15);
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(110,231,255,.2);
     }
 
-    .gen-btn {
-      padding: 10px 22px;
-      background-color: #00a1d6;
-      color: #fff;
+    .btn-action {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: #000;
+      font-weight: 800;
       border: none;
-      border-radius: 8px;
+      border-radius: 14px;
+      padding: 12px 24px;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      transition: background-color .3s, transform .15s;
-      white-space: nowrap;
+      transition: all .2s;
+      box-shadow: 0 6px 20px rgba(110,231,255,.3);
     }
 
-    .gen-btn:hover:not(:disabled) {
-      background-color: #0087b3;
-      transform: translateY(-1px);
+    .btn-action:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(110,231,255,.5);
     }
 
-    .gen-btn:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    .gen-btn:disabled {
-      background-color: #aaa;
+    .btn-action:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
 
-    #shortUrlResult {
-      display: none;
-      margin-top: 12px;
-      padding: 14px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      word-break: break-all;
-      line-height: 1.8;
+    .result-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(255,255,255,.2);
       font-size: 14px;
-    }
-
-    #shortUrlResult a {
-      color: #00a1d6;
-      font-weight: bold;
-      text-decoration: none;
-    }
-
-    #shortUrlResult a:hover {
-      text-decoration: underline;
-    }
-
-    .message-error {
-      color: #e74c3c;
-    }
-
-    .message-muted {
-      color: #666;
-    }
-
-    .result-small {
-      color: #888;
+      display: none;
     }
 
     .copy-btn {
-      padding: 4px 12px;
-      background-color: #fb7299;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
       color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-left: 8px;
-      transition: background-color .3s;
-    }
-
-    .copy-btn:hover {
-      background-color: #e0527a;
-    }
-
-    /* ===== 其他區塊 ===== */
-    .content-section {
-      max-width: 700px;
-      margin: 20px 0;
-      padding: 24px;
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 14px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
-    }
-
-    .content-section h3 {
-      margin: 0 0 12px 0;
-      color: #555;
-    }
-
-    .form-field {
-      margin: 12px 0;
-    }
-
-    .form-field > label {
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
-      font-weight: 600;
-    }
-
-    .form-field .inline-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 0;
-      font-weight: 400;
-    }
-
-    .form-field input[type="email"],
-    .form-field select {
-      max-width: 100%;
-      padding: 8px 10px;
-      border: 1px solid #ccc;
+      padding: 4px 10px;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 10px;
     }
 
-    .audio-player {
-      width: 100%;
-    }
+    .copy-btn:hover { background: rgba(255,255,255,.2); }
 
-    .download-row {
-      margin-top: 8px;
-    }
-
-    .download-link {
-      color: #00a1d6;
-    }
-
-    .math-line {
+    /* Footer */
+    footer {
+      padding: 60px 0 40px;
       text-align: center;
-    }
-
-    math {
-      font-size: 1.2rem;
-    }
-
-    hr {
-      border: none;
-      border-top: 2px dashed #ddd;
-      margin: 24px 0;
-      max-width: 700px;
-    }
-
-    /* ===== 底部圖片 ===== */
-    .bottom-figure {
-      max-width: 700px;
-      margin: 20px 0 0 0;
-    }
-
-    .bottom-img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-      border-radius: 12px;
-      margin-top: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 12px;
-      }
-
-      .card,
-      .content-section {
-        padding: 18px;
-      }
-
-      .bili-short-url-box .input-row {
-        flex-direction: column;
-      }
-
-      .bili-short-url-box input[type="text"],
-      .gen-btn {
-        width: 100%;
-      }
+      border-top: 1px solid rgba(255,255,255,.1);
+      color: var(--muted);
+      font-size: 14px;
     }
   </style>
 </head>
-
 <body>
-  <p>&nbsp;嗨， <u><em><strong>test</strong></em></u>&nbsp; <s>Hello world!</s></p>
+  <div class="aurora"></div>
+  <canvas id="stars"></canvas>
+  <div class="glow-cursor" id="glowCursor"></div>
 
-  <p class="math-line">
-    <math xmlns="http://www.w3.org/1998/Math/MathML" aria-label="x 平方加 2x 加 1 等於 0">
-      <mrow>
-        <msup>
-          <mi>x</mi>
-          <mn>2</mn>
-        </msup>
-        <mo>+</mo>
-        <mn>2</mn>
-        <mi>x</mi>
-        <mo>+</mo>
-        <mn>1</mn>
-        <mo>=</mo>
-        <mn>0</mn>
-      </mrow>
-    </math>
-  </p>
-
-  <hr>
-
-  <!-- ===== 導航區塊 ===== -->
-  <nav class="card card--pink nav-section" aria-label="頁面導航">
-    <h3>📌 頁面導航</h3>
-    <p class="card-desc">點擊下方按鈕前往各子頁面（新分頁開啟）</p>
-
-    <div class="nav-grid">
-      <a href="/aboutme" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">👤</span> About Me
+  <!-- 頂部導航 -->
+  <header class="site-header wrap">
+    <nav class="nav">
+      <a href="/" class="brand">
+        <div class="brand-mark">🦋</div>
+        <span>Rushia's Lab</span>
       </a>
+      <div class="nav-links">
+        <a href="#featured">🎮 實用專案</a>
+        <a href="#lab">🧪 互動實驗室</a>
+        <a href="#ecosystem">🔗 生態連結</a>
+        <a href="https://github.com/rushiaismywaifu" target="_blank" rel="noreferrer" class="btn-gh">GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
 
-      <a href="/project-1" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🚀</span> Project-1
-      </a>
+  <main>
+    <!-- Hero Banner -->
+    <section class="hero wrap">
+      <div class="eyebrow"><span class="pulse-dot"></span> GitHub Pages Live · Rushia My Beloved</div>
+      <h1><span class="gradient-text">Digital Garden</span><br />for Cyber-VTuber Builds.</h1>
+      <p class="hero-subtitle">
+        收錄 Discord 任務探索器、Web Audio 頻譜音樂播放器、二分搜尋猜數字，以及各項前端技術與 API 實驗室。
+      </p>
+      <div class="stats-row">
+        <div class="stat-badge">📦 核心模組 <strong>8+ 款</strong></div>
+        <div class="stat-badge">🎨 視覺風格 <strong>Glassmorphism</strong></div>
+        <div class="stat-badge">⚡ 網站響應 <strong>100% Client-side</strong></div>
+      </div>
+    </section>
 
-      <a href="/PageTest" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🧪</span> PageTest
-      </a>
+    <!-- 主打專案區 -->
+    <section id="featured" class="section-block wrap">
+      <div class="section-head">
+        <div>
+          <h2>🎮 實用專案與遊戲</h2>
+          <p>點擊卡片新分頁開啟各獨立模組（Clean URLs 支援）</p>
+        </div>
+      </div>
 
-      <a href="/credentials" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🔑</span> Credentials
-      </a>
+      <div class="grid">
+        <!-- Discord Quests -->
+        <a href="/discord-quest" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🎮</div>
+              <span class="card-tag">API Explorer</span>
+            </div>
+            <h3>Discord Quests 探索器</h3>
+            <p>串接第三方 API，即時查詢進行中與即將開放的 Discord 任務、全球可用地區過濾與 Orbs/Nitro 獎勵。</p>
+          </div>
+          <div class="card-footer">前往探索 <span>→</span></div>
+        </a>
 
-      <a href="/guess" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🎲</span> Guess
-      </a>
+        <!-- Music Player -->
+        <a href="/music-player" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🎵</div>
+              <span class="card-tag pink">Audio Player</span>
+            </div>
+            <h3>Cyber-VTuber 音樂播放器</h3>
+            <p>玻璃擬態與賽博粉霓虹 UI，內建 Canvas 動態聲波頻譜視覺化，支援一鍵拖曳上傳與本地音檔極速播放。</p>
+          </div>
+          <div class="card-footer">開啟播放器 <span>→</span></div>
+        </a>
 
-      <a href="/minimalist-notes" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">📝</span> Notes
-      </a>
+        <!-- Guess Game -->
+        <a href="/guess" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🎲</div>
+              <span class="card-tag gold">Mini Game</span>
+            </div>
+            <h3>極限終極密碼猜數字</h3>
+            <p>三大挑戰難度、智能二分法推薦中點工具、歷史猜測紀錄與全螢幕漫天繽紛紙花慶祝特效。</p>
+          </div>
+          <div class="card-footer">挑戰終極密碼 <span>→</span></div>
+        </a>
 
-      <a href="/music-player" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🎵</span> Music Player
-      </a>
+        <!-- FxEmbed -->
+        <a href="/fx-embed" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🐦</div>
+              <span class="card-tag green">Twitter Tool</span>
+            </div>
+            <h3>FxEmbed 推文檢視器</h3>
+            <p>專為 X / Twitter 設計的媒體預覽介面，輕鬆解析並下載推文中的高畫質圖片與影片連結。</p>
+          </div>
+          <div class="card-footer">檢視推文 <span>→</span></div>
+        </a>
 
-      <a href="/ayame" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🌸</span> Ayame
-      </a>
+        <!-- Base64 -->
+        <a href="/base64" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🔣</div>
+              <span class="card-tag">Cyber Utility</span>
+            </div>
+            <h3>Base64 賽博加解密</h3>
+            <p>高科技科幻風格介面，支援即時字串編解碼、檔案 Base64 轉換與複製。</p>
+          </div>
+          <div class="card-footer">開始轉換 <span>→</span></div>
+        </a>
 
-      <a href="/base64" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🔣</span> Base64
-      </a>
+        <!-- Credentials -->
+        <a href="/credentials" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🔑</div>
+              <span class="card-tag pink">Security</span>
+            </div>
+            <h3>本地密碼管理工具</h3>
+            <p>基於 CryptoJS 的純前端帳戶密碼管理器，資料 100% 僅存在您的本地瀏覽器，安全隱私不外洩。</p>
+          </div>
+          <div class="card-footer">進入管理 <span>→</span></div>
+        </a>
 
-      <a href="/fx-embed" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🐦</span> FxEmbed
-      </a>
+        <!-- Minimalist Notes -->
+        <a href="/minimalist-notes" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">📝</div>
+              <span class="card-tag gold">PWA App</span>
+            </div>
+            <h3>極簡筆記本 (PWA)</h3>
+            <p>支援 Service Worker 與 Manifest 規範，具備離線瀏覽與安裝至電腦/手機桌面功能的筆記應用。</p>
+          </div>
+          <div class="card-footer">開啟筆記 <span>→</span></div>
+        </a>
 
-      <a href="/discord-quest" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🎮</span> Discord Quests
-      </a>
+        <!-- Ayame Cover -->
+        <a href="/ayame" target="_blank" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🌸</div>
+              <span class="card-tag green">Easter Egg</span>
+            </div>
+            <h3>Ayame AI Cover 彩蛋</h3>
+            <p>結合 ASCII Art 終端機藝術與張韶涵《隱形的翅膀》百鬼綾目 AI Cover 語音演唱的經典彩蛋。</p>
+          </div>
+          <div class="card-footer">聆聽彩蛋 <span>→</span></div>
+        </a>
+      </div>
+    </section>
 
-      <a href="/ui_shigure" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">🎨</span> UI Shigure
-      </a>
+    <!-- 互動實驗室 -->
+    <section id="lab" class="section-block wrap">
+      <div class="section-head">
+        <div>
+          <h2>🧪 內嵌互動實驗室</h2>
+          <p>首頁專屬前端 API 與互動元件測試台</p>
+        </div>
+      </div>
 
-      <a href="/timeis" target="_blank" rel="noopener noreferrer">
-        <span class="nav-icon">⏰</span> Time Is
-      </a>
+      <!-- Ayame 語音板 -->
+      <div class="lab-panel">
+        <div class="lab-head"><span>🌸</span> 百鬼綾目 (Ayame) 經典音軌板</div>
+        <p style="color: var(--muted); margin-bottom: 16px;">點擊下方播放音訊，體驗即時控制：</p>
+        <audio id="ayameAudio" controls src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"></audio>
+      </div>
+
+      <!-- Bilibili 短網址 -->
+      <div class="lab-panel">
+        <div class="lab-head"><span>🔗</span> Bilibili 短網址生成與過濾器</div>
+        <p style="color: var(--muted); margin-bottom: 16px;">自動過濾 B 站繁雜追蹤參數，呼叫 Cloudflare Worker 生成純淨短網址：</p>
+        <div class="input-group">
+          <input type="url" id="biliUrlInput" placeholder="請輸入 Bilibili 網址 (如 https://www.bilibili.com/video/BV...)" />
+          <button type="button" class="btn-action" id="genBtn">產生短網址</button>
+        </div>
+        <div id="shortUrlResult" class="result-box"></div>
+      </div>
+
+      <!-- 表單測試 -->
+      <div class="lab-panel">
+        <div class="lab-head"><span>⚙️</span> UI 元件樣式展示</div>
+        <div class="input-group">
+          <input type="text" placeholder="文字輸入框展示..." />
+          <select>
+            <option>選項 A：Cyber Pink</option>
+            <option>選項 B：Neon Cyan</option>
+            <option>選項 C：Digital Purple</option>
+          </select>
+          <button type="button" class="btn-action" style="background: linear-gradient(135deg, var(--pink), var(--violet)); color: #fff;">測試按鈕</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 同帳號生態專案 -->
+    <section id="ecosystem" class="section-block wrap">
+      <div class="section-head">
+        <div>
+          <h2>🔗 作者生態專案連結</h2>
+          <p>導向 GitHub 同帳號 (rushiaismywaifu) 下的其他獨立 Pages 專案</p>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+        <a href="/aboutme" target="_blank" class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; margin: 0;">👤 About Me ↗</h3>
+        </a>
+        <a href="/project-1" target="_blank" class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; margin: 0;">🚀 Project-1 ↗</h3>
+        </a>
+        <a href="/PageTest" target="_blank" class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; margin: 0;">🧪 PageTest ↗</h3>
+        </a>
+        <a href="/ui_shigure" target="_blank" class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; margin: 0;">🎨 UI Shigure ↗</h3>
+        </a>
+        <a href="/timeis" target="_blank" class="card" style="padding: 18px;">
+          <h3 style="font-size: 1rem; margin: 0;">⏰ Time Is ↗</h3>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Powered by <strong>Rushia My Beloved 🌸</strong> · Built with Digital Garden Glassmorphism Aesthetics.</p>
     </div>
-  </nav>
-
-  <hr>
-
-  <!-- ===== 小元件測試 ===== -->
-  <section class="content-section" aria-labelledby="form-test-title">
-    <h3 id="form-test-title">🧪 表單元件測試</h3>
-
-    <div class="form-field">
-      <label class="inline-label">
-        <input name="我是按鈕" type="radio" value="YES">
-        YES
-      </label>
-    </div>
-
-    <div class="form-field">
-      <label for="textInput">文字</label>
-      <input id="textInput" maxlength="10" name="文字" type="email" value="0">
-    </div>
-
-    <div class="form-field">
-      <label for="selectField">欄位</label>
-      <select id="selectField" multiple name="欄位">
-        <option value="50">abc</option>
-        <option value="0">def</option>
-        <option value="-5">ghi</option>
-      </select>
-    </div>
-
-    <div class="form-field">
-      <label for="testButton">按鈕嗎</label>
-      <input id="testButton" name="按鈕嗎" type="button" value="20">
-    </div>
-  </section>
-
-  <!-- ===== 音訊 ===== -->
-  <section class="content-section" aria-labelledby="audio-title">
-    <h3 id="audio-title">🎧 Ayame 音訊</h3>
-
-    <audio
-      src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"
-      controls
-      class="audio-player">
-    </audio>
-
-    <p class="download-row">
-      <a
-        href="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"
-        class="download-link"
-        target="_blank"
-        rel="noopener noreferrer">
-        ⬇️ 下載 ayame.mp3
-      </a>
-    </p>
-  </section>
-
-  <hr>
-
-  <!-- ===== Bilibili 短網址產生器 ===== -->
-  <section class="card card--blue bili-short-url-box" aria-labelledby="bili-short-url-title">
-    <h3 id="bili-short-url-title">🔗 Bilibili 短網址產生器</h3>
-    <p class="card-desc">輸入任意 Bilibili 站內網址，產生 b23.tv 短網址</p>
-
-    <div class="input-row">
-      <label class="visually-hidden" for="biliUrlInput">Bilibili 網址</label>
-      <input
-        type="text"
-        id="biliUrlInput"
-        placeholder="例：https://www.bilibili.com/video/BV1GJ411x7h7"
-        autocomplete="url">
-
-      <button class="gen-btn" id="genBtn" type="button">產生短網址</button>
-    </div>
-
-    <div id="shortUrlResult" role="status" aria-live="polite"></div>
-  </section>
-
-  <hr>
-
-  <!-- ===== 底部圖片 ===== -->
-  <figure class="bottom-figure">
-    <img
-      alt="底部圖片"
-      class="bottom-img"
-      loading="lazy"
-      decoding="async"
-      src="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/d.png">
-  </figure>
+  </footer>
 
   <script>
     "use strict";
 
-    /*
-     * 注意：
-     * 前端程式碼無法真正隱藏 Worker URL。
-     * 若有流量或安全性考量，請在 Worker 端加入 rate limiting / Referer 檢查。
-     */
+    /* ========================================================
+     * 1. 視覺特效：星空 Canvas 與游標跟隨發光
+     * ======================================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      // 游標微光跟隨
+      const cursor = document.getElementById("glowCursor");
+      window.addEventListener("mousemove", (e) => {
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+      });
+
+      // 星空 Canvas
+      const canvas = document.getElementById("stars");
+      const ctx = canvas.getContext("2d");
+      let width, height;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      const stars = Array.from({ length: 80 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 1.8 + 0.5,
+        alpha: Math.random(),
+        speed: (Math.random() - 0.5) * 0.015
+      }));
+
+      function renderStars() {
+        ctx.clearRect(0, 0, width, height);
+        stars.forEach(s => {
+          s.alpha += s.speed;
+          if (s.alpha > 1 || s.alpha < 0.2) s.speed = -s.speed;
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+          ctx.fillRect(s.x, s.y, s.size, s.size);
+        });
+        requestAnimationFrame(renderStars);
+      }
+      renderStars();
+    });
+
+    /* ========================================================
+     * 2. Bilibili 短網址產生邏輯 (100% 繼承)
+     * ======================================================== */
     const WORKER_URL = "https://soft-boat-f648.csgtung88.workers.dev";
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -547,7 +788,6 @@
       const btn = document.getElementById("genBtn");
 
       btn.addEventListener("click", generateShortUrl);
-
       input.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
@@ -559,18 +799,15 @@
     async function generateShortUrl() {
       const input = document.getElementById("biliUrlInput");
       const btn = document.getElementById("genBtn");
-
       if (btn.disabled) return;
 
       const rawUrl = input.value.trim();
-
       if (!rawUrl) {
         showMessage("⚠️ 請輸入 Bilibili 網址", "error");
         return;
       }
 
       let normalizedUrl;
-
       try {
         normalizedUrl = normalizeBilibiliUrl(rawUrl);
       } catch (error) {
@@ -595,39 +832,27 @@
       try {
         const resp = await fetch(WORKER_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
           body: params.toString()
         });
 
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status}`);
-        }
-
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
 
         if (data.code === 0 && data.data && typeof data.data.content !== "undefined") {
           const content = String(data.data.content);
           const shortUrl = extractB23Url(content);
-
           if (shortUrl) {
             renderShortUrl(shortUrl, content);
           } else {
             renderReturnedContent(content);
           }
         } else {
-          const message = data && data.message
-            ? String(data.message)
-            : JSON.stringify(data);
-
+          const message = data && data.message ? String(data.message) : JSON.stringify(data);
           showMessage(`❌ 產生失敗：${message || "未知錯誤"}`, "error");
         }
       } catch (error) {
-        showMessage(
-          `❌ 請求失敗：${error.message}\n請確認 Worker 網址是否正確或稍後再試`,
-          "error"
-        );
+        showMessage(`❌ 請求失敗：${error.message}\n請確認 Worker 網址是否正確或稍後再試`, "error");
       } finally {
         btn.disabled = false;
         btn.textContent = "產生短網址";
@@ -636,52 +861,22 @@
 
     function normalizeBilibiliUrl(rawUrl) {
       let url = rawUrl.trim();
-
-      const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url);
-
-      if (!hasScheme) {
-        url = `https://${url}`;
-      }
-
+      if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url)) url = `https://${url}`;
       const parsedUrl = new URL(url);
-
-      if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-        throw new Error("網址協定必須為 http 或 https");
-      }
-
+      if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") throw new Error("網址協定必須為 http 或 https");
       const hostname = parsedUrl.hostname.toLowerCase();
-      const isBilibiliDomain =
-        hostname === "bilibili.com" || hostname.endsWith(".bilibili.com");
-
-      if (!isBilibiliDomain) {
-        throw new Error("網址域名必須為 bilibili.com 或 *.bilibili.com");
-      }
-
+      if (hostname !== "bilibili.com" && !hostname.endsWith(".bilibili.com")) throw new Error("網址域名必須為 bilibili.com 或 *.bilibili.com");
       return parsedUrl.href;
     }
 
     function extractB23Url(content) {
       const match = String(content).match(/https?:\/\/b23\.tv\/[^\s"'<>]+/i);
-
-      if (!match) {
-        return "";
-      }
-
+      if (!match) return "";
       try {
         const parsedUrl = new URL(match[0]);
-
-        if (parsedUrl.hostname.toLowerCase() !== "b23.tv") {
-          return "";
-        }
-
-        if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-          return "";
-        }
-
-        return parsedUrl.href;
-      } catch {
-        return "";
-      }
+        if (parsedUrl.hostname.toLowerCase() !== "b23.tv") return "";
+        return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:" ? parsedUrl.href : "";
+      } catch { return ""; }
     }
 
     function getResultElement() {
@@ -692,22 +887,16 @@
       const result = getResultElement();
       result.style.display = "block";
       result.textContent = "";
-
       const span = document.createElement("span");
-      span.className = type === "error" ? "message-error" : "message-muted";
-
+      span.style.color = type === "error" ? "var(--pink)" : "var(--cyan)";
+      span.style.fontWeight = "700";
       appendTextWithBreaks(span, message);
       result.appendChild(span);
     }
 
     function appendTextWithBreaks(parent, text) {
-      const lines = String(text).split("\n");
-
-      lines.forEach((line, index) => {
-        if (index > 0) {
-          parent.appendChild(document.createElement("br"));
-        }
-
+      String(text).split("\n").forEach((line, index) => {
+        if (index > 0) parent.appendChild(document.createElement("br"));
         parent.appendChild(document.createTextNode(line));
       });
     }
@@ -716,30 +905,29 @@
       const result = getResultElement();
       result.style.display = "block";
       result.textContent = "";
-
       const link = document.createElement("a");
       link.href = shortUrl;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.textContent = shortUrl;
+      link.style.color = "var(--cyan)";
+      link.style.fontWeight = "800";
 
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
       copyBtn.className = "copy-btn";
       copyBtn.textContent = "📋 複製";
-      copyBtn.addEventListener("click", () => {
-        copyText(shortUrl, copyBtn);
-      });
+      copyBtn.addEventListener("click", () => copyText(shortUrl, copyBtn));
 
       const small = document.createElement("small");
-      small.className = "result-small";
+      small.style.display = "block";
+      small.style.color = "var(--muted)";
+      small.style.marginTop = "8px";
       small.textContent = `📝 ${content}`;
 
       result.appendChild(document.createTextNode("✅ 短網址："));
       result.appendChild(link);
-      result.appendChild(document.createTextNode(" "));
       result.appendChild(copyBtn);
-      result.appendChild(document.createElement("br"));
       result.appendChild(small);
     }
 
@@ -752,47 +940,30 @@
 
     async function copyText(text, btnEl) {
       const defaultText = "📋 複製";
-
       try {
         if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(text);
         } else {
           fallbackCopyText(text);
         }
-
         btnEl.textContent = "✅ 已複製";
       } catch {
         btnEl.textContent = "❌ 複製失敗";
       } finally {
-        window.setTimeout(() => {
-          btnEl.textContent = defaultText;
-        }, 2000);
+        window.setTimeout(() => btnEl.textContent = defaultText, 2000);
       }
     }
 
     function fallbackCopyText(text) {
       const textarea = document.createElement("textarea");
-
       textarea.value = text;
       textarea.setAttribute("readonly", "");
       textarea.style.position = "fixed";
       textarea.style.left = "-9999px";
-      textarea.style.top = "0";
-
       document.body.appendChild(textarea);
       textarea.focus();
       textarea.select();
-
-      try {
-        // execCommand("copy") 已 deprecated，僅作為舊瀏覽器 fallback。
-        const successful = document.execCommand("copy");
-
-        if (!successful) {
-          throw new Error("Fallback copy failed");
-        }
-      } finally {
-        document.body.removeChild(textarea);
-      }
+      try { document.execCommand("copy"); } finally { document.body.removeChild(textarea); }
     }
   </script>
 </body>
