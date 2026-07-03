@@ -17,32 +17,30 @@
 ---
 
 ### 🛠️ 2. 實用工具集
+* **🎮 Discord Quests 探索器 (`/discord-quest/`)**
+  * 串接第三方 API，即時瀏覽與過濾 Discord 任務（進行中、即將開始、已結束），提供全球區域過濾、任務獎勵（Orbs / Nitro / 虛寶）詳情檢視與兌換資訊。
 * **🔑 帳號管理工具 (`/credentials/`)**
   * 基於 `CryptoJS` 的本地加密／解密帳密管理工具，資料僅保留於瀏覽器端，兼顧便利與隱私。
 * **🔣 Base64 加解密工具 (`/base64/`)**
   * 採用賽博龐克（Cyberpunk）高科技科幻風格介面的 Base64 字串與檔案編解碼工具。
 * **📝 極簡筆記本 PWA (`/minimalist-notes/`)**
   * 支援 Progressive Web App (PWA) 規範，內建 `Service Worker` 與 `manifest.json`，支援離線記錄與安裝至桌面。
-
----
-
-### 🐦 3. X (Twitter) 媒體工具
 * **🐦 FxEmbed 推文媒體檢視器 (`/fx-embed/`)**
   * 專為 X / Twitter 推文設計的媒體檢視器，利用 FixTweet/FxTwitter API 輕鬆解析並預覽推文中的高畫質圖片與影片。
 
 ---
 
-### 🎮 4. 娛樂與影音
+### 🎮 3. 娛樂與影音
 * **🎲 猜數字遊戲 (`/guess/`)**
-  * 經典 1~100 範圍終極密碼猜數字小遊戲，帶有即時提示與次數統計。
+  * 經典 1~100 / 1~1000 範圍終極密碼猜數字小遊戲，內建智能二分法推薦中點與勝利紙花慶祝特效。
 * **🎵 音樂播放器 (`/music-player/`)**
-  * 全新重寫的 **Cyber-VTuber Music Player**！具備玻璃擬態與賽博霓虹 UI，內建 Web Audio API 動態頻譜視覺化特效，並**支援一鍵拖曳上傳與本地音檔極速播放**。
+  * 現代 Cyber-VTuber 音樂播放器！具備玻璃擬態 UI，內建 Web Audio API 動態頻譜視覺化特效，並**支援一鍵拖曳上傳與本地音檔極速播放**。
 * **🌸 Ayame AI Cover (`/ayame/`)**
   * 結合 ASCII Art 視覺藝術與張韶涵《隱形的翅膀》Ayame AI Cover 語音演唱的彩蛋網頁。
 
 ---
 
-### 🔗 5. 同帳號生態系連結
+### 🔗 4. 同帳號生態系連結
 主導航中含有部分導向作者帳號下其他 GitHub Pages 專案的快捷連結：
 * `About Me` (`/aboutme`)
 * `Project-1` (`/project-1`)
@@ -60,13 +58,15 @@ rushiaismywaifu.github.io/
 ├── favicon.ico                 # 網站圖示
 ├── image.png / d.png           # OG 分享與視覺素材
 ├── README.md                   # 專案說明文件
-├── REFACTORING_REPORT.md       # 重構紀錄總結報告
+├── discord-quest.html          # 🔄 向後相容轉址 (指向 /discord-quest/)
 │
 ├── ayame/                      # 🌸 Ayame AI Cover 頁面
 │   └── index.html
 ├── base64/                     # 🔣 Base64 賽博龐克加解密工具
 │   └── index.html
 ├── credentials/                # 🔑 本地帳號密碼管理工具
+│   └── index.html
+├── discord-quest/              # 🎮 Discord Quests 探索器
 │   └── index.html
 ├── fx-embed/                   # 🐦 FxEmbed X/Twitter 推文檢視器
 │   └── index.html
@@ -77,7 +77,7 @@ rushiaismywaifu.github.io/
 │   ├── sw.js
 │   ├── manifest.json
 │   └── assets/
-└── music-player/               # 🎵 Cyber-VTuber 音樂播放器 (支援上傳與頻譜)
+└── music-player/               # 🎵 Cyber-VTuber 音樂播放器
     ├── index.html
     ├── script.js
     └── styles.css

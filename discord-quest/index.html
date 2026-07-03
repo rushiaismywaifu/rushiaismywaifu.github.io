@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="referrer" content="no-referrer" />
+<title>Discord Quest Explorer 🎮</title>
+<style>
+  :root{
+    --bg:#1e1f22;
+    --bg2:#2b2d31;
+    --bg3:#313338;
+    --panel:#232428;
+    --line:#1f2023;
+    --text:#f2f3f5;
+    --muted:#b5bac1;
+    --dim:#80848e;
+    --blurple:#5865f2;
+    --blurple-2:#4752c4;
+    --green:#23a55a;
+    --red:#f23f43;
+    --yellow:#f0b232;
+    --pink:#eb459e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'gg sans','Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:#00a8fc;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Layout */
+  .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  .sidebar{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 12px;gap:14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;gap:12px;padding:14px 22px;background:var(--bg3);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;backdrop-filter:saturate(120%) blur(6px)}
+  .content{padding:22px;display:flex;flex-direction:column;gap:18px}
+
+  /* Brand */
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px}
+  .brand-mark{width:36px;height:36px;border-radius:10px;background:var(--blurple);display:grid;place-items:center;color:#fff;font-weight:800}
+  .brand-name{font-weight:700}
+  .brand-sub{font-size:11px;color:var(--muted)}
+
+  /* Sidebar items */
+  .group-title{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);padding:8px 10px 4px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--muted);cursor:pointer;font-size:14px;user-select:none}
+  .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+  .nav-item.active{background:rgba(88,101,242,.18);color:#fff}
+  .nav-item .count{margin-left:auto;font-size:11px;color:var(--dim);background:rgba(255,255,255,.05);padding:2px 7px;border-radius:10px}
+  .nav-item.active .count{color:#fff;background:var(--blurple-2)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.live{background:var(--green);box-shadow:0 0 0 3px rgba(35,165,90,.25)}
+  .dot.up{background:var(--yellow)}
+  .dot.end{background:var(--dim)}
+  .dot.all{background:var(--blurple)}
+
+  /* Region select */
+  select, input[type=text]{
+    width:100%;background:var(--bg);color:var(--text);border:1px solid #111214;border-radius:6px;
+    padding:8px 10px;font-size:14px;outline:none
+  }
+  select:focus, input[type=text]:focus{border-color:var(--blurple)}
+  label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;display:block;margin:0 0 4px 2px}
+
+  /* Topbar */
+  .search{flex:1;max-width:520px;position:relative}
+  .search input{padding-left:34px}
+  .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.6}
+  .topbar .meta{margin-left:auto;color:var(--muted);font-size:13px}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);padding:5px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{
+    background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    display:flex;flex-direction:column;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    position:relative
+  }
+  .card:hover{transform:translateY(-2px);border-color:#3b3d44;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .hero{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg, #2b2d31 0%, #1e1f22 50%, #5865f2 100%);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .hero img, .hero video{width:100%;height:100%;object-fit:cover;display:block}
+  .hero .gradient{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.75) 100%)}
+  .hero .logotype{position:absolute;left:14px;bottom:12px;max-width:60%;max-height:36px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
+  .badge{position:absolute;top:10px;left:10px;display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);color:#fff;font-weight:600}
+  .badge.live{background:rgba(35,165,90,.85)}
+  .badge.up{background:rgba(240,178,50,.9);color:#1e1f22}
+  .badge.end{background:rgba(80,84,94,.85)}
+  .badge .dot{box-shadow:none}
+  .age{position:absolute;top:10px;right:10px;background:rgba(242,63,67,.9);color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px}
+
+  .card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px}
+  .game{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+  .game .tile{width:18px;height:18px;border-radius:4px;object-fit:cover;background:#0c0d10}
+  .title{font-size:16px;font-weight:700;line-height:1.25}
+  .reward-row{display:flex;align-items:center;gap:10px;margin-top:4px;padding-top:10px;border-top:1px solid var(--line)}
+  .reward-row img{width:40px;height:40px;object-fit:contain;background:#0c0d10;border-radius:8px;padding:3px}
+  .reward-meta{display:flex;flex-direction:column;min-width:0}
+  .reward-meta .l{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+  .reward-meta .n{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .footer-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:2px}
+  .regions{display:flex;gap:4px;flex-wrap:wrap}
+  .flag{font-size:14px}
+
+  /* Empty / loading */
+  .state{padding:60px 16px;text-align:center;color:var(--muted)}
+  .spinner{width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--blurple);animation:spin 1s linear infinite;margin:0 auto 12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:24px;backdrop-filter:blur(6px)}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--bg3);border-radius:14px;max-width:920px;width:100%;max-height:92vh;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column}
+  .modal-hero{position:relative;aspect-ratio:16/9;background:#000}
+  .modal-hero img, .modal-hero video{width:100%;height:100%;object-fit:cover}
+  .modal-hero .gradient{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 50%,rgba(0,0,0,.85) 100%)}
+  .modal-hero .info{position:absolute;left:24px;bottom:18px;right:24px;display:flex;align-items:flex-end;gap:14px}
+  .modal-hero .info img.logo{max-height:54px;max-width:60%;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))}
+  .modal-close{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}
+  .modal-close:hover{background:rgba(0,0,0,.85)}
+  .modal-body{padding:20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;color:var(--text)}
+  .section{display:flex;flex-direction:column;gap:8px}
+  .section h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);font-weight:700}
+  .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .kv .item{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .kv .k{font-size:11px;color:var(--dim);text-transform:uppercase}
+  .kv .v{font-size:14px;font-weight:600;margin-top:2px}
+  .rewards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .reward-card{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center}
+  .reward-card img{width:60px;height:60px;object-fit:contain;background:#0c0d10;border-radius:8px;padding:4px;flex-shrink:0}
+  .reward-card .rn{font-weight:700}
+  .reward-card .rs{font-size:12px;color:var(--muted);margin-top:2px}
+  .tasks{display:flex;flex-direction:column;gap:8px}
+  .task{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:14px}
+  .task .ttype{padding:3px 8px;background:var(--blurple);color:#fff;border-radius:6px;font-size:11px;font-weight:600}
+  .task .ttarget{margin-left:auto;color:var(--muted);font-size:12px}
+  .region-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:var(--bg2);border:1px solid var(--line);border-radius:999px;font-size:12px;padding:4px 10px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+  .chip.exclude{border-color:#5a2a2c;color:#ff8a8d}
+  .colorbar{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+  .swatch{width:18px;height:18px;border-radius:4px;border:1px solid rgba(255,255,255,.1)}
+
+  @media (max-width: 880px){
+    .app{grid-template-columns:1fr}
+    .sidebar{position:static;height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">Q</div>
+      <div>
+        <div class="brand-name">Quest Explorer</div>
+        <div class="brand-sub">discordquest.com API</div>
+      </div>
+    </div>
+    <a href="../index.html" class="nav-item" style="background: rgba(88,101,242,0.15); color: #fff; font-weight: 600; text-decoration: none; border: 1px solid rgba(88,101,242,0.4);">
+      <span>🏠 返回主首頁</span>
+    </a>
+
+    <div>
+      <div class="group-title">狀態</div>
+      <div class="nav-item" data-filter="all"><span class="dot all"></span>全部<span class="count" id="cnt-all">0</span></div>
+      <div class="nav-item active" data-filter="live"><span class="dot live"></span>進行中<span class="count" id="cnt-live">0</span></div>
+      <div class="nav-item" data-filter="upcoming"><span class="dot up"></span>即將開始<span class="count" id="cnt-upcoming">0</span></div>
+      <div class="nav-item" data-filter="ended"><span class="dot end"></span>已結束<span class="count" id="cnt-ended">0</span></div>
+    </div>
+
+    <div>
+      <div class="group-title">獎勵類型</div>
+      <div class="nav-item active" data-reward="all"><span class="dot all"></span>全部獎勵<span class="count" id="rcnt-all">0</span></div>
+      <div class="nav-item" data-reward="orbs"><span class="dot" style="background:#f0b232"></span>Orbs<span class="count" id="rcnt-orbs">0</span></div>
+      <div class="nav-item" data-reward="avatar"><span class="dot" style="background:#eb459e"></span>頭像裝飾<span class="count" id="rcnt-avatar">0</span></div>
+      <div class="nav-item" data-reward="ingame"><span class="dot" style="background:#23a55a"></span>遊戲內獎勵<span class="count" id="rcnt-ingame">0</span></div>
+      <div class="nav-item" data-reward="nitro"><span class="dot" style="background:#5865f2"></span>Nitro<span class="count" id="rcnt-nitro">0</span></div>
+    </div>
+
+    <div>
+      <div class="group-title">任務方式</div>
+      <div class="nav-item active" data-task="all"><span class="dot all"></span>全部方式<span class="count" id="tcnt-all">0</span></div>
+      <div class="nav-item" data-task="play"><span class="dot" style="background:#23a55a"></span>🎮 遊玩<span class="count" id="tcnt-play">0</span></div>
+      <div class="nav-item" data-task="watch"><span class="dot" style="background:#f23f43"></span>📺 觀看<span class="count" id="tcnt-watch">0</span></div>
+    </div>
+
+    <div>
+      <div class="group-title">區域</div>
+      <label for="regionSel">過濾國家 / 地區</label>
+      <select id="regionSel">
+        <option value="">全部地區</option>
+      </select>
+      <div style="margin-top:10px"><label for="ageSel">年齡限制</label>
+      <select id="ageSel">
+        <option value="all">全部</option>
+        <option value="age">需要年齡驗證</option>
+        <option value="noage">無年齡限制</option>
+      </select></div>
+    </div>
+
+    <div>
+      <div class="group-title">排序</div>
+      <select id="sortSel">
+        <option value="newest">最新（開始時間）</option>
+        <option value="ending">即將結束</option>
+        <option value="name">名稱 A→Z</option>
+        <option value="game">遊戲名稱</option>
+      </select>
+    </div>
+
+    <div style="margin-top:auto;font-size:11px;color:var(--dim);padding:10px">
+      資料來源：<br/><a href="https://api.discordquest.com" target="_blank" rel="noopener">api.discordquest.com</a><br/>
+      非官方第三方介面，與 Discord Inc. 無關。
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <section class="main">
+    <header class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" placeholder="搜尋任務、遊戲、發行商…" />
+      </div>
+      <span class="pill" id="totalPill">載入中…</span>
+      <button id="refreshBtn" class="pill" style="cursor:pointer;border-color:var(--blurple);color:#fff;background:var(--blurple)">↻ 重新整理</button>
+    </header>
+
+    <div class="content">
+      <div id="state" class="state"><div class="spinner"></div>正在抓取任務資料…</div>
+      <div id="grid" class="grid" style="display:none"></div>
+    </div>
+  </section>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal-bg" role="dialog" aria-modal="true">
+  <div class="modal" id="modalCard"></div>
+</div>
+
+<script>
+const API = 'https://api.discordquest.com';
+const CDN = 'https://cdn.discordapp.com/quests';
+
+const REGION_NAMES = {
+  US:'United States', UK:'United Kingdom', GB:'United Kingdom',
+  CA:'Canada', AU:'Australia', BR:'Brazil', DE:'Germany',
+  FR:'France', IT:'Italy', NL:'Netherlands', PL:'Poland',
+  CH:'Switzerland', JP:'Japan', KR:'South Korea',
+  HK:'Hong Kong', SG:'Singapore', VN:'Vietnam', TW:'Taiwan',
+  MX:'Mexico', ES:'Spain', PT:'Portugal', AR:'Argentina',
+  CL:'Chile', CO:'Colombia', NZ:'New Zealand', SE:'Sweden',
+  NO:'Norway', FI:'Finland', DK:'Denmark', BE:'Belgium',
+  AT:'Austria', IE:'Ireland', IN:'India', TH:'Thailand',
+  MY:'Malaysia', ID:'Indonesia', PH:'Philippines', ZA:'South Africa',
+  TR:'Turkey'
+};
+function flag(cc){
+  if(!cc) return '🌐';
+  const c = cc.toUpperCase()==='UK' ? 'GB' : cc.toUpperCase();
+  if(c.length!==2) return '🏳️';
+  return String.fromCodePoint(...[...c].map(x=>127397+x.charCodeAt(0)));
+}
+function regName(cc){ return REGION_NAMES[cc?.toUpperCase()] || cc; }
+
+const PLATFORM_NAMES = {0:'Any platform', 1:'Xbox', 2:'PlayStation', 3:'Nintendo Switch', 4:'PC'};
+const REWARD_TYPES = {1:'Code Reward', 2:'In-game Reward', 3:'Avatar Decoration', 4:'Discord Orbs', 5:'Discord Nitro'};
+const REWARD_CAT_LABEL = {orbs:'⭐ Orbs', avatar:'🧩 頭像裝飾', ingame:'🎮 遊戲內', nitro:'💎 Nitro'};
+
+// Module-level constant so escapeHtml never rebuilds the map on each call
+const _ESC_MAP = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+
+
+const MOCK_QUESTS = [
+  {
+    id: "demo-mhw",
+    config: {
+      application: { name: "Monster Hunter Wilds" },
+      messages: { quest_name: "魔物獵人荒野：公會狩獵任務", game_title: "Monster Hunter Wilds", game_publisher: "CAPCOM" },
+      assets: { hero: "../image.png", logotype: "" },
+      rewards: [{ name: "限定武器吊飾與頭像裝飾", type: 3 }],
+      tasks: { play: { type: "play", target: "遊玩 15 分鐘" } },
+      starts_at: "2026-07-01T00:00:00Z",
+      expires_at: "2026-07-31T23:59:59Z"
+    }
+  },
+  {
+    id: "demo-rushia",
+    config: {
+      application: { name: "Hololive Fantasy" },
+      messages: { quest_name: "Rushia My Beloved：蝶戀彩蛋任務", game_title: "Hololive Alternative", game_publisher: "Cover Corp" },
+      assets: { hero: "../d.png", logotype: "" },
+      rewards: [{ name: "專屬蝶與骷髏頭像框", type: 3 }],
+      tasks: { watch: { type: "watch", target: "觀看直播 10 分鐘" } },
+      starts_at: "2026-06-01T00:00:00Z",
+      expires_at: "2026-08-01T23:59:59Z"
+    }
+  },
+  {
+    id: "demo-valorant",
+    config: {
+      application: { name: "VALORANT" },
+      messages: { quest_name: "特戰英豪：第三幕挑戰賽", game_title: "VALORANT", game_publisher: "Riot Games" },
+      assets: { hero: "https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/image.png", logotype: "" },
+      rewards: [{ name: "Discord Orbs x 500", type: 4, orb_quantity: 500 }],
+      tasks: { play: { type: "play", target: "在對戰中取得 1 次勝利" } },
+      starts_at: "2026-07-01T00:00:00Z",
+      expires_at: "2026-07-20T23:59:59Z"
+    }
+  }
+];
+
+const els = {
+  grid:document.getElementById('grid'),
+  state:document.getElementById('state'),
+  search:document.getElementById('searchInput'),
+  regionSel:document.getElementById('regionSel'),
+  ageSel:document.getElementById('ageSel'),
+  sortSel:document.getElementById('sortSel'),
+  totalPill:document.getElementById('totalPill'),
+  modal:document.getElementById('modal'),
+  modalCard:document.getElementById('modalCard'),
+  refreshBtn:document.getElementById('refreshBtn'),
+  // Sidebar count badges — cached to avoid repeated getElementById in render()
+  cntAll:document.getElementById('cnt-all'),
+  cntLive:document.getElementById('cnt-live'),
+  cntUpcoming:document.getElementById('cnt-upcoming'),
+  cntEnded:document.getElementById('cnt-ended'),
+  rcntAll:document.getElementById('rcnt-all'),
+  rcntOrbs:document.getElementById('rcnt-orbs'),
+  rcntAvatar:document.getElementById('rcnt-avatar'),
+  rcntIngame:document.getElementById('rcnt-ingame'),
+  rcntNitro:document.getElementById('rcnt-nitro'),
+  tcntAll:document.getElementById('tcnt-all'),
+  tcntPlay:document.getElementById('tcnt-play'),
+  tcntWatch:document.getElementById('tcnt-watch'),
+};
+
+let state = {
+  quests:[],          // raw quests array
+  regionsMap:{},      // id -> region info from /api/regions
+  filter:'live',      // default: 進行中
+  reward:'all',      // default: Orbs 獎勵
+  task:'all',
+  search:'',
+  region:'',
+  age:'all',
+  sort:'newest',
+};
+
+// Reward categorisation
+// API reward.type: 1 = code reward (game item via code), 2 = in-game reward,
+// 3 = avatar decoration / collectible, 4 = Discord Orbs, 5 = Nitro
+function rewardCategory(rw){
+  if(!rw) return null;
+  const t = rw.type;
+  const name = ((rw.messages?.name) || rw.name || '').toLowerCase();
+  if(t===4 || rw.orb_quantity || /\borbs?\b/.test(name)) return 'orbs';
+  if(t===3 || /avatar decoration|profile effect|collectible/.test(name)) return 'avatar';
+  if(t===5 || /\bnitro\b/.test(name)) return 'nitro';
+  if(t===1 || t===2) return 'ingame';
+  return 'ingame'; // unknown -> treat as in-game
+}
+function questRewardCategories(q){
+  const cats = new Set();
+  getRewards(q.config||{}).forEach(r=>{ const c=rewardCategory(r); if(c) cats.add(c); });
+  return cats;
+}
+
+// Task categorisation: PLAY_*, STREAM_*, ACHIEVEMENT_*, win, progress => play; WATCH_* => watch
+function taskCategory(typeStr){
+  const s = String(typeStr||'').toUpperCase();
+  if(s.startsWith('WATCH')) return 'watch';
+  if(s.startsWith('PLAY') || s.startsWith('STREAM') || s.startsWith('ACHIEVEMENT') || s==='WIN' || s==='PROGRESS') return 'play';
+  return 'play';
+}
+function questTaskCategories(q){
+  const cats = new Set();
+  const c=q.config||{};
+  const tc = c.task_config_v2 || c.task_config || {};
+  const tasks = tc.tasks || {};
+  Object.entries(tasks).forEach(([k,v])=>{
+    cats.add(taskCategory(v.type || v.event_name || k));
+  });
+  return cats;
+}
+
+function normalizeRegions(r){
+  // Pre-uppercase here so matchesRegion / buildRegionOptions never need to call .toUpperCase()
+  const up = a => (Array.isArray(a)?a:[]).map(x=>x.toUpperCase());
+  if(Array.isArray(r)) return {include:up(r), exclude:[]};
+  if(r && typeof r==='object') return {include:up(r.include), exclude:up(r.exclude)};
+  return {include:[], exclude:[]};
+}
+
+async function load(){
+  try{
+    els.state.style.display='';
+    els.state.innerHTML = '<div class="spinner"></div>正在抓取任務資料…';
+    els.grid.style.display='none';
+
+    const [qRes, rRes] = await Promise.all([
+      fetch(`${API}/api/quests`).then(r=>r.json()),
+      fetch(`${API}/api/regions`).then(r=>r.json()).catch(()=>({quests:[]})),
+    ]);
+    state.quests = qRes;
+    state.regionsMap = {};
+    (rRes.quests||[]).forEach(q=>{
+      state.regionsMap[q.id] = {
+        show_age_gate: !!q.show_age_gate,
+        is_global: !!q.is_global,
+        regions: normalizeRegions(q.regions),
+      };
+    });
+
+    buildRegionOptions();
+    render();
+  }catch(err){
+    console.warn("API 獲取受限或離線，自動載入示範與本地任務數據：", err);
+    els.state.style.display = "none";
+    els.grid.style.display = "";
+    state.quests = MOCK_QUESTS;
+    state.regionsMap = {};
+    MOCK_QUESTS.forEach(q=>{
+      state.regionsMap[q.id] = { show_age_gate: false, is_global: true, regions: { include: [], exclude: [] } };
+    });
+    buildRegionOptions();
+    render();
+  }
+}
+
+function buildRegionOptions(){
+  const all = new Set();
+  // include/exclude already uppercased by normalizeRegions
+  Object.values(state.regionsMap).forEach(r=>{
+    r.regions.include.forEach(c=>all.add(c));
+    r.regions.exclude.forEach(c=>all.add(c));
+  });
+  const sorted = [...all].sort();
+  els.regionSel.innerHTML = '<option value="">全部地區</option>'
+    + sorted.map(c=>`<option value="${c}">${flag(c)} ${regName(c)} (${c})</option>`).join('');
+}
+
+function statusOf(q){
+  const c = q.config||{};
+  const now = Date.now();
+  const start = c.starts_at ? new Date(c.starts_at).getTime() : 0;
+  const end = c.expires_at ? new Date(c.expires_at).getTime() : Infinity;
+  if(now < start) return 'upcoming';
+  if(now > end) return 'ended';
+  return 'live';
+}
+
+function matchesRegion(q, cc){
+  if(!cc) return true;
+  const r = state.regionsMap[q.id];
+  if(!r) return true; // unknown -> show all
+  if(r.is_global) return true;
+  // include/exclude are already uppercased by normalizeRegions
+  const {include:inc, exclude:exc} = r.regions;
+  if(exc.includes(cc)) return false;
+  if(inc.length===0) return true; // not restricted
+  return inc.includes(cc);
+}
+
+function matchesAge(q){
+  const r = state.regionsMap[q.id];
+  if(state.age==='all') return true;
+  const gated = r ? r.show_age_gate : false;
+  return state.age==='age' ? gated : !gated;
+}
+
+function searchText(q){
+  const c=q.config||{}, m=c.messages||{}, app=c.application||{};
+  return [m.quest_name, m.game_title, m.game_publisher, app.name, q.id].filter(Boolean).join(' ').toLowerCase();
+}
+
+
+function getRewards(c){
+  // config_version 2: c.rewards_config.rewards
+  // older: c.rewards
+  return (c.rewards_config?.rewards) || c.rewards || [];
+}
+
+function assetURL(qid, asset){
+  if(!asset) return null;
+  if(asset.startsWith('http')) return asset;
+  return `${CDN}/${qid}/${encodeURIComponent(asset)}`;
+}
+
+function fmtDate(s){
+  if(!s) return '—';
+  const d=new Date(s);
+  if(isNaN(d)) return s;
+  return d.toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function daysLeft(s){
+  if(!s) return null;
+  const ms = new Date(s).getTime() - Date.now();
+  if(ms<=0) return 0;
+  return Math.ceil(ms/86400000);
+}
+
+function render(){
+  // Pre-compute per-quest derived values once to avoid redundant calls
+  // during counting, filtering, and card rendering
+  const meta = new Map();
+  state.quests.forEach(q=>{
+    meta.set(q.id, {
+      status: statusOf(q),
+      rewards: questRewardCategories(q),
+      tasks: questTaskCategories(q),
+    });
+  });
+
+  // counts (use pre-computed meta)
+  const counts={all:0,live:0,upcoming:0,ended:0};
+  const rCounts={all:0,orbs:0,avatar:0,ingame:0,nitro:0};
+  const tCounts={all:0,play:0,watch:0};
+  state.quests.forEach(q=>{
+    const m = meta.get(q.id);
+    counts.all++; counts[m.status]++;
+    rCounts.all++;
+    m.rewards.forEach(c=>rCounts[c]++);
+    tCounts.all++;
+    m.tasks.forEach(c=>tCounts[c]++);
+  });
+
+  // Use cached els instead of repeated getElementById
+  els.cntAll.textContent=counts.all;
+  els.cntLive.textContent=counts.live;
+  els.cntUpcoming.textContent=counts.upcoming;
+  els.cntEnded.textContent=counts.ended;
+  els.rcntAll.textContent=rCounts.all;
+  els.rcntOrbs.textContent=rCounts.orbs;
+  els.rcntAvatar.textContent=rCounts.avatar;
+  els.rcntIngame.textContent=rCounts.ingame;
+  els.rcntNitro.textContent=rCounts.nitro;
+  els.tcntAll.textContent=tCounts.all;
+  els.tcntPlay.textContent=tCounts.play;
+  els.tcntWatch.textContent=tCounts.watch;
+
+  let list = state.quests.filter(q=>{
+    const m = meta.get(q.id);
+    if(state.filter!=='all' && m.status!==state.filter) return false;
+    if(state.search && !searchText(q).includes(state.search)) return false;
+    if(!matchesRegion(q, state.region)) return false;
+    if(!matchesAge(q)) return false;
+    if(state.reward!=='all' && !m.rewards.has(state.reward)) return false;
+    if(state.task!=='all' && !m.tasks.has(state.task)) return false;
+    return true;
+  });
+
+  // Pre-compute sort keys to avoid repeated new Date() inside compare()
+  const sortKeys = new Map();
+  list.forEach(q=>{
+    const c=q.config||{};
+    sortKeys.set(q.id,{
+      start: c.starts_at ? new Date(c.starts_at).getTime() : 0,
+      end:   c.expires_at ? new Date(c.expires_at).getTime() : 0,
+      name:  c.messages?.quest_name || '',
+      game:  c.messages?.game_title || '',
+    });
+  });
+  list.sort((a,b)=>{
+    const ka=sortKeys.get(a.id), kb=sortKeys.get(b.id);
+    switch(state.sort){
+      case 'ending': return ka.end-kb.end;
+      case 'name':   return ka.name.localeCompare(kb.name);
+      case 'game':   return ka.game.localeCompare(kb.game);
+      default:       return kb.start-ka.start; // newest
+    }
+  });
+
+  els.totalPill.textContent = `${list.length} / ${state.quests.length} 個任務`;
+
+  if(list.length===0){
+    els.state.style.display='';
+    els.state.innerHTML = '😴 找不到符合條件的任務，調整一下篩選看看。';
+    els.grid.style.display='none';
+    return;
+  }
+  els.state.style.display='none';
+  els.grid.style.display='';
+  // Pass pre-computed meta into card() so it won't recompute categories
+  els.grid.innerHTML = list.map(q=>card(q, meta.get(q.id))).join('');
+  // Event delegation: one listener on the grid instead of N on each card
+}
+
+// meta = { status, rewards (Set), tasks (Set) } — pre-computed by render()
+function card(q, meta){
+  const c=q.config||{};
+  const m=c.messages||{};
+  const id=q.id;
+  const st=meta.status;
+  const hero = assetURL(id, c.assets?.hero) || assetURL(id, c.assets?.quest_bar_hero);
+  const logotype = assetURL(id, c.assets?.logotype || c.assets?.logotype_light);
+  const tile = assetURL(id, c.assets?.game_tile || c.assets?.game_tile_light);
+  const rewards = getRewards(c);
+  const reward = rewards[0];
+  const rewardImg = reward ? assetURL(id, reward.asset) : null;
+  const rewardName = reward ? (reward.messages?.name || reward.name || REWARD_TYPES[reward.type]||'Reward') : '—';
+  const r = state.regionsMap[id];
+  const gated = r?.show_age_gate;
+  const incAll = r?.regions.include || [];
+  const inc = incAll.slice(0,4);
+  const stMap = {live:['live','● Live'], upcoming:['up','◷ 即將開始'], ended:['end','✓ 已結束']};
+  const [stCls,stTxt] = stMap[st];
+
+  const dl = daysLeft(c.expires_at);
+  const dlTxt = st==='live' && dl!=null ? `· 剩 ${dl} 天` : '';
+
+  return `
+    <div class="card" data-id="${id}">
+      <div class="hero">
+        ${hero ? `<img loading="lazy" decoding="async" src="${hero}" alt="" onerror="this.style.display='none'">` : ''}
+        <div class="gradient"></div>
+        ${logotype ? `<img class="logotype" src="${logotype}" alt="" onerror="this.style.display='none'">` : ''}
+        <span class="badge ${stCls}">${stTxt}${dlTxt}</span>
+        ${gated ? `<span class="age">18+</span>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="game">
+          ${tile ? `<img class="tile" loading="lazy" decoding="async" src="${tile}" onerror="this.style.display='none'">` : ''}
+          ${escapeHtml(m.game_title || c.application?.name || '未知遊戲')}
+        </div>
+        <div class="title">${escapeHtml(m.quest_name || '未命名任務')}</div>
+        <div class="reward-row">
+          ${rewardImg ? `<img loading="lazy" decoding="async" src="${rewardImg}" onerror="this.style.display='none'">` : `<div style="width:40px;height:40px;border-radius:8px;background:#0c0d10;display:grid;place-items:center;color:var(--dim)">🎁</div>`}
+          <div class="reward-meta" style="min-width:0">
+            <span class="l">獎勵 · ${[...meta.rewards].map(c=>REWARD_CAT_LABEL[c]||c).join(' / ') || '—'}</span>
+            <span class="n" title="${escapeHtml(rewardName)}">${escapeHtml(rewardName)}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+          ${[...meta.tasks].map(c=>`<span class="chip" style="padding:2px 8px;font-size:11px">${c==='play'?'🎮 遊玩':'📺 觀看'}</span>`).join('')}
+        </div>
+        <div class="footer-row">
+          <div class="regions">
+            ${r?.is_global ? `<span class="flag" title="全球">🌐</span>` : inc.map(cc=>`<span class="flag" title="${regName(cc)}">${flag(cc)}</span>`).join('')}
+            ${incAll.length>4?`<span style="font-size:11px;color:var(--dim)">+${incAll.length-4}</span>`:''}
+          </div>
+          <div>${m.game_publisher ? escapeHtml(m.game_publisher) : ''}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openModal(id){
+  const q = state.quests.find(x=>x.id===id);
+  if(!q) return;
+  const c=q.config||{}, m=c.messages||{};
+  const hero = assetURL(id, c.assets?.hero);
+  const heroVideo = assetURL(id, c.assets?.hero_video);
+  const qbVideo = assetURL(id, c.assets?.quest_bar_hero?.endsWith?.('.webm') ? c.assets.quest_bar_hero : null);
+  const logo = assetURL(id, c.assets?.logotype || c.assets?.logotype_light);
+  const rewards = getRewards(c);
+  const r = state.regionsMap[id];
+  const st = statusOf(q);
+  const stMap = {live:['live','● 進行中'], upcoming:['up','◷ 即將開始'], ended:['end','✓ 已結束']};
+  const [stCls,stTxt] = stMap[st];
+
+  // Tasks: support task_config (v1) and task_config_v2
+  const tasksObj = c.task_config_v2?.tasks || c.task_config?.tasks || {};
+  const taskList = Object.entries(tasksObj).map(([k,v])=>({
+    type: v.type || v.event_name || k,
+    target: v.target ?? '—',
+  }));
+  const joinOp = (c.task_config_v2?.join_operator || c.task_config?.join_operator || 'and').toUpperCase();
+
+  const platforms = c.rewards_config?.platforms || [];
+
+  const incRegions = r?.regions.include || [];
+  const excRegions = r?.regions.exclude || [];
+
+  const heroMedia = heroVideo
+    ? `<video src="${heroVideo}" autoplay muted loop playsinline poster="${hero||''}"></video>`
+    : qbVideo
+      ? `<video src="${qbVideo}" autoplay muted loop playsinline poster="${hero||''}"></video>`
+      : hero ? `<img src="${hero}" onerror="this.style.display='none'">` : '';
+
+  els.modalCard.innerHTML = `
+    <div class="modal-hero">
+      ${heroMedia}
+      <div class="gradient"></div>
+      <button class="modal-close" aria-label="關閉">✕</button>
+      <div class="info">
+        ${logo ? `<img class="logo" src="${logo}" onerror="this.style.display='none'">` : ''}
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge ${stCls}" style="position:static">${stTxt}</span>
+          ${r?.show_age_gate ? '<span class="age" style="position:static">18+</span>' : ''}
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">${escapeHtml(m.game_title||c.application?.name||'')}</div>
+        <h2 style="margin:6px 0 4px;font-size:22px">${escapeHtml(m.quest_name||'未命名')}</h2>
+        <div style="color:var(--muted);font-size:13px">
+          ${m.game_publisher ? `發行：${escapeHtml(m.game_publisher)} · ` : ''}
+          ID: <code style="font-size:12px;color:var(--dim)">${id}</code>
+          ${c.application?.link ? ` · <a href="${c.application.link}" target="_blank" rel="noopener">遊戲官網 ↗</a>` : ''}
+        </div>
+      </div>
+
+      <div class="kv">
+        <div class="item"><div class="k">開始時間</div><div class="v">${fmtDate(c.starts_at)}</div></div>
+        <div class="item"><div class="k">結束時間</div><div class="v">${fmtDate(c.expires_at)}</div></div>
+        <div class="item"><div class="k">獎勵領取截止</div><div class="v">${fmtDate(c.rewards_config?.rewards_expire_at)}</div></div>
+        <div class="item"><div class="k">支援平台</div><div class="v">${platforms.length?platforms.map(p=>PLATFORM_NAMES[p]||p).join('、'):'—'}</div></div>
+      </div>
+
+      ${taskList.length ? `
+      <div class="section">
+        <h3>任務內容（join: ${joinOp}）</h3>
+        <div class="tasks">
+          ${taskList.map(t=>`
+            <div class="task">
+              <span class="ttype">${escapeHtml(String(t.type))}</span>
+              <span style="color:var(--muted);font-size:13px">完成目標</span>
+              <span class="ttarget">${escapeHtml(String(t.target))}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${rewards.length ? `
+      <div class="section">
+        <h3>獎勵 (${rewards.length})</h3>
+        <div class="rewards">
+          ${rewards.map(rw=>{
+            const img = assetURL(id, rw.asset);
+            const name = rw.messages?.name || rw.name || REWARD_TYPES[rw.type] || 'Reward';
+            const link = rw.redemption_link;
+            const orbs = rw.orb_quantity;
+            return `<div class="reward-card">
+              ${img?`<img src="${img}" onerror="this.style.display='none'">`:`<div style="width:60px;height:60px;border-radius:8px;background:#0c0d10;display:grid;place-items:center">🎁</div>`}
+              <div style="min-width:0">
+                <div class="rn">${escapeHtml(name)}</div>
+                <div class="rs">${REWARD_TYPES[rw.type]||'Reward'}${orbs?` · ${orbs} Orbs`:''}</div>
+                ${link?`<div style="margin-top:6px"><a href="${link.replace('{reward_code}','XXXXX')}" target="_blank" rel="noopener" style="font-size:12px">兌換連結範例 ↗</a></div>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="section">
+        <h3>地區 ${r?.is_global ? '· 🌐 全球可用' : ''}</h3>
+        <div class="region-chips">
+          ${r?.is_global && incRegions.length===0 && excRegions.length===0 ? '<span class="chip">所有地區皆可參與</span>' : ''}
+          ${incRegions.map(cc=>`<span class="chip">${flag(cc)} ${regName(cc)}</span>`).join('')}
+          ${excRegions.map(cc=>`<span class="chip exclude">⊘ ${flag(cc)} ${regName(cc)}</span>`).join('')}
+          ${(!r || (incRegions.length===0 && excRegions.length===0 && !r.is_global)) ? '<span class="chip">未指定限制</span>' : ''}
+        </div>
+      </div>
+
+      ${(c.colors?.primary||c.colors?.secondary) ? `
+      <div class="section">
+        <h3>主題色</h3>
+        <div class="colorbar">
+          ${c.colors?.primary?`<span class="swatch" style="background:${c.colors.primary}"></span><code style="color:var(--muted)">${c.colors.primary}</code>`:''}
+          ${c.colors?.secondary?`<span class="swatch" style="background:${c.colors.secondary}"></span><code style="color:var(--muted)">${c.colors.secondary}</code>`:''}
+        </div>
+      </div>`:''}
+    </div>
+  `;
+  els.modal.classList.add('open');
+  els.modalCard.querySelector('.modal-close').addEventListener('click', closeModal);
+}
+function closeModal(){ els.modal.classList.remove('open'); }
+els.modal.addEventListener('click', e=>{ if(e.target===els.modal) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, ch=>_ESC_MAP[ch]);
+}
+
+// Event delegation for card clicks — set up once, avoids rebinding on every render
+els.grid.addEventListener('click', e=>{
+  const card = e.target.closest('.card[data-id]');
+  if(card) openModal(card.dataset.id);
+});
+
+// Wire up controls — each side-nav group is independent
+function bindNavGroup(attr, stateKey){
+  const items = document.querySelectorAll(`.nav-item[data-${attr}]`);
+  items.forEach(el=>{
+    el.addEventListener('click', ()=>{
+      items.forEach(n=>n.classList.remove('active'));
+      el.classList.add('active');
+      state[stateKey] = el.dataset[attr];
+      render();
+    });
+  });
+}
+bindNavGroup('filter','filter');
+bindNavGroup('reward','reward');
+bindNavGroup('task','task');
+els.search.addEventListener('input', e=>{ state.search = e.target.value.trim().toLowerCase(); render(); });
+els.regionSel.addEventListener('change', e=>{ state.region = e.target.value; render(); });
+els.ageSel.addEventListener('change', e=>{ state.age = e.target.value; render(); });
+els.sortSel.addEventListener('change', e=>{ state.sort = e.target.value; render(); });
+els.refreshBtn.addEventListener('click', load);
+
+load();
+</script>
+</body>
+</html>
