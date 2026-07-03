@@ -1,63 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
-    <title>Music Player</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,700">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-<link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cyber-VTuber Music Player 🎧</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-  <div class="music-player">
+    <div class="player-container">
+      
+      <!-- ===== 左側：主播放介面 ===== -->
+      <div class="player-main">
+        <!-- 專輯封面 -->
+        <div class="album-art-wrapper">
+          <div class="album-art" id="albumArt">
+            <span class="album-icon">🦋</span>
+          </div>
+        </div>
 
-  <div class="info">
+        <!-- 音頻動態視覺化 Canvas -->
+        <div class="visualizer-container">
+          <canvas id="visualizer"></canvas>
+        </div>
 
-    <div class="left">
-      <a href="javascript:;" class="icon-shuffle"></a>
-      <a href="javascript:;" class="icon-heart"></a>
-    </div>
+        <!-- 歌曲資訊 -->
+        <div class="track-info">
+          <div class="track-title" id="trackTitle">準備播放</div>
+          <div class="track-artist" id="trackArtist">選擇或上傳歌曲開始聆聽</div>
+        </div>
 
-    <div class="center">
-      <div class="jp-playlist">
-        <ul>
-          <li></li>
+        <!-- 進度條 -->
+        <div class="progress-area">
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-current" id="progressCurrent"></div>
+          </div>
+          <div class="time-info">
+            <span id="currentTime">0:00</span>
+            <span id="totalTime">0:00</span>
+          </div>
+        </div>
+
+        <!-- 播放控制鍵 -->
+        <div class="controls">
+          <button class="btn-control" id="btnMode" title="切換循環模式">🔁</button>
+          <button class="btn-control" id="btnPrev" title="上一首">⏮️</button>
+          <button class="btn-control btn-play-pause" id="btnPlayPause" title="播放 / 暫停">▶️</button>
+          <button class="btn-control" id="btnNext" title="下一首">⏭️</button>
+          <button class="btn-control" id="btnMute" title="靜音 / 開啟聲音">🔊</button>
+        </div>
+
+        <!-- 音量調整條 -->
+        <div class="volume-area">
+          <span style="font-size: 0.9rem;">🔈</span>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" />
+          <span style="font-size: 0.9rem;">🔊</span>
+        </div>
+      </div>
+
+      <!-- ===== 右側：清單與上傳 ===== -->
+      <div class="player-playlist-section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🎵 播放清單</span>
+            <span class="badge" id="trackCount">0 首</span>
+          </div>
+        </div>
+
+        <!-- 拖放或選擇上傳區域 -->
+        <div class="upload-dropzone" id="dropzone">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">點此或拖拽本地音檔至此</div>
+          <div class="upload-subtext">支援 MP3, WAV, OGG, FLAC (可多選)</div>
+          <input type="file" id="fileInput" multiple accept="audio/*" style="display: none;" />
+        </div>
+
+        <!-- 播放清單列表 -->
+        <ul class="playlist" id="playlist">
+          <!-- 透過 JS 動態產生歌曲項目 -->
         </ul>
       </div>
+
     </div>
 
-    <div class="right">
-      <a href="javascript:;" class="icon-repeat"></a>
-      <a href="javascript:;" class="icon-share"></a>
-    </div>
-
-    <div class="progress"></div>
-
-  </div>
-
-  <div class="controls">
-    <div class="current jp-current-time">00:00</div>
-    <div class="play-controls">
-      <a href="javascript:;" class="icon-previous jp-previous" title="previous"></a>
-      <a href="javascript:;" class="icon-play jp-play" title="play"></a>
-      <a href="javascript:;" class="icon-pause jp-pause" title="pause"></a>
-      <a href="javascript:;" class="icon-next jp-next" title="next"></a>
-    </div>
-    <div class="volume-level">
-      <a href="javascript:;" class="icon-volume-up" title="max volume"></a>
-      <a href="javascript:;" class="icon-volume-down" title="mute"></a>
-    </div>
-  </div>
-
-  <div id="jquery_jplayer" class="jp-jplayer"></div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.6.4/jquery.jplayer/jquery.jplayer.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jplayer/2.6.4/add-on/jplayer.playlist.min.js"></script>
-<script src="script.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
