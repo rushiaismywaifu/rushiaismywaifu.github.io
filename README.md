@@ -2,7 +2,7 @@
 
 > **網址**：[https://rushiaismywaifu.github.io](https://rushiaismywaifu.github.io)
 
-這是一座基於 **GitHub Pages** 構建的個人主題網頁與前端實用小工具實驗室。專案整合了多種獨立的前端工具、影音播放器、小遊戲以及 Twitter/X 媒體提取元件，並以 VTuber 主題風格進行視覺與彩蛋設計。
+這是一座基於 **GitHub Pages** 構建的個人主題網頁與前端實用小工具實驗室。專案整合了多種獨立的前端工具、影音播放器與小遊戲，並以 VTuber 主題風格進行視覺與彩蛋設計。
 
 ---
 
@@ -29,20 +29,16 @@
 ### 🐦 3. X (Twitter) 媒體工具
 * **🐦 FxEmbed 推文媒體檢視器 (`/fx-embed/`)**
   * 專為 X / Twitter 推文設計的媒體檢視器，利用 FixTweet/FxTwitter API 輕鬆解析並預覽推文中的高畫質圖片與影片。
-* **📥 X 媒體提取器 (`/twitter-extractor/`)**
-  * 簡潔高效的推文圖片、影片連結提取器，方便存取與保存社群媒體素材。
 
 ---
 
-### 🎮 4. 娛樂與小遊戲
+### 🎮 4. 娛樂與影音
 * **🎲 猜數字遊戲 (`/guess/`)**
   * 經典 1~100 範圍終極密碼猜數字小遊戲，帶有即時提示與次數統計。
 * **🎵 音樂播放器 (`/music-player/`)**
-  * 輕量級網頁音樂播放器介面，具備自訂播放清單與進度控制。
+  * 全新重寫的 **Cyber-VTuber Music Player**！具備玻璃擬態與賽博霓虹 UI，內建 Web Audio API 動態頻譜視覺化特效，並**支援一鍵拖曳上傳與本地音檔極速播放**。
 * **🌸 Ayame AI Cover (`/ayame/`)**
   * 結合 ASCII Art 視覺藝術與張韶涵《隱形的翅膀》Ayame AI Cover 語音演唱的彩蛋網頁。
-* **📮 Sus 迷因播放器 (`/Sus/`)**
-  * 全螢幕自動播放的迷因短影音展示頁面。
 
 ---
 
@@ -64,6 +60,7 @@ rushiaismywaifu.github.io/
 ├── favicon.ico                 # 網站圖示
 ├── image.png / d.png           # OG 分享與視覺素材
 ├── README.md                   # 專案說明文件
+├── REFACTORING_REPORT.md       # 重構紀錄總結報告
 │
 ├── ayame/                      # 🌸 Ayame AI Cover 頁面
 │   └── index.html
@@ -80,29 +77,11 @@ rushiaismywaifu.github.io/
 │   ├── sw.js
 │   ├── manifest.json
 │   └── assets/
-├── music-player/               # 🎵 網頁音樂播放器
-│   ├── index.html
-│   ├── script.js
-│   └── styles.css
-├── Sus/                        # 📮 迷因影片展示
-│   └── index.html
-└── twitter-extractor/          # 📥 X/Twitter 媒體提取器
-    └── index.html
+└── music-player/               # 🎵 Cyber-VTuber 音樂播放器 (支援上傳與頻譜)
+    ├── index.html
+    ├── script.js
+    └── styles.css
 ```
-
----
-
-## ⚡ 本次專案整理與結構優化紀錄
-
-1. **目錄結構標準化 (Directory Refactoring)**：
-   * 將原先散落在根目錄的獨立 HTML 檔案（如 `ayame.html`、`base64.html`、`FxEmbed.html`）統一遷移至對應的獨立模組資料夾（`ayame/index.html`、`base64/index.html`、`fx-embed/index.html`），以符合 GitHub Pages 乾淨路由（Clean URLs）最佳實踐。
-   * 將編號臨時檔 `gemini-3.1-pro-preview.index.html` 重構並命名為 `twitter-extractor/index.html`。
-2. **向後相容轉址處理 (Backward Compatibility)**：
-   * 於根目錄保留輕量級轉址頁面 `ayame.html`、`base64.html`、`FxEmbed.html`，確保舊有書籤或分享網址不會產生 404 錯誤。
-3. **首頁導航升級**：
-   * 於首頁 `index.html` 的「📌 頁面導航」區塊中，補上了 **FxEmbed** (`/fx-embed`) 與 **X Extractor** (`/twitter-extractor`) 兩個工具入口。
-4. **HTML 規範修復**：
-   * 為部分缺少 `<head>` 資訊及 `<title>` 的網頁補齊標準 HTML5 聲明與語系字元集設定（如 `ayame/index.html`）。
 
 ---
 *Powered by Rushia My Beloved 🦋*

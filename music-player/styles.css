@@ -1,194 +1,441 @@
-*, *:before, *:after {
-  box-sizing: border-box;
+:root {
+  --bg-dark: #0f111a;
+  --card-bg: rgba(26, 29, 46, 0.75);
+  --accent-pink: #ff4081;
+  --accent-cyan: #00e5ff;
+  --text-main: #ffffff;
+  --text-muted: #9aa0b4;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-html {
-  min-height: 100%;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: #eee url("https://i.imgur.com/82fLDu4.jpg") no-repeat center;
-  background-size: cover;
-  font-family: "Open Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(255, 64, 129, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.15) 0%, transparent 40%);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 
-.music-player {
-  position: relative;
-  width: 350px;
-  height: 290px;
-  margin: 150px auto;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
-  border-radius: 10px;
-  background: #222;
+.player-container {
+  width: 100%;
+  max-width: 850px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
   overflow: hidden;
-  z-index: 0;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
 }
-.music-player img {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  bottom: 0px;
-  right: 0px;
-  z-index: -1;
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  filter: blur(2px);
+
+@media (max-width: 768px) {
+  .player-container {
+    grid-template-columns: 1fr;
+  }
 }
-.music-player .info {
-  width: 100%;
-  height: 100px;
-  background: #222;
-  background: rgba(0, 0, 0, 0.8);
-  text-align: center;
+
+/* ===== 左側：播放控制與視覺化 ===== */
+.player-main {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--border-color);
   position: relative;
 }
-.music-player .info .jp-playlist li {
-  display: none;
+
+@media (max-width: 768px) {
+  .player-main {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
 }
-.music-player .info .jp-playlist li a {
-  font-size: 30px;
-  font-weight: 300;
-  text-decoration: none;
-  color: #fff;
-  color: rgba(225, 225, 225, 0.4);
-}
-.music-player .info .jp-playlist li a span {
-  font-size: 14px;
-  display: block;
-  margin-top: 10px;
-}
-.music-player .info .jp-playlist li.jp-playlist-current {
-  display: block;
-}
-.music-player .info .jp-playlist li .jp-free-media, .music-player .info .jp-playlist li .jp-playlist-item-remove {
-  display: none;
-}
-.music-player .info .left, .music-player .info .right {
-  width: 25px;
-  position: absolute;
-  top: 30px;
-  left: 30px;
-}
-.music-player .info .right {
-  left: auto;
-  right: 30px;
-}
-.music-player .info [class^=icon-] {
-  margin: 0 0 10px;
-}
-.music-player .info .center {
-  padding: 20px 0 0;
-}
-.music-player .progress, .music-player .volume-level {
-  width: 100%;
-  height: 5px;
-  display: block;
-  background: #000;
-  position: absolute;
-  bottom: 0px;
-  cursor: pointer;
-  border: none;
-}
-.music-player .progress .ui-slider-range, .music-player .volume-level .ui-slider-range {
-  display: block;
-  background: #ed553b;
-  height: 5px;
-  border-radius: 0;
-}
-.music-player .progress .ui-slider-handle, .music-player .volume-level .ui-slider-handle {
-  position: absolute;
-  top: -8px;
-  width: 8px;
-  height: 22px;
-  background: url("https://i.imgur.com/tsqwz1N.png") no-repeat center;
-  border: none;
-  outline: none;
-  margin: 0 0 0 -3px;
-  cursor: move;
-}
-.music-player .controls {
-  text-align: center;
-  width: 100%;
-  height: 190px;
-  background: #982e4b;
-  background: rgba(152, 46, 75, 0.6);
-}
-.music-player .controls .current {
-  font-size: 48px;
-  color: #fff;
-  color: rgba(225, 225, 225, 0.4);
-  padding: 15px 0 20px;
-}
-.music-player .controls .play-controls a {
-  display: inline-block;
-  width: 35px;
-  height: 40px;
-  margin: 0 30px;
-}
-.music-player .controls .volume-level {
+
+/* 專輯封面與唱片旋轉 */
+.album-art-wrapper {
   position: relative;
-  bottom: auto;
   width: 200px;
-  height: 2px;
-  margin: 30px auto 0;
-  background: rgba(225, 225, 225, 0.3);
+  height: 200px;
+  margin-bottom: 24px;
 }
-.music-player .controls .volume-level .ui-slider-range {
-  height: 2px;
+
+.album-art {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(255, 64, 129, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: rotateAlbum 12s linear infinite;
+  animation-play-state: paused;
 }
-.music-player .controls .volume-level .ui-slider-handle {
-  top: -8px;
-  margin-left: -9px;
-  width: 22px;
-  height: 22px;
-  background-image: url("https://i.imgur.com/V5i67V2.png");
+
+.album-art.playing {
+  animation-play-state: running;
 }
-.music-player .controls .volume-level .icon-volume-up, .music-player .controls .volume-level .icon-volume-down {
+
+@keyframes rotateAlbum {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.album-art::after {
+  content: "";
   position: absolute;
-  right: -34px;
-  top: -8px;
-  width: 22px;
-}
-.music-player .controls .volume-level .icon-volume-down {
-  right: auto;
-  left: -27px;
+  width: 50px;
+  height: 50px;
+  background: var(--bg-dark);
+  border-radius: 50%;
+  border: 4px solid var(--card-bg);
 }
 
-[class^=icon-] {
-  width: 18px;
-  height: 18px;
-  background: url("https://i.imgur.com/E09T8tf.png") no-repeat center;
-  display: block;
+.album-icon {
+  font-size: 64px;
+  z-index: 1;
 }
 
-.icon-shuffle {
-  background-image: url("https://i.imgur.com/AQAxRxS.png");
+/* 音頻視覺化 Canvas */
+.visualizer-container {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 16px;
 }
-.icon-heart {
-  background-image: url("https://i.imgur.com/E09T8tf.png");
+
+canvas#visualizer {
+  width: 100%;
+  height: 100%;
 }
-.icon-repeat {
-  background-image: url("https://i.imgur.com/338F8MX.png");
+
+/* 歌曲資訊 */
+.track-info {
+  text-align: center;
+  margin-bottom: 24px;
+  width: 100%;
 }
-.icon-share {
-  background-image: url("https://i.imgur.com/PGIC6ME.png");
+
+.track-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.icon-previous {
-  background-image: url("https://i.imgur.com/LIqj0nr.png");
+
+.track-artist {
+  font-size: 0.95rem;
+  color: var(--accent-pink);
+  font-weight: 500;
 }
-.icon-play {
-  background-image: url("https://i.imgur.com/xlBv5aR.png");
+
+/* 進度條 */
+.progress-area {
+  width: 100%;
+  margin-bottom: 24px;
 }
-.icon-pause {
-  background-image: url("https://i.imgur.com/lIhwduj.png");
+
+.progress-bar {
+  height: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: height 0.2s ease;
 }
-.icon-next {
-  background-image: url("https://i.imgur.com/Mb6Nzj5.png");
+
+.progress-bar:hover {
+  height: 8px;
 }
-.icon-volume-up {
-  background-image: url("https://i.imgur.com/qqdoddi.png");
+
+.progress-current {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan));
+  border-radius: 10px;
+  position: relative;
 }
-.icon-volume-down {
-  background-image: url("https://i.imgur.com/3iirf2f.png");
+
+.progress-current::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
+  transition: transform 0.2s ease;
+}
+
+.progress-bar:hover .progress-current::after {
+  transform: translateY(-50%) scale(1);
+}
+
+.time-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* 播放控制器按鈕 */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.btn-control {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.btn-control:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-control.active {
+  color: var(--accent-pink);
+}
+
+.btn-play-pause {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--accent-pink), #ff1744);
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 16px rgba(255, 64, 129, 0.4);
+}
+
+.btn-play-pause:hover {
+  transform: scale(1.08);
+  background: linear-gradient(135deg, #ff5c93, #ff1744);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(255, 64, 129, 0.6);
+}
+
+/* 音量條 */
+.volume-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.volume-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  cursor: pointer;
+}
+
+/* ===== 右側：上傳區與播放清單 ===== */
+.player-playlist-section {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 17, 26, 0.4);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  background: rgba(255, 64, 129, 0.2);
+  color: var(--accent-pink);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* 檔案上傳拖曳區 */
+.upload-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.upload-dropzone:hover, .upload-dropzone.dragover {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.05);
+}
+
+.upload-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  color: var(--accent-cyan);
+}
+
+.upload-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.upload-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* 播放清單 */
+.playlist {
+  list-style: none;
+  overflow-y: auto;
+  max-height: 340px;
+  flex: 1;
+  padding-right: 6px;
+}
+
+/* 滾動條樣式 */
+.playlist::-webkit-scrollbar {
+  width: 5px;
+}
+.playlist::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.playlist::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+}
+
+.playlist-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.playlist-item.playing {
+  background: rgba(255, 64, 129, 0.12);
+  border-color: rgba(255, 64, 129, 0.3);
+}
+
+.item-index {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  width: 24px;
+}
+
+.playlist-item.playing .item-index {
+  color: var(--accent-pink);
+  font-weight: 700;
+}
+
+.item-info {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.item-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.item-artist {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.item-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition);
+  padding: 4px;
+  font-size: 1rem;
+}
+
+.playlist-item:hover .item-remove {
+  opacity: 1;
+}
+
+.item-remove:hover {
+  color: #ff1744;
 }
