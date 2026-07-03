@@ -482,8 +482,12 @@ function getRewards(c){
 
 function assetURL(qid, asset){
   if(!asset) return null;
-  if(asset.startsWith('http')) return asset;
-  return `${CDN}/${qid}/${encodeURIComponent(asset)}`;
+  if(asset.startsWith('http://') || asset.startsWith('https://')) return asset;
+  if(asset.startsWith('quests/')) {
+    return `https://cdn.discordapp.com/${asset}`;
+  }
+  asset = asset.replace(/^\/+/, '');
+  return `${CDN}/${qid}/${asset}`;
 }
 
 function fmtDate(s){
@@ -591,9 +595,9 @@ function card(q, meta){
   const m=c.messages||{};
   const id=q.id;
   const st=meta.status;
-  const hero = assetURL(id, c.assets?.hero) || assetURL(id, c.assets?.quest_bar_hero);
-  const logotype = assetURL(id, c.assets?.logotype || c.assets?.logotype_light);
-  const tile = assetURL(id, c.assets?.game_tile || c.assets?.game_tile_light);
+  const hero = assetURL(id, c.assets?.quest_bar_hero || c.assets?.hero || c.assets?.hero_video);
+  const logotype = assetURL(id, c.assets?.logotype_dark || c.assets?.logotype_light || c.assets?.logotype);
+  const tile = assetURL(id, c.assets?.game_tile_dark || c.assets?.game_tile_light || c.assets?.game_tile);
   const rewards = getRewards(c);
   const reward = rewards[0];
   const rewardImg = reward ? assetURL(id, reward.asset) : null;
@@ -649,10 +653,10 @@ function openModal(id){
   const q = state.quests.find(x=>x.id===id);
   if(!q) return;
   const c=q.config||{}, m=c.messages||{};
-  const hero = assetURL(id, c.assets?.hero);
+  const hero = assetURL(id, c.assets?.quest_bar_hero || c.assets?.hero);
   const heroVideo = assetURL(id, c.assets?.hero_video);
-  const qbVideo = assetURL(id, c.assets?.quest_bar_hero?.endsWith?.('.webm') ? c.assets.quest_bar_hero : null);
-  const logo = assetURL(id, c.assets?.logotype || c.assets?.logotype_light);
+  const qbVideo = assetURL(id, c.assets?.quest_bar_hero_video || (c.assets?.quest_bar_hero?.endsWith?.('.webm') ? c.assets.quest_bar_hero : null));
+  const logo = assetURL(id, c.assets?.logotype_dark || c.assets?.logotype_light || c.assets?.logotype);
   const rewards = getRewards(c);
   const r = state.regionsMap[id];
   const st = statusOf(q);
