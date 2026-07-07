@@ -60,29 +60,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  let vizData = null;
+  let vizGradient = null;
+
+  // 只在容器尺寸變動時重設 canvas 與漸層(重設 canvas 尺寸會清空內容且耗效能)
+  function syncVisualizerSize() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+      vizGradient = ctx.createLinearGradient(0, h, 0, 0);
+      vizGradient.addColorStop(0, "#ff4081");
+      vizGradient.addColorStop(1, "#00e5ff");
+    }
+  }
+
   function drawVisualizer() {
     requestAnimationFrame(drawVisualizer);
     if (!analyser) return;
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyser.getByteFrequencyData(dataArray);
+    syncVisualizerSize();
 
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+    const bufferLength = analyser.frequencyBinCount;
+    if (!vizData || vizData.length !== bufferLength) {
+      vizData = new Uint8Array(bufferLength);
+    }
+    analyser.getByteFrequencyData(vizData);
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const barWidth = (canvas.width / bufferLength) * 1.4;
-    let barHeight;
+    ctx.fillStyle = vizGradient;
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
-      barHeight = (dataArray[i] / 255) * canvas.height;
-      const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
-      gradient.addColorStop(0, "#ff4081");
-      gradient.addColorStop(1, "#00e5ff");
-
-      ctx.fillStyle = gradient;
+      const barHeight = (vizData[i] / 255) * canvas.height;
       ctx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
       x += barWidth;
     }
@@ -132,12 +145,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (playlist[idx].src.startsWith("blob:")) {
       URL.revokeObjectURL(playlist[idx].src);
     }
+    const removingCurrent = idx === currentIndex;
+    const wasPlaying = isPlaying;
     playlist.splice(idx, 1);
-    if (currentIndex >= playlist.length) {
-      currentIndex = 0;
+
+    if (removingCurrent) {
+      if (currentIndex >= playlist.length) currentIndex = 0;
+      loadTrack(currentIndex);
+      if (wasPlaying) playTrack();
+    } else {
+      // 移除目前歌曲之前的項目時僅校正索引,不中斷播放
+      if (idx < currentIndex) currentIndex--;
+      renderPlaylist();
     }
-    renderPlaylist();
-    loadTrack(currentIndex);
   }
 
   // ===== 載入與播放控制 =====

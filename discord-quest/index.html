@@ -4,7 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="referrer" content="no-referrer" />
+<meta name="description" content="Discord Quest Explorer:即時瀏覽與篩選 Discord 任務,支援狀態、獎勵類型、任務方式、地區與年齡過濾,查看 Orbs/Nitro 獎勵詳情。" />
+<meta name="theme-color" content="#0e1015" />
 <title>Discord Quest Explorer 🎮</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon" />
 <style>
   :root{
     --bg:#0e1015;
@@ -180,6 +183,8 @@
   .region-chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:600;padding:6px 12px;color:var(--text);display:inline-flex;align-items:center;gap:6px}
   .chip.exclude{border-color:rgba(242,63,67,0.3);background:rgba(242,63,67,0.1);color:#ff8a8d}
+  .colorbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .swatch{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);display:inline-block;flex-shrink:0}
 
   @media (max-width: 880px){
     .app{grid-template-columns:1fr}
@@ -523,14 +528,20 @@ function getRewards(c){
   return (c.rewards_config?.rewards) || c.rewards || [];
 }
 
+// 回傳值一律經過 escapeHtml,因為結果會直接插入 innerHTML 模板的屬性中
 function assetURL(qid, asset){
   if(!asset) return null;
-  if(asset.startsWith('http://') || asset.startsWith('https://')) return asset;
+  if(asset.startsWith('http://') || asset.startsWith('https://')) return escapeHtml(asset);
   if(asset.startsWith('quests/')) {
-    return `https://cdn.discordapp.com/${asset}`;
+    return escapeHtml(`https://cdn.discordapp.com/${asset}`);
   }
   asset = asset.replace(/^\/+/, '');
-  return `${CDN}/${qid}/${asset}`;
+  return escapeHtml(`${CDN}/${qid}/${asset}`);
+}
+
+// 外部連結防護:僅允許 http(s) 協定,並跳脫供屬性插值使用
+function safeLink(u){
+  return /^https?:\/\//i.test(String(u||'')) ? escapeHtml(u) : '';
 }
 
 function fmtDate(s){
@@ -656,7 +667,7 @@ function card(q, meta){
   const dlTxt = st==='live' && dl!=null ? `· 剩 ${dl} 天` : '';
 
   return `
-    <div class="card" data-id="${id}">
+    <div class="card" data-id="${escapeHtml(id)}">
       <div class="hero">
         ${hero ? `<img loading="lazy" decoding="async" src="${hero}" alt="" onerror="this.style.display='none'">` : ''}
         <div class="gradient"></div>
@@ -744,8 +755,8 @@ function openModal(id){
         <h2 style="margin:6px 0 4px;font-size:22px">${escapeHtml(m.quest_name||'未命名')}</h2>
         <div style="color:var(--muted);font-size:13px">
           ${m.game_publisher ? `發行：${escapeHtml(m.game_publisher)} · ` : ''}
-          ID: <code style="font-size:12px;color:var(--dim)">${id}</code>
-          ${c.application?.link ? ` · <a href="${c.application.link}" target="_blank" rel="noopener">遊戲官網 ↗</a>` : ''}
+          ID: <code style="font-size:12px;color:var(--dim)">${escapeHtml(id)}</code>
+          ${safeLink(c.application?.link) ? ` · <a href="${safeLink(c.application.link)}" target="_blank" rel="noopener">遊戲官網 ↗</a>` : ''}
         </div>
       </div>
 
@@ -776,14 +787,14 @@ function openModal(id){
           ${rewards.map(rw=>{
             const img = assetURL(id, rw.asset);
             const name = rw.messages?.name || rw.name || REWARD_TYPES[rw.type] || 'Reward';
-            const link = rw.redemption_link;
+            const link = safeLink(String(rw.redemption_link||'').replace('{reward_code}','XXXXX'));
             const orbs = rw.orb_quantity;
             return `<div class="reward-card">
               ${img?`<img src="${img}" onerror="this.style.display='none'">`:`<div style="width:60px;height:60px;border-radius:8px;background:#0c0d10;display:grid;place-items:center">🎁</div>`}
               <div style="min-width:0">
                 <div class="rn">${escapeHtml(name)}</div>
-                <div class="rs">${REWARD_TYPES[rw.type]||'Reward'}${orbs?` · ${orbs} Orbs`:''}</div>
-                ${link?`<div style="margin-top:6px"><a href="${link.replace('{reward_code}','XXXXX')}" target="_blank" rel="noopener" style="font-size:12px">兌換連結範例 ↗</a></div>`:''}
+                <div class="rs">${REWARD_TYPES[rw.type]||'Reward'}${orbs?` · ${escapeHtml(orbs)} Orbs`:''}</div>
+                ${link?`<div style="margin-top:6px"><a href="${link}" target="_blank" rel="noopener" style="font-size:12px">兌換連結範例 ↗</a></div>`:''}
               </div>
             </div>`;
           }).join('')}
@@ -804,8 +815,8 @@ function openModal(id){
       <div class="section">
         <h3>主題色</h3>
         <div class="colorbar">
-          ${c.colors?.primary?`<span class="swatch" style="background:${c.colors.primary}"></span><code style="color:var(--muted)">${c.colors.primary}</code>`:''}
-          ${c.colors?.secondary?`<span class="swatch" style="background:${c.colors.secondary}"></span><code style="color:var(--muted)">${c.colors.secondary}</code>`:''}
+          ${c.colors?.primary?`<span class="swatch" style="background:${escapeHtml(c.colors.primary)}"></span><code style="color:var(--muted)">${escapeHtml(c.colors.primary)}</code>`:''}
+          ${c.colors?.secondary?`<span class="swatch" style="background:${escapeHtml(c.colors.secondary)}"></span><code style="color:var(--muted)">${escapeHtml(c.colors.secondary)}</code>`:''}
         </div>
       </div>`:''}
     </div>

@@ -9,14 +9,21 @@
   <title>Rushia My Beloved · Digital Garden & Lab</title>
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="canonical" href="https://rushiaismywaifu.github.io/" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Rushia我婆 · Digital Garden" />
   <meta property="og:description" content="雖然她死ㄌ，但數位花園與前端工具永存！" />
   <meta property="og:url" content="https://rushiaismywaifu.github.io" />
-  <meta property="og:image" content="https://raw.githubusercontent.com/rushiaismywaifu/rushiaismywaifu.github.io/main/image.png" />
+  <meta property="og:image" content="https://rushiaismywaifu.github.io/image.png" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Rushia My Beloved" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Rushia我婆 · Digital Garden" />
+  <meta name="twitter:description" content="雖然她死ㄌ，但數位花園與前端工具永存！" />
+  <meta name="twitter:image" content="https://rushiaismywaifu.github.io/image.png" />
 
   <style>
     :root {
@@ -117,7 +124,14 @@
       translate: -50% -50%;
       background: radial-gradient(circle, rgba(110,231,255,.22), rgba(255,110,199,.08) 45%, transparent 70%);
       filter: blur(15px);
+      opacity: 0; /* 觸控裝置無滑鼠事件,預設隱藏避免光暈卡在左上角 */
       transition: opacity .3s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .aurora { animation: none; }
+      .pulse-dot { animation: none; }
     }
 
     .wrap {
@@ -549,7 +563,7 @@
 
       <div class="grid">
         <!-- Discord Quests -->
-        <a href="/discord-quest" target="_blank" class="card">
+        <a href="/discord-quest" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🎮</div>
@@ -562,7 +576,7 @@
         </a>
 
         <!-- Music Player -->
-        <a href="/music-player" target="_blank" class="card">
+        <a href="/music-player" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🎵</div>
@@ -575,7 +589,7 @@
         </a>
 
         <!-- Guess Game -->
-        <a href="/guess" target="_blank" class="card">
+        <a href="/guess" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🎲</div>
@@ -588,7 +602,7 @@
         </a>
 
         <!-- FxEmbed -->
-        <a href="/fx-embed" target="_blank" class="card">
+        <a href="/fx-embed" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🐦</div>
@@ -601,7 +615,7 @@
         </a>
 
         <!-- Base64 -->
-        <a href="/base64" target="_blank" class="card">
+        <a href="/base64" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🔣</div>
@@ -614,7 +628,7 @@
         </a>
 
         <!-- Credentials -->
-        <a href="/credentials" target="_blank" class="card">
+        <a href="/credentials" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🔑</div>
@@ -627,7 +641,7 @@
         </a>
 
         <!-- Minimalist Notes -->
-        <a href="/minimalist-notes" target="_blank" class="card">
+        <a href="/minimalist-notes" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">📝</div>
@@ -640,7 +654,7 @@
         </a>
 
         <!-- Ayame Cover -->
-        <a href="/ayame" target="_blank" class="card">
+        <a href="/ayame" target="_blank" rel="noopener" class="card">
           <div>
             <div class="card-top">
               <div class="card-icon">🌸</div>
@@ -667,7 +681,7 @@
       <div class="lab-panel">
         <div class="lab-head"><span>🌸</span> 百鬼綾目 (Ayame) 經典音軌板</div>
         <p style="color: var(--muted); margin-bottom: 16px;">點擊下方播放音訊，體驗即時控制：</p>
-        <audio id="ayameAudio" controls src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"></audio>
+        <audio id="ayameAudio" controls preload="none" src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"></audio>
       </div>
 
       <!-- Bilibili 短網址 -->
@@ -706,19 +720,19 @@
       </div>
 
       <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
-        <a href="/aboutme" target="_blank" class="card" style="padding: 18px;">
+        <a href="/aboutme" target="_blank" rel="noopener" class="card" style="padding: 18px;">
           <h3 style="font-size: 1rem; margin: 0;">👤 About Me ↗</h3>
         </a>
-        <a href="/project-1" target="_blank" class="card" style="padding: 18px;">
+        <a href="/project-1" target="_blank" rel="noopener" class="card" style="padding: 18px;">
           <h3 style="font-size: 1rem; margin: 0;">🚀 Project-1 ↗</h3>
         </a>
-        <a href="/PageTest" target="_blank" class="card" style="padding: 18px;">
+        <a href="/PageTest" target="_blank" rel="noopener" class="card" style="padding: 18px;">
           <h3 style="font-size: 1rem; margin: 0;">🧪 PageTest ↗</h3>
         </a>
-        <a href="/ui_shigure" target="_blank" class="card" style="padding: 18px;">
+        <a href="/ui_shigure" target="_blank" rel="noopener" class="card" style="padding: 18px;">
           <h3 style="font-size: 1rem; margin: 0;">🎨 UI Shigure ↗</h3>
         </a>
-        <a href="/timeis" target="_blank" class="card" style="padding: 18px;">
+        <a href="/timeis" target="_blank" rel="noopener" class="card" style="padding: 18px;">
           <h3 style="font-size: 1rem; margin: 0;">⏰ Time Is ↗</h3>
         </a>
       </div>
@@ -738,9 +752,12 @@
      * 1. 視覺特效：星空 Canvas 與游標跟隨發光
      * ======================================================== */
     document.addEventListener("DOMContentLoaded", () => {
-      // 游標微光跟隨
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // 游標微光跟隨(首次移動才顯示,觸控裝置不會出現殘留光暈)
       const cursor = document.getElementById("glowCursor");
       window.addEventListener("mousemove", (e) => {
+        cursor.style.opacity = "1";
         cursor.style.left = `${e.clientX}px`;
         cursor.style.top = `${e.clientY}px`;
       });
@@ -749,15 +766,25 @@
       const canvas = document.getElementById("stars");
       const ctx = canvas.getContext("2d");
       let width, height;
+      let stars = [];
 
       function resize() {
+        const oldW = width, oldH = height;
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
+        // 視窗尺寸改變時,等比例重佈星點,避免星星集中在舊區域
+        if (stars.length && oldW && oldH) {
+          stars.forEach(s => {
+            s.x = (s.x / oldW) * width;
+            s.y = (s.y / oldH) * height;
+          });
+          if (reduceMotion) drawStarsOnce();
+        }
       }
       window.addEventListener("resize", resize);
       resize();
 
-      const stars = Array.from({ length: 80 }, () => ({
+      stars = Array.from({ length: 80 }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         size: Math.random() * 1.8 + 0.5,
@@ -765,17 +792,29 @@
         speed: (Math.random() - 0.5) * 0.015
       }));
 
-      function renderStars() {
+      function drawStarsOnce() {
         ctx.clearRect(0, 0, width, height);
         stars.forEach(s => {
-          s.alpha += s.speed;
-          if (s.alpha > 1 || s.alpha < 0.2) s.speed = -s.speed;
           ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
           ctx.fillRect(s.x, s.y, s.size, s.size);
         });
+      }
+
+      function renderStars() {
+        stars.forEach(s => {
+          s.alpha += s.speed;
+          if (s.alpha > 1 || s.alpha < 0.2) s.speed = -s.speed;
+        });
+        drawStarsOnce();
         requestAnimationFrame(renderStars);
       }
-      renderStars();
+
+      // 尊重減少動態偏好:僅繪製靜態星空,不啟動閃爍動畫
+      if (reduceMotion) {
+        drawStarsOnce();
+      } else {
+        renderStars();
+      }
     });
 
     /* ========================================================

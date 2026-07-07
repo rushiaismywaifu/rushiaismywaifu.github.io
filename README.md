@@ -55,10 +55,13 @@
 ```text
 rushiaismywaifu.github.io/
 ├── index.html                  # 網站首頁（整合導航、表單測試、語音、B站短網址）
+├── 404.html                    # 自訂 404 頁面（GitHub Pages 自動套用）
+├── robots.txt / sitemap.xml    # 搜尋引擎索引設定
 ├── favicon.ico                 # 網站圖示
 ├── image.png / d.png           # OG 分享與視覺素材
 ├── README.md                   # 專案說明文件
 ├── discord-quest.html          # 🔄 向後相容轉址 (指向 /discord-quest/)
+├── ayame.html / base64.html / FxEmbed.html  # 🔄 向後相容轉址
 │
 ├── ayame/                      # 🌸 Ayame AI Cover 頁面
 │   └── index.html

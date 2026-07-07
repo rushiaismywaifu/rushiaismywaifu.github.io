@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="賽博龐克風格的 Base64 編碼解碼工具:支援即時字串轉換、二進位檔案編碼、多國語言介面與一鍵複製下載。">
+    <meta name="theme-color" content="#0a0a0a">
     <title>Base64 加密解密工具 - 賽博風格</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -539,8 +544,8 @@
 
         <div class="main-content">
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('encode')" data-i18n="encodeTab">📝 編碼 (加密)</button>
-                <button class="tab" onclick="switchTab('decode')" data-i18n="decodeTab">🔓 解碼 (解密)</button>
+                <button class="tab active" onclick="switchTab('encode', this)" data-i18n="encodeTab">📝 編碼 (加密)</button>
+                <button class="tab" onclick="switchTab('decode', this)" data-i18n="decodeTab">🔓 解碼 (解密)</button>
             </div>
 
             <!-- 編碼標籤頁 -->
@@ -668,7 +673,8 @@
                 downloadSuccess: '檔案下載中...',
                 downloadError: '沒有內容可下載',
                 fileLoadedEncode: '檔案已載入，可以點擊編碼按鈕',
-                fileLoadedDecode: '檔案已載入，可以點擊解碼按鈕'
+                fileLoadedDecode: '檔案已載入，可以點擊解碼按鈕',
+                fileTooLarge: '檔案過大（上限 50 MB）'
             },
             'zh-CN': {
                 title: '🔐 BASE64 加密解密工具',
@@ -700,7 +706,8 @@
                 downloadSuccess: '文件下载中...',
                 downloadError: '没有内容可下载',
                 fileLoadedEncode: '文件已加载，可以点击编码按钮',
-                fileLoadedDecode: '文件已加载，可以点击解码按钮'
+                fileLoadedDecode: '文件已加载，可以点击解码按钮',
+                fileTooLarge: '文件过大（上限 50 MB）'
             },
             'en': {
                 title: '🔐 BASE64 ENCODER/DECODER',
@@ -732,7 +739,8 @@
                 downloadSuccess: 'FILE DOWNLOADING...',
                 downloadError: 'NO CONTENT TO DOWNLOAD',
                 fileLoadedEncode: 'FILE LOADED, CLICK THE ENCODE BUTTON',
-                fileLoadedDecode: 'FILE LOADED, CLICK THE DECODE BUTTON'
+                fileLoadedDecode: 'FILE LOADED, CLICK THE DECODE BUTTON',
+                fileTooLarge: 'FILE TOO LARGE (50 MB LIMIT)'
             },
             'ja': {
                 title: '🔐 BASE64 暗号化・復号化ツール',
@@ -764,7 +772,8 @@
                 downloadSuccess: 'ファイルをダウンロード中...',
                 downloadError: 'ダウンロードするコンテンツがありません',
                 fileLoadedEncode: 'ファイルが読み込まれました。エンコードボタンをクリックしてください',
-                fileLoadedDecode: 'ファイルが読み込まれました。デコードボタンをクリックしてください'
+                fileLoadedDecode: 'ファイルが読み込まれました。デコードボタンをクリックしてください',
+                fileTooLarge: 'ファイルが大きすぎます（上限 50 MB）'
             },
             'ru': {
                 title: '🔐 BASE64 ШИФРАТОР/ДЕШИФРАТОР',
@@ -796,7 +805,8 @@
                 downloadSuccess: 'ФАЙЛ СКАЧИВАЕТСЯ...',
                 downloadError: 'НЕТ СОДЕРЖАНИЯ ДЛЯ СКАЧИВАНИЯ',
                 fileLoadedEncode: 'ФАЙЛ ЗАГРУЖЕН, НАЖМИТЕ КНОПКУ КОДИРОВАНИЯ',
-                fileLoadedDecode: 'ФАЙЛ ЗАГРУЖЕН, НАЖМИТЕ КНОПКУ ДЕКОДИРОВАНИЯ'
+                fileLoadedDecode: 'ФАЙЛ ЗАГРУЖЕН, НАЖМИТЕ КНОПКУ ДЕКОДИРОВАНИЯ',
+                fileTooLarge: 'ФАЙЛ СЛИШКОМ БОЛЬШОЙ (ЛИМИТ 50 МБ)'
             }
         };
 
@@ -835,6 +845,7 @@
             const select = document.getElementById('languageSelect');
             currentLanguage = select.value;
             localStorage.setItem('selectedLanguage', currentLanguage);
+            document.documentElement.lang = currentLanguage;
             applyTranslations();
             updateDateTime(); // 更新日期時間格式
         }
@@ -864,22 +875,22 @@
         }
 
         // 切換標籤頁
-        function switchTab(tabName) {
+        function switchTab(tabName, btn) {
             // 隱藏所有標籤內容
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
+
             // 移除所有標籤的激活狀態
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // 顯示選中的標籤內容
             document.getElementById(tabName).classList.add('active');
-            
+
             // 激活對應的標籤按鈕
-            event.target.classList.add('active');
+            btn.classList.add('active');
         }
 
         // 更新字符計數
@@ -988,17 +999,54 @@
             showNotification(translations[currentLanguage].downloadSuccess);
         }
 
+        // 判斷是否為文字類檔案(其餘視為二進位)
+        function isTextFile(file) {
+            return file.type.startsWith('text/') ||
+                ['application/json', 'application/xml', 'application/javascript', 'image/svg+xml'].includes(file.type) ||
+                /\.(txt|md|json|xml|csv|html?|css|js|ts|log|ini|ya?ml)$/i.test(file.name);
+        }
+
+        // ArrayBuffer 轉 Base64(分段處理避免大檔造成呼叫堆疊溢位)
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            const chunkSize = 0x8000;
+            let binary = '';
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+            return btoa(binary);
+        }
+
         // 處理文件上傳
         function handleFileUpload(type) {
             const fileInput = document.getElementById(type + 'File');
             const file = fileInput.files[0];
-            
+
             if (!file) return;
 
+            if (file.size > 50 * 1024 * 1024) {
+                showNotification(translations[currentLanguage].fileTooLarge, 'error');
+                fileInput.value = '';
+                return;
+            }
+
             const reader = new FileReader();
+
+            // 二進位檔案:直接讀取位元組並轉為 Base64(readAsText 會毀損二進位內容)
+            if (type === 'encode' && !isTextFile(file)) {
+                reader.onload = function(e) {
+                    document.getElementById('encodeResult').textContent = arrayBufferToBase64(e.target.result);
+                    document.getElementById('encodeResultSection').style.display = 'block';
+                    showNotification(translations[currentLanguage].encodeSuccess);
+                };
+                reader.readAsArrayBuffer(file);
+                fileInput.value = '';
+                return;
+            }
+
             reader.onload = function(e) {
                 const content = e.target.result;
-                
+
                 if (type === 'encode') {
                     document.getElementById('encodeInput').value = content;
                     updateCharCount('encodeInput', 'encodeCount');
@@ -1009,8 +1057,10 @@
                     showNotification(translations[currentLanguage].fileLoadedDecode);
                 }
             };
-            
+
             reader.readAsText(file);
+            // 清空 input 以便重新選取同一檔案時仍會觸發 change 事件
+            fileInput.value = '';
         }
 
         // 顯示通知
@@ -1056,9 +1106,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 從localStorage載入語言設置
             const savedLanguage = localStorage.getItem('selectedLanguage');
-            if (savedLanguage) {
+            if (savedLanguage && translations[savedLanguage]) {
                 currentLanguage = savedLanguage;
                 document.getElementById('languageSelect').value = currentLanguage;
+                document.documentElement.lang = currentLanguage;
             }
             
             // 應用翻譯

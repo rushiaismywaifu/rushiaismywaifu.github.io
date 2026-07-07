@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   btnGuess.addEventListener("click", checkGuess);
-  guessInput.addEventListener("keypress", (e) => {
+  guessInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") checkGuess();
   });
 

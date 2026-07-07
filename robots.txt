@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rushiaismywaifu.github.io/sitemap.xml

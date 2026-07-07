@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="X / Twitter 推文媒體檢視器:貼上推文連結即可透過 FxTwitter API 檢視並下載高畫質圖片、影片與 GIF。">
+    <meta name="theme-color" content="#15202b">
     <title>X/Twitter 推文媒體檢視器</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style>
         *, *::before, *::after {
             margin: 0;
@@ -710,13 +714,23 @@
                             video.src = originalUrl;
                             return;
                         }
-                        // 兩種方式都失敗
-                        wrap.innerHTML = `
-                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:20px;color:#8899a6;text-align:center;">
-                                <div style="font-size:2rem;margin-bottom:8px;">⚠️</div>
-                                <div>影片無法播放</div>
-                                <a href="${originalUrl}" target="_blank" rel="noopener" style="color:#1d9bf0;margin-top:8px;">在新分頁開啟</a>
-                            </div>`;
+                        // 兩種方式都失敗（以 DOM API 建構，避免將 API URL 插入 innerHTML）
+                        wrap.textContent = '';
+                        const fail = document.createElement('div');
+                        fail.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:20px;color:#8899a6;text-align:center;';
+                        const icon = document.createElement('div');
+                        icon.style.cssText = 'font-size:2rem;margin-bottom:8px;';
+                        icon.textContent = '⚠️';
+                        const msg = document.createElement('div');
+                        msg.textContent = '影片無法播放';
+                        const link = document.createElement('a');
+                        link.href = originalUrl;
+                        link.target = '_blank';
+                        link.rel = 'noopener';
+                        link.style.cssText = 'color:#1d9bf0;margin-top:8px;';
+                        link.textContent = '在新分頁開啟';
+                        fail.append(icon, msg, link);
+                        wrap.appendChild(fail);
                     };
                     video.onerror = handleError;
 
@@ -768,9 +782,19 @@
             if (ext.type === 'video' && ext.url) {
                 const ytMatch = ext.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
                 if (ytMatch) {
-                    extDiv.innerHTML = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen></iframe>`;
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}`;
+                    iframe.setAttribute('allowfullscreen', '');
+                    extDiv.appendChild(iframe);
                 } else {
-                    extDiv.innerHTML = `<a href="${ext.url}" target="_blank" rel="noopener" style="color:#1d9bf0;">🔗 外部媒體連結</a>`;
+                    // 以 DOM API 建構，避免將 API URL 插入 innerHTML
+                    const extLink = document.createElement('a');
+                    extLink.href = ext.url;
+                    extLink.target = '_blank';
+                    extLink.rel = 'noopener';
+                    extLink.style.color = '#1d9bf0';
+                    extLink.textContent = '🔗 外部媒體連結';
+                    extDiv.appendChild(extLink);
                 }
             }
             $mediaContainer.appendChild(extDiv);
