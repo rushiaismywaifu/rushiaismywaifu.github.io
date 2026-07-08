@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="夜櫻圖鑑：貼上 Pixiv 連結或作品 ID，即刻預覽插畫、多頁漫畫與 Ugoira 動圖，並下載高畫質原圖。">
+<meta name="theme-color" content="#110d1a">
+<meta property="og:title" content="夜櫻圖鑑 · Pixiv 預覽">
+<meta property="og:description" content="貼上 Pixiv 連結，即刻預覽並下載原圖與動圖。">
+<title>夜櫻圖鑑 · Pixiv 預覽</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 3c2 4 6 5 10 4-1 4 1 8-2 11s-7 2-8 6c-1-4-5-3-8-6s-1-7-2-11c4 1 8 0 10-4z" fill="%23f2a5bd"/><circle cx="16" cy="15" r="2.6" fill="%23c8422e"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ 🎨 夜櫻設計基調 ═══════════════ */
+:root{
+  --night-0:#110d1a;        /* 夜空最深處 */
+  --night-1:#181229;        /* 卡片底 */
+  --night-2:#221a38;        /* 浮層 */
+  --sakura:#f2a5bd;         /* 夜櫻粉 */
+  --sakura-deep:#e87fa6;
+  --kin:#d9bb8b;            /* 金縷 */
+  --ink:#f4eff6;            /* 月光白 */
+  --ink-dim:#a89dbd;
+  --line:rgba(242,165,189,.16);
+  --line-kin:rgba(217,187,139,.30);
+  --seal:#c8422e;           /* 印泥朱 */
+  --ok:#8fd8ae;
+  --err:#f08d9e;
+  --r-lg:18px; --r-md:12px; --r-sm:8px;
+  --serif:"Noto Serif TC","Noto Serif JP",serif;
+  --body:"Zen Maru Gothic","Noto Sans TC",system-ui,sans-serif;
+  --shadow:0 18px 50px rgba(5,2,14,.55);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-color:#3a2f52 transparent}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 520px at 85% -8%, rgba(217,187,139,.10), transparent 62%),
+    radial-gradient(900px 600px at -12% 108%, rgba(232,127,166,.13), transparent 60%),
+    radial-gradient(600px 380px at 50% 118%, rgba(120,80,160,.14), transparent 70%),
+    var(--night-0);
+  min-height:100vh;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+#petals{position:fixed;inset:0;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 18px 72px}
+a{color:var(--kin)}
+::selection{background:rgba(232,127,166,.35)}
+:focus-visible{outline:2px solid var(--kin);outline-offset:2px;border-radius:4px}
+button{font-family:inherit}
+
+/* ═══════════════ 標題 ═══════════════ */
+.masthead{text-align:center;margin-bottom:30px}
+.brand{display:inline-flex;align-items:center;gap:14px}
+.brand-seal{
+  width:52px;height:52px;border-radius:12px;flex:none;
+  background:linear-gradient(150deg,#d5503a,#b23421);
+  box-shadow:inset 0 0 0 2px rgba(255,236,220,.28), 0 6px 18px rgba(200,66,46,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:900;font-size:1.5rem;color:#ffefe6;
+  transform:rotate(-4deg);
+}
+.brand h1{
+  font-family:var(--serif);font-weight:900;font-size:clamp(1.7rem,5vw,2.3rem);
+  letter-spacing:.14em;line-height:1.25;
+  background:linear-gradient(120deg,var(--ink) 30%,var(--sakura) 75%,var(--kin));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand .en{display:block;font-family:var(--body);font-weight:500;font-size:.72rem;letter-spacing:.42em;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);margin-top:2px}
+.masthead p{color:var(--ink-dim);font-size:.94rem;margin-top:12px}
+
+/* ═══════════════ 查詢列 ═══════════════ */
+.search{
+  background:linear-gradient(160deg,rgba(34,26,56,.72),rgba(24,18,41,.86));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow);
+  padding:10px;display:flex;gap:8px;
+}
+.search:focus-within{border-color:rgba(242,165,189,.5)}
+.search input{
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  color:var(--ink);font-size:1rem;font-family:inherit;padding:12px 14px;
+}
+.search input::placeholder{color:#6d6284}
+.btn{
+  border:1px solid var(--line);background:var(--night-2);color:var(--ink);
+  border-radius:var(--r-md);padding:11px 16px;font-size:.92rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:transform .12s,background .2s,border-color .2s;
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;line-height:1.35;
+}
+.btn:hover{border-color:rgba(242,165,189,.45);background:#2a2145}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-sakura{
+  background:linear-gradient(135deg,var(--sakura-deep),#c85f95);
+  border-color:transparent;color:#fff;
+  box-shadow:0 6px 20px rgba(232,127,166,.30);
+}
+.btn-sakura:hover{background:linear-gradient(135deg,#f095b6,#d16ba1)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:7px 12px;font-size:.82rem;border-radius:9px}
+
+.chip-rows{margin:16px 4px 34px;display:flex;flex-direction:column;gap:9px;font-size:.84rem}
+.chip-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chip-row .lbl{color:var(--ink-dim);letter-spacing:.2em;flex:none}
+.chip{
+  border:1px solid var(--line);background:rgba(34,26,56,.5);color:#d9cfe6;
+  padding:5px 13px;border-radius:999px;cursor:pointer;font-size:.82rem;
+  transition:border-color .2s,color .2s;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.chip:hover{border-color:var(--sakura);color:#fff}
+.chip-clear{border:none;background:none;color:#6d6284;cursor:pointer;font-size:.78rem;text-decoration:underline dotted}
+.chip-clear:hover{color:var(--err)}
+
+/* ═══════════════ 狀態 ═══════════════ */
+.notice{display:none;border-radius:var(--r-md);padding:15px 18px;margin-bottom:22px;font-size:.92rem;white-space:pre-wrap;animation:rise .3s ease}
+.notice.on{display:block}
+.notice-err{background:rgba(240,141,158,.10);border:1px solid rgba(240,141,158,.45);color:#ffc6cf}
+.notice-info{background:rgba(217,187,139,.08);border:1px solid var(--line-kin);color:#ecdcbd}
+.notice small{color:var(--ink-dim)}
+
+.skeleton{display:none;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--night-1)}
+.skeleton.on{display:block}
+.sk-bar{height:14px;border-radius:7px;margin:14px 22px;background:var(--night-2);position:relative;overflow:hidden}
+.sk-stage{height:340px;margin:14px 22px 22px;border-radius:var(--r-md);background:var(--night-2);position:relative;overflow:hidden}
+.sk-bar::after,.sk-stage::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(242,165,189,.14) 50%,transparent 70%);
+  animation:shimmer 1.4s infinite;
+}
+.sk-loadtext{text-align:center;color:var(--ink-dim);font-size:.86rem;padding:0 0 20px}
+.sk-loadtext .petal-spin{display:inline-block;animation:twirl 1.6s linear infinite;margin-right:6px}
+
+/* ═══════════════ 作品卡 ═══════════════ */
+.art{
+  display:none;position:relative;
+  background:linear-gradient(165deg,rgba(30,22,50,.88),rgba(22,16,37,.94));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  animation:rise .45s ease;
+}
+.art.on{display:grid;grid-template-columns:58px 1fr}
+
+/* — 掛軸式直書資訊條（本頁的招牌元素）— */
+.spine{
+  border-right:1px solid var(--line-kin);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  display:flex;align-items:center;justify-content:flex-start;gap:16px;
+  padding:26px 0;letter-spacing:.30em;
+  color:var(--kin);font-size:.8rem;user-select:none;
+}
+.spine .no{font-family:var(--serif);font-weight:700}
+.spine .dot{width:5px;height:5px;border-radius:50%;background:var(--sakura);opacity:.7;letter-spacing:0}
+.spine .pg{color:var(--ink-dim)}
+.spine-mobile{display:none;justify-content:space-between;align-items:center;padding:12px 20px 0;color:var(--kin);font-size:.78rem;letter-spacing:.16em}
+.spine-mobile .pg{color:var(--ink-dim)}
+
+.art-main{min-width:0;padding:22px 24px 26px}
+
+.byline{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.avatar{
+  width:44px;height:44px;border-radius:50%;flex:none;
+  border:1px solid var(--line-kin);background:radial-gradient(circle at 32% 28%,#2e2450,#1a1330);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:700;font-size:1.15rem;color:var(--kin);
+}
+.byline .who{min-width:0}
+.author-name{font-weight:700;font-size:1.02rem}
+.author-name a{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--line-kin)}
+.author-name a:hover{color:var(--kin)}
+.workmeta{color:var(--ink-dim);font-size:.78rem;display:flex;gap:12px;flex-wrap:wrap}
+.seals{margin-left:auto;display:flex;gap:8px}
+.seal{
+  font-family:var(--serif);font-weight:900;font-size:.8rem;line-height:1;
+  padding:7px 8px;border-radius:7px;transform:rotate(3deg);letter-spacing:.1em;
+  background:linear-gradient(150deg,#d5503a,#a92f1e);color:#ffefe6;
+  box-shadow:inset 0 0 0 1.5px rgba(255,236,220,.3);
+}
+.seal.grey{background:linear-gradient(150deg,#5a5470,#433d58);color:#e7e1f2;transform:rotate(-3deg)}
+
+.art-title{
+  font-family:var(--serif);font-weight:900;font-size:clamp(1.25rem,3.4vw,1.62rem);
+  letter-spacing:.04em;line-height:1.4;margin:14px 0 16px;
+}
+
+/* — 舞台（主圖 / 影片）— */
+.stage{
+  position:relative;border-radius:var(--r-md);overflow:hidden;
+  background:#0c0915;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;min-height:230px;
+}
+.stage img{width:100%;max-height:72vh;object-fit:contain;display:block;cursor:zoom-in}
+.stage video{width:100%;max-height:72vh;background:#000;display:block}
+.pgbadge{
+  position:absolute;top:12px;left:12px;z-index:3;
+  background:rgba(12,9,21,.78);border:1px solid var(--line);
+  color:var(--ink);font-size:.76rem;letter-spacing:.12em;
+  padding:4px 12px;border-radius:999px;pointer-events:none;
+}
+.nav-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:3;
+  width:42px;height:58px;border:1px solid var(--line);border-radius:10px;
+  background:rgba(12,9,21,.62);color:var(--sakura);font-size:1.25rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,opacity .2s;
+}
+.nav-arrow:hover{background:rgba(46,32,74,.85)}
+.nav-arrow.prev{left:10px}.nav-arrow.next{right:10px}
+.nav-arrow[hidden]{display:none}
+.gate{
+  position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;gap:14px;
+  align-items:center;justify-content:center;text-align:center;
+  background:rgba(14,10,24,.6);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+}
+.gate p{font-size:.92rem;color:#ffd7de;letter-spacing:.1em}
+
+/* — 縮圖膠卷 — */
+.film{display:none;gap:8px;overflow-x:auto;padding:12px 2px 4px;scrollbar-width:thin}
+.film.on{display:flex}
+.film button{
+  flex:none;width:62px;height:62px;border-radius:9px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;background:var(--night-2);padding:0;position:relative;
+  color:var(--ink-dim);font-size:.72rem;
+}
+.film button img{width:100%;height:100%;object-fit:cover;display:block}
+.film button.cur{border-color:var(--kin);box-shadow:0 0 0 2px rgba(217,187,139,.25)}
+.film button:hover{border-color:var(--sakura)}
+
+/* — 說明、標籤 — */
+.desc{
+  margin-top:16px;padding:14px 16px;border-radius:var(--r-md);
+  background:rgba(12,9,21,.55);border:1px solid var(--line);
+  color:#d4cbe0;font-size:.9rem;white-space:pre-wrap;word-break:break-word;
+  max-height:172px;overflow:hidden;position:relative;transition:max-height .3s ease;
+}
+.desc.open{max-height:1400px;overflow-y:auto}
+.desc.fade:not(.open)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(transparent,rgba(18,13,31,.96))}
+.desc-toggle{display:none;margin:8px auto 0;color:var(--kin);background:none;border:none;cursor:pointer;font-size:.82rem;letter-spacing:.2em}
+.desc-toggle.on{display:block}
+.desc-toggle:hover{color:var(--sakura)}
+
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tag{
+  font-size:.8rem;color:var(--sakura);text-decoration:none;
+  border:1px solid rgba(242,165,189,.35);border-radius:999px;padding:4px 12px;
+  background:rgba(232,127,166,.07);transition:background .2s,color .2s;
+}
+.tag:hover{background:rgba(232,127,166,.18);color:#ffd3e1}
+.tag .tr{color:var(--ink-dim);margin-left:5px;font-size:.74rem}
+
+/* — 操作列 — */
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px;padding-top:18px;border-top:1px dashed var(--line-kin)}
+.ugoira-bar{
+  margin-top:14px;padding:13px 15px;border-radius:var(--r-md);
+  border:1px solid rgba(232,127,166,.35);background:rgba(232,127,166,.06);
+  display:flex;flex-wrap:wrap;gap:9px;align-items:center;
+}
+.ugoira-bar .t{font-size:.82rem;color:var(--sakura);letter-spacing:.14em;margin-right:4px}
+
+/* ═══════════════ 燈箱 / 彈窗 / Toast ═══════════════ */
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(8,5,15,.93);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:22px}
+.lightbox.on{display:flex}
+.lightbox img{max-width:96vw;max-height:94vh;object-fit:contain;border-radius:6px}
+.lb-x{position:absolute;top:16px;right:18px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(34,26,56,.7);color:#fff;font-size:1.3rem;cursor:pointer}
+.lb-count{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:var(--ink-dim);font-size:.82rem;letter-spacing:.2em}
+.lightbox .nav-arrow{z-index:61}
+
+.modal{position:fixed;inset:0;z-index:70;background:rgba(8,5,15,.82);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal-card{
+  background:var(--night-1);border:1px solid var(--line-kin);border-radius:var(--r-lg);
+  max-width:520px;width:100%;padding:26px;box-shadow:var(--shadow);animation:rise .25s ease;
+}
+.modal-card h3{font-family:var(--serif);font-weight:700;color:var(--kin);letter-spacing:.1em;margin-bottom:12px}
+.modal-card p{font-size:.9rem;color:#d4cbe0;margin-bottom:14px}
+.modal-card .row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+
+#toast{
+  position:fixed;bottom:26px;left:50%;transform:translate(-50%,16px);z-index:80;
+  background:var(--night-2);border:1px solid var(--line-kin);color:var(--ink);
+  padding:10px 20px;border-radius:999px;font-size:.86rem;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;box-shadow:var(--shadow);max-width:88vw;
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ═══════════════ 部署說明 / 頁尾 ═══════════════ */
+.deploy{margin-top:44px;border:1px solid var(--line);border-radius:var(--r-lg);background:rgba(24,18,41,.6);overflow:hidden}
+.deploy summary{cursor:pointer;padding:15px 20px;font-size:.9rem;color:var(--ink-dim);letter-spacing:.14em;list-style:none}
+.deploy summary::-webkit-details-marker{display:none}
+.deploy summary::before{content:"❀ ";color:var(--sakura)}
+.deploy[open] summary{border-bottom:1px dashed var(--line)}
+.deploy .body{padding:18px 22px 22px;font-size:.88rem;color:#cfc6dd}
+.deploy ol{padding-left:22px;display:flex;flex-direction:column;gap:9px}
+.deploy code{background:#0c0915;border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:.82em;color:#f2d9e2}
+footer{margin-top:34px;text-align:center;color:#6d6284;font-size:.78rem;letter-spacing:.1em}
+footer button{background:none;border:none;color:#6d6284;cursor:pointer;font-size:inherit;text-decoration:underline dotted;letter-spacing:inherit}
+footer button:hover{color:var(--kin)}
+
+/* ═══════════════ 動畫 / 響應式 / 減少動態 ═══════════════ */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes twirl{to{transform:rotate(360deg)}}
+
+@media (max-width:640px){
+  .wrap{padding-top:28px}
+  .search{flex-wrap:wrap}
+  .search input{flex-basis:100%;padding:10px 12px}
+  .search .btn{flex:1;justify-content:center}
+  .art.on{grid-template-columns:1fr}
+  .spine{display:none}
+  .spine-mobile{display:flex}
+  .art-main{padding:16px 16px 22px}
+  .seals{margin-left:0;width:100%}
+  .actions .btn{flex:1 1 46%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  #petals{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="petals" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <!-- ═ 標題 ═ -->
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-seal" aria-hidden="true">櫻</span>
+      <h1>夜櫻圖鑑<span class="en">PIXIV PREVIEWER</span></h1>
+    </div>
+    <p>貼上 Pixiv 連結或作品 ID —— 即刻預覽插畫・漫畫・Ugoira 動圖，並下載高畫質原圖</p>
+  </header>
+
+  <!-- ═ 查詢列 ═ -->
+  <div class="search" role="search">
+    <input id="q" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+           placeholder="https://www.pixiv.net/artworks/… 或作品 ID"
+           aria-label="Pixiv 連結或作品 ID">
+    <button class="btn btn-ghost" id="pasteBtn" title="從剪貼簿貼上">📋 貼上</button>
+    <button class="btn btn-sakura" id="goBtn">❀ 預覽</button>
+  </div>
+
+  <div class="chip-rows">
+    <div class="chip-row">
+      <span class="lbl">試玩</span>
+      <button class="chip" data-id="118320473">🌀 Ugoira 動圖</button>
+      <button class="chip" data-id="124748386">📖 多頁作品</button>
+      <button class="chip" data-id="1903">🖌️ 經典單圖</button>
+    </div>
+    <div class="chip-row" id="recentRow" hidden>
+      <span class="lbl">最近</span>
+      <span id="recentChips" style="display:contents"></span>
+      <button class="chip-clear" id="recentClear">清除</button>
+    </div>
+  </div>
+
+  <!-- ═ 狀態 ═ -->
+  <div id="noticeInfo" class="notice notice-info"></div>
+  <div id="noticeErr"  class="notice notice-err" role="alert"></div>
+
+  <div id="skeleton" class="skeleton" aria-hidden="true">
+    <div class="sk-bar" style="width:44%"></div>
+    <div class="sk-bar" style="width:68%"></div>
+    <div class="sk-stage"></div>
+    <div class="sk-loadtext"><span class="petal-spin">🌸</span>正在向後端擷取作品資料…</div>
+  </div>
+
+  <!-- ═ 作品卡 ═ -->
+  <article id="art" class="art" aria-live="polite">
+    <div class="spine" aria-hidden="true">
+      <span class="no" id="spineNo">№ ——</span>
+      <span class="dot"></span>
+      <span class="pg" id="spinePg">頁</span>
+    </div>
+
+    <div class="art-main">
+      <div class="spine-mobile" aria-hidden="true">
+        <span id="spineNoM">№ ——</span><span class="pg" id="spinePgM"></span>
+      </div>
+
+      <div class="byline">
+        <div class="avatar" id="avatar">P</div>
+        <div class="who">
+          <div class="author-name" id="authorName">—</div>
+          <div class="workmeta" id="workMeta"></div>
+        </div>
+        <div class="seals" id="seals"></div>
+      </div>
+
+      <h2 class="art-title" id="artTitle">—</h2>
+
+      <div class="stage" id="stage">
+        <span class="pgbadge" id="pgBadge" hidden></span>
+        <button class="nav-arrow prev" id="prevBtn" aria-label="上一頁" hidden>‹</button>
+        <button class="nav-arrow next" id="nextBtn" aria-label="下一頁" hidden>›</button>
+        <div class="gate" id="gate" hidden>
+          <p>此作品含 R-18 內容</p>
+          <button class="btn btn-sm" id="gateBtn">顯示內容</button>
+        </div>
+      </div>
+
+      <div class="film" id="film" role="tablist" aria-label="頁面縮圖"></div>
+
+      <div class="desc" id="desc"></div>
+      <button class="desc-toggle" id="descToggle">▾ 展開全文</button>
+
+      <div class="tags" id="tags"></div>
+
+      <div class="ugoira-bar" id="ugoiraBar" hidden>
+        <span class="t">動圖下載</span>
+        <a class="btn btn-sm" id="dlMp4" href="#">🎬 MP4 影片</a>
+        <a class="btn btn-sm" id="dlZip" href="#" hidden>📦 ZIP 原始影格</a>
+        <button class="btn btn-sm" id="convertBtn">🌀 轉 GIF / APNG…</button>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-sakura" id="copyPhixiv" title="貼到 Discord / Telegram 會自動展開圖片預覽">❀ 複製 Phixiv 連結</button>
+        <button class="btn" id="copyPixiv">複製 Pixiv 網址</button>
+        <a class="btn" id="openPixiv" href="#" target="_blank" rel="noopener">Pixiv 開啟 ↗</a>
+        <a class="btn" id="dlPage" href="#">⬇ 下載本頁原圖</a>
+        <button class="btn" id="dlAll" hidden>⬇ 下載全部</button>
+      </div>
+    </div>
+  </article>
+
+  <!-- ═ 部署說明 ═ -->
+  <details class="deploy">
+    <summary>後端 Worker 部署與網域鎖定說明</summary>
+    <div class="body">
+      <ol>
+        <li>登入 <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare Dashboard</a> → <b>Workers &amp; Pages</b> → <b>Create Worker</b>，貼上本專案的 <code>worker.js</code> 後 Deploy。</li>
+        <li>把取得的網址（如 <code>https://xxx.workers.dev</code>）填入本檔開頭的 <code>WORKER_URL</code> 常數，重新上傳到 GitHub Pages 即完成。</li>
+        <li>想避免額度被其他網站盜用：到 <code>worker.js</code> 開頭把 <code>ALLOWED_ORIGINS</code> 的 <code>"*"</code> 改成你的網域即可。</li>
+      </ol>
+      <p style="margin-top:12px;color:var(--ink-dim)">臨時切換後端可在網址加上 <code>?worker=https://…</code>，會記住於此瀏覽器。</p>
+    </div>
+  </details>
+
+  <footer>
+    夜櫻圖鑑 — 資料來源 Pixiv／phixiv・僅供個人預覽收藏之用
+    <br>API：<span id="apiHost">未設定</span> ／ <button id="apiChange">變更</button>
+  </footer>
+</div>
+
+<!-- ═ 燈箱 ═ -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-x" id="lbClose" aria-label="關閉">×</button>
+  <button class="nav-arrow prev" id="lbPrev" aria-label="上一頁" hidden>‹</button>
+  <img id="lbImg" alt="全螢幕預覽" referrerpolicy="no-referrer">
+  <button class="nav-arrow next" id="lbNext" aria-label="下一頁" hidden>›</button>
+  <span class="lb-count" id="lbCount"></span>
+</div>
+
+<!-- ═ 轉檔說明 ═ -->
+<div class="modal" id="convertModal">
+  <div class="modal-card">
+    <h3>Ugoira 轉 GIF / APNG</h3>
+    <p>Pixiv 動圖的原始形態是一包連續影格的 <b>ZIP</b>；MP4 為 phixiv 轉檔的最佳畫質版本。若需要 GIF（相容性最廣）或 APNG（無損全彩），可用下載的 MP4／ZIP 透過線上工具轉換：</p>
+    <div class="row">
+      <a class="btn btn-sm" href="https://ezgif.com/video-to-gif" target="_blank" rel="noopener">EZGIF — MP4 轉 GIF ↗</a>
+      <a class="btn btn-sm" href="https://ezgif.com/apng-maker" target="_blank" rel="noopener">EZGIF — APNG 製作 ↗</a>
+    </div>
+    <button class="btn btn-sakura" id="convertClose" style="width:100%;justify-content:center">回到圖鑑</button>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   ⚙️ 唯一需要修改的設定：你的 Cloudflare Worker 網址
+   （是的，直接寫在這裡即可 —— 前端呼叫的端點本來就公開可見，
+     額度保護請改用 worker.js 內的 ALLOWED_ORIGINS 白名單。）
+   ════════════════════════════════════════════════════════════════ */
+const WORKER_URL = "https://misty-moon-958b.r0b5k3f0.workers.dev";
+
+const PHIXIV_HOST = "https://www.phixiv.net";
+const RECENT_KEY  = "yozakura_recent";
+const WORKER_KEY  = "yozakura_worker_override";
+
+/* ── 小工具 ── */
+const $ = id => document.getElementById(id);
+const els = {
+  q:$("q"), goBtn:$("goBtn"), pasteBtn:$("pasteBtn"),
+  noticeErr:$("noticeErr"), noticeInfo:$("noticeInfo"), skeleton:$("skeleton"),
+  art:$("art"), spineNo:$("spineNo"), spinePg:$("spinePg"), spineNoM:$("spineNoM"), spinePgM:$("spinePgM"),
+  avatar:$("avatar"), authorName:$("authorName"), workMeta:$("workMeta"), seals:$("seals"),
+  artTitle:$("artTitle"), stage:$("stage"), pgBadge:$("pgBadge"),
+  prevBtn:$("prevBtn"), nextBtn:$("nextBtn"), gate:$("gate"), gateBtn:$("gateBtn"),
+  film:$("film"), desc:$("desc"), descToggle:$("descToggle"), tags:$("tags"),
+  ugoiraBar:$("ugoiraBar"), dlMp4:$("dlMp4"), dlZip:$("dlZip"), convertBtn:$("convertBtn"),
+  copyPhixiv:$("copyPhixiv"), copyPixiv:$("copyPixiv"), openPixiv:$("openPixiv"),
+  dlPage:$("dlPage"), dlAll:$("dlAll"),
+  lightbox:$("lightbox"), lbImg:$("lbImg"), lbClose:$("lbClose"), lbPrev:$("lbPrev"), lbNext:$("lbNext"), lbCount:$("lbCount"),
+  convertModal:$("convertModal"), convertClose:$("convertClose"),
+  toast:$("toast"), recentRow:$("recentRow"), recentChips:$("recentChips"), recentClear:$("recentClear"),
+  apiHost:$("apiHost"), apiChange:$("apiChange"),
+};
+
+/* localStorage 需以 try/catch 包覆（隱私模式或沙盒環境可能拋錯） */
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(_){} },
+};
+
+function apiBase(){
+  const p = new URLSearchParams(location.search).get("worker");
+  if (p && /^https?:\/\//.test(p)) { store.set(WORKER_KEY, p.replace(/\/$/,"")); }
+  const ov = store.get(WORKER_KEY);
+  return (ov || WORKER_URL).replace(/\/$/,"");
+}
+function apiConfigured(){ return !/YOUR-WORKER/.test(apiBase()); }
+function refreshApiHost(){
+  try{ els.apiHost.textContent = apiConfigured() ? new URL(apiBase()).host : "未設定"; }
+  catch(_){ els.apiHost.textContent = "未設定"; }
+}
+
+let toastTimer;
+function toast(msg){
+  els.toast.textContent = msg;
+  els.toast.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>els.toast.classList.remove("on"), 2200);
+}
+async function copyText(text, okMsg){
+  try{ await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(_){
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast(okMsg); }catch(e){ toast("複製失敗，請手動複製"); }
+    ta.remove();
+  }
+}
+function fmtCount(n){
+  if (n == null) return null;
+  if (n >= 1e8) return (n/1e8).toFixed(1).replace(/\.0$/,"") + "億";
+  if (n >= 1e4) return (n/1e4).toFixed(1).replace(/\.0$/,"") + "萬";
+  return n.toLocaleString("zh-TW");
+}
+function fmtDate(iso){
+  if(!iso) return null;
+  const d = new Date(iso);
+  return isNaN(d) ? null : `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`;
+}
+const cjkNum = "〇一二三四五六七八九十";
+function toCjk(n){ // 直書資訊條用的漢字頁碼（1–99）
+  if (n <= 10) return cjkNum[n] || String(n);
+  if (n < 20)  return "十" + (n%10 ? cjkNum[n%10] : "");
+  if (n < 100) return cjkNum[Math.floor(n/10)] + "十" + (n%10 ? cjkNum[n%10] : "");
+  return String(n);
+}
+
+/* ── 狀態 ── */
+const state = { data:null, page:0, revealed:false };
+
+function parseInput(raw){
+  const m = String(raw).trim().match(/(?:artworks\/|illust_id=|^)(\d+)/);
+  return m ? m[1] : null;
+}
+
+/* ── 查詢主流程 ── */
+async function lookup(raw){
+  hideNotices();
+  const id = parseInput(raw);
+  if(!id){ showErr("無法從輸入內容識別出 Pixiv 作品 ID（需含連續數字）。"); return; }
+  if(!apiConfigured()){
+    showInfo("尚未設定後端 Worker 網址。\n請先依頁尾「部署說明」建立 Cloudflare Worker，再把網址填入本檔開頭的 WORKER_URL；或在網址列暫時加上 ?worker=https://… 進行測試。");
+    return;
+  }
+
+  els.art.classList.remove("on");
+  els.skeleton.classList.add("on");
+  els.goBtn.disabled = true;
+
+  try{
+    const resp = await fetch(`${apiBase()}/?id=${id}`);
+    let data = null;
+    try{ data = await resp.json(); }catch(_){ }
+    if(!resp.ok || !data || data.status !== "success"){
+      const detail = data && data.detail ? `\n（Pixiv API：${data.detail.pixiv_ajax || "—"}／phixiv：${data.detail.phixiv_html || "—"}）` : "";
+      throw new Error(((data && data.message) || `後端回應 HTTP ${resp.status}`) + detail);
+    }
+    render(data);
+    pushRecent(data);
+    try{ history.replaceState(null, "", `?id=${data.id}`); }catch(_){}
+  }catch(err){
+    console.error(err);
+    showErr(`載入失敗：${err.message}\n請確認作品是否存在，或稍後再試。`);
+  }finally{
+    els.skeleton.classList.remove("on");
+    els.goBtn.disabled = false;
+  }
+}
+
+/* ── 畫面渲染 ── */
+function render(data){
+  state.data = data; state.page = 0; state.revealed = false;
+
+  /* 直書資訊條 */
+  els.spineNo.textContent = `作品 № ${data.id}`;
+  els.spineNoM.textContent = `№ ${data.id}`;
+
+  /* 作者列 */
+  const a = data.author || {};
+  els.avatar.textContent = (a.name || "P").trim().charAt(0) || "P";
+  els.authorName.innerHTML = "";
+  if(a.url){
+    const link = document.createElement("a");
+    link.href = a.url; link.target = "_blank"; link.rel = "noopener";
+    link.textContent = a.name || "未知繪師";
+    els.authorName.appendChild(link);
+  }else{
+    els.authorName.textContent = a.name || "未知繪師";
+  }
+
+  /* 日期・數據列 */
+  els.workMeta.innerHTML = "";
+  const metaBits = [];
+  const typeLabel = data.is_ugoira ? "動圖" : data.illust_type === 1 ? "漫畫" : "插畫";
+  metaBits.push(typeLabel + (data.media_count > 1 ? `・全 ${data.media_count} 頁` : ""));
+  const dt = fmtDate(data.create_date); if(dt) metaBits.push(dt);
+  if(data.counts){
+    const v = fmtCount(data.counts.views), b = fmtCount(data.counts.bookmarks);
+    if(v) metaBits.push(`👁 ${v}`);
+    if(b) metaBits.push(`❤ ${b}`);
+  }
+  metaBits.forEach(t=>{
+    const s = document.createElement("span"); s.textContent = t; els.workMeta.appendChild(s);
+  });
+
+  /* 印章徽記 */
+  els.seals.innerHTML = "";
+  const addSeal = (txt, grey, title)=>{
+    const s = document.createElement("span");
+    s.className = "seal" + (grey ? " grey" : "");
+    s.textContent = txt; if(title) s.title = title;
+    els.seals.appendChild(s);
+  };
+  if(data.is_ugoira) addSeal("動", false, "Ugoira 動態插畫");
+  if(data.x_restrict >= 2) addSeal("R-18G", false);
+  else if(data.x_restrict === 1) addSeal("R-18", false);
+  if(data.is_ai_generated) addSeal("AI", true, "AI 生成作品");
+
+  /* 標題・說明 */
+  els.artTitle.textContent = data.title || `Pixiv Artwork #${data.id}`;
+  els.desc.textContent = data.description || "（此作品沒有附加說明）";
+  els.desc.classList.remove("open","fade");
+  els.descToggle.classList.remove("on");
+  els.descToggle.textContent = "▾ 展開全文";
+
+  /* 標籤 */
+  els.tags.innerHTML = "";
+  (data.tags || []).forEach(t=>{
+    const name = typeof t === "string" ? t.replace(/^#/,"") : t.name;
+    const tr = typeof t === "object" && t.translated && t.translated !== name ? t.translated : null;
+    const el = document.createElement("a");
+    el.className = "tag";
+    el.href = `https://www.pixiv.net/tags/${encodeURIComponent(name)}/artworks`;
+    el.target = "_blank"; el.rel = "noopener";
+    el.textContent = `#${name}`;
+    if(tr){
+      const sp = document.createElement("span"); sp.className = "tr"; sp.textContent = tr;
+      el.appendChild(sp);
+    }
+    els.tags.appendChild(el);
+  });
+
+  /* 連結類操作 */
+  els.openPixiv.href = data.original_url || `https://www.pixiv.net/artworks/${data.id}`;
+
+  /* Ugoira 專屬列 */
+  const v = data.is_ugoira ? data.media[0] : null;
+  els.ugoiraBar.hidden = !v;
+  if(v){
+    els.dlMp4.href = v.download_url || v.mp4_url || v.display_url;
+    if(v.zip_download_url || v.zip_url){
+      els.dlZip.hidden = false;
+      els.dlZip.href = v.zip_download_url || v.zip_url;
+    }else{
+      els.dlZip.hidden = true;
+    }
+  }
+  els.dlPage.hidden = !!v;
+  els.dlAll.hidden = !!v || data.media_count <= 1;
+  if(!els.dlAll.hidden) els.dlAll.textContent = `⬇ 下載全部 ${data.media_count} 頁`;
+
+  /* 縮圖膠卷 */
+  buildFilm(data);
+
+  /* R-18 遮罩 */
+  els.gate.hidden = !(data.x_restrict > 0);
+
+  showPage(0);
+  els.art.classList.add("on");
+  requestAnimationFrame(()=>{
+    /* 說明是否需要「展開」按鈕 */
+    if(els.desc.scrollHeight > els.desc.clientHeight + 8){
+      els.desc.classList.add("fade");
+      els.descToggle.classList.add("on");
+    }
+    els.art.scrollIntoView({behavior:"smooth", block:"start"});
+  });
+}
+
+function buildFilm(data){
+  els.film.innerHTML = "";
+  const multi = !data.is_ugoira && data.media.length > 1;
+  els.film.classList.toggle("on", multi);
+  if(!multi) return;
+  data.media.forEach((m,i)=>{
+    const b = document.createElement("button");
+    b.setAttribute("role","tab");
+    b.title = m.label || `第 ${i+1} 頁`;
+    const img = document.createElement("img");
+    img.loading = "lazy"; img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    img.alt = ""; img.src = m.thumb_url || m.display_url;
+    img.onerror = ()=>{ img.remove(); b.textContent = String(i+1); };
+    b.appendChild(img);
+    b.addEventListener("click", ()=>showPage(i));
+    els.film.appendChild(b);
+  });
+}
+
+/* 顯示第 i 頁（同時更新舞台、徽章、直書條、下載鍵、膠卷高亮） */
+function showPage(i){
+  const data = state.data; if(!data) return;
+  const total = data.media.length;
+  state.page = Math.max(0, Math.min(i, total - 1));
+  const item = data.media[state.page];
+
+  /* 清空舞台（保留覆蓋元素） */
+  [...els.stage.querySelectorAll("img,video")].forEach(n=>n.remove());
+
+  if(item.type === "video"){
+    const vid = document.createElement("video");
+    vid.controls = true; vid.autoplay = true; vid.loop = true; vid.muted = true;
+    vid.playsInline = true; vid.preload = "metadata";
+    if(item.poster_url) vid.poster = item.poster_url;
+    vid.src = item.display_url;               /* 注意：不可設定 crossOrigin（phixiv 無 CORS 標頭，設定會直接無法播放） */
+    els.stage.appendChild(vid);
+  }else{
+    const img = document.createElement("img");
+    img.alt = `${data.title} — ${item.label || ""}`;
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    img.src = item.display_url;
+    /* phixiv 圖片代理故障時 → 退回本站 Worker 代理原圖 */
+    img.onerror = ()=>{
+      if(img.dataset.fb) return;
+      img.dataset.fb = "1";
+      if(item.original_url && apiConfigured()){
+        img.src = `${apiBase()}/?media=${encodeURIComponent(item.original_url)}`;
+      }
+    };
+    img.addEventListener("click", ()=>openLightbox());
+    els.stage.appendChild(img);
+  }
+
+  const multi = total > 1 && !data.is_ugoira;
+  els.pgBadge.hidden = !multi;
+  els.prevBtn.hidden = els.nextBtn.hidden = !multi;
+  if(multi){
+    els.pgBadge.textContent = `${state.page+1} ／ ${total}`;
+    els.prevBtn.disabled = state.page === 0;
+    els.nextBtn.disabled = state.page === total-1;
+  }
+  const pgText = data.is_ugoira ? "動態插畫"
+               : total > 1 ? `第${toCjk(state.page+1)}頁・全${toCjk(total)}頁`
+               : "單頁作品";
+  els.spinePg.textContent = pgText;
+  els.spinePgM.textContent = data.is_ugoira ? "動態插畫" : total > 1 ? `${state.page+1} / ${total} 頁` : "單頁";
+
+  if(item.type !== "video"){
+    els.dlPage.href = item.download_url || item.original_url || item.display_url;
+    els.dlPage.textContent = total > 1 ? `⬇ 下載第 ${state.page+1} 頁原圖` : "⬇ 下載原圖";
+  }
+
+  [...els.film.children].forEach((b,idx)=>b.classList.toggle("cur", idx === state.page));
+  const cur = els.film.children[state.page];
+  if(cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
+
+  if(!els.lightbox.classList.contains("on")) return;
+  syncLightbox();
+}
+
+/* ── 燈箱 ── */
+function openLightbox(){
+  if(!state.data || state.data.is_ugoira) return;
+  els.lightbox.classList.add("on");
+  document.body.style.overflow = "hidden";
+  syncLightbox();
+}
+function syncLightbox(){
+  const data = state.data; if(!data) return;
+  const item = data.media[state.page];
+  els.lbImg.src = item.display_url;
+  els.lbImg.onerror = ()=>{
+    if(els.lbImg.dataset.fb === item.display_url) return;
+    els.lbImg.dataset.fb = item.display_url;
+    if(item.original_url && apiConfigured())
+      els.lbImg.src = `${apiBase()}/?media=${encodeURIComponent(item.original_url)}`;
+  };
+  const multi = data.media.length > 1;
+  els.lbPrev.hidden = els.lbNext.hidden = !multi;
+  els.lbCount.textContent = multi ? `${state.page+1} ／ ${data.media.length}` : "";
+}
+function closeLightbox(){
+  els.lightbox.classList.remove("on");
+  document.body.style.overflow = "";
+}
+
+/* ── 下載全部（逐頁觸發瀏覽器下載）── */
+async function downloadAll(){
+  const data = state.data; if(!data) return;
+  const items = data.media.filter(m=>m.type === "photo");
+  if(items.length > 12 && !confirm(`即將連續下載 ${items.length} 個檔案，瀏覽器可能會詢問是否允許多重下載。繼續嗎？`)) return;
+  toast(`開始下載 ${items.length} 個檔案…`);
+  for(const m of items){
+    const aEl = document.createElement("a");
+    aEl.href = m.download_url || m.original_url;
+    aEl.download = m.filename || "";
+    document.body.appendChild(aEl); aEl.click(); aEl.remove();
+    await new Promise(r=>setTimeout(r, 420));
+  }
+}
+
+/* ── 最近查詢 ── */
+function readRecent(){
+  try{ return JSON.parse(store.get(RECENT_KEY) || "[]"); }catch(_){ return []; }
+}
+function pushRecent(data){
+  const list = readRecent().filter(x=>x.id !== data.id);
+  list.unshift({ id:data.id, title:(data.title || "").slice(0,20) });
+  store.set(RECENT_KEY, JSON.stringify(list.slice(0,8)));
+  renderRecent();
+}
+function renderRecent(){
+  const list = readRecent();
+  els.recentRow.hidden = list.length === 0;
+  els.recentChips.innerHTML = "";
+  list.forEach(x=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = x.title ? `${x.title}` : `#${x.id}`;
+    b.title = `#${x.id}`;
+    b.addEventListener("click", ()=>{ els.q.value = x.id; lookup(x.id); });
+    els.recentChips.appendChild(b);
+  });
+}
+
+/* ── 通知 ── */
+function showErr(msg){ els.noticeErr.textContent = msg; els.noticeErr.classList.add("on"); }
+function showInfo(msg){ els.noticeInfo.textContent = msg; els.noticeInfo.classList.add("on"); }
+function hideNotices(){ els.noticeErr.classList.remove("on"); els.noticeInfo.classList.remove("on"); }
+
+/* ── 事件繫結 ── */
+els.goBtn.addEventListener("click", ()=>lookup(els.q.value));
+els.q.addEventListener("keydown", e=>{ if(e.key === "Enter") lookup(els.q.value); });
+els.pasteBtn.addEventListener("click", async ()=>{
+  try{
+    const t = await navigator.clipboard.readText();
+    if(t){ els.q.value = t.trim(); lookup(t); }
+  }catch(_){ els.q.focus(); toast("瀏覽器未授權讀取剪貼簿，請手動貼上"); }
+});
+document.querySelectorAll(".chip[data-id]").forEach(b=>{
+  b.addEventListener("click", ()=>{ els.q.value = b.dataset.id; lookup(b.dataset.id); });
+});
+els.recentClear.addEventListener("click", ()=>{ store.del(RECENT_KEY); renderRecent(); });
+
+els.prevBtn.addEventListener("click", ()=>showPage(state.page-1));
+els.nextBtn.addEventListener("click", ()=>showPage(state.page+1));
+els.lbPrev.addEventListener("click", ()=>showPage(state.page-1));
+els.lbNext.addEventListener("click", ()=>showPage(state.page+1));
+els.lbClose.addEventListener("click", closeLightbox);
+els.lightbox.addEventListener("click", e=>{ if(e.target === els.lightbox) closeLightbox(); });
+
+document.addEventListener("keydown", e=>{
+  if(e.target === els.q) return;
+  if(e.key === "Escape"){ closeLightbox(); els.convertModal.classList.remove("on"); return; }
+  if(!state.data) return;
+  if(e.key === "ArrowLeft") showPage(state.page-1);
+  if(e.key === "ArrowRight") showPage(state.page+1);
+});
+
+els.gateBtn.addEventListener("click", ()=>{ state.revealed = true; els.gate.hidden = true; });
+els.descToggle.addEventListener("click", ()=>{
+  const open = els.desc.classList.toggle("open");
+  els.descToggle.textContent = open ? "▴ 收合" : "▾ 展開全文";
+});
+
+els.copyPhixiv.addEventListener("click", ()=>{
+  const d = state.data; if(!d) return;
+  const page = (!d.is_ugoira && d.media.length > 1 && state.page > 0) ? `/${state.page+1}` : "";
+  copyText(`${d.phixiv_url || PHIXIV_HOST + "/artworks/" + d.id}${page}`, "已複製 Phixiv 連結 — 貼到 Discord 即會展開圖片");
+});
+els.copyPixiv.addEventListener("click", ()=>{
+  const d = state.data; if(!d) return;
+  copyText(d.original_url || `https://www.pixiv.net/artworks/${d.id}`, "已複製 Pixiv 網址");
+});
+els.dlAll.addEventListener("click", downloadAll);
+els.convertBtn.addEventListener("click", ()=>els.convertModal.classList.add("on"));
+els.convertClose.addEventListener("click", ()=>els.convertModal.classList.remove("on"));
+els.convertModal.addEventListener("click", e=>{ if(e.target === els.convertModal) els.convertModal.classList.remove("on"); });
+
+els.apiChange.addEventListener("click", ()=>{
+  const cur = store.get(WORKER_KEY) || "";
+  const v = prompt("輸入 Worker 網址（留空 = 回復為程式內建 WORKER_URL）：", cur);
+  if(v === null) return;
+  if(v.trim() === ""){ store.del(WORKER_KEY); }
+  else if(/^https?:\/\//.test(v.trim())){ store.set(WORKER_KEY, v.trim().replace(/\/$/,"")); }
+  else { toast("網址需以 http(s):// 開頭"); return; }
+  refreshApiHost(); toast("已更新 API 來源");
+});
+
+/* ── 夜櫻花瓣（尊重「減少動態」設定；分頁隱藏時暫停）── */
+(function petals(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("petals"), ctx = cv.getContext("2d");
+  let W, H, list = [];
+  const COUNT = innerWidth < 640 ? 8 : 15;
+  function resize(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+  function spawn(init){
+    return {
+      x: Math.random()*W,
+      y: init ? Math.random()*H : -20,
+      s: 5 + Math.random()*6,
+      vy: .35 + Math.random()*.6,
+      vx: -.25 + Math.random()*.5,
+      rot: Math.random()*Math.PI*2,
+      vr: -.012 + Math.random()*.024,
+      sway: Math.random()*Math.PI*2,
+      hue: Math.random() < .3 ? "rgba(244,234,240," : "rgba(242,165,189,",
+      op: .35 + Math.random()*.4,
+    };
+  }
+  function drawPetal(p){
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.hue + p.op + ")";
+    ctx.beginPath();
+    ctx.moveTo(0, -p.s);
+    ctx.bezierCurveTo(p.s*.9, -p.s*.4, p.s*.6, p.s*.7, 0, p.s);
+    ctx.bezierCurveTo(-p.s*.6, p.s*.7, -p.s*.9, -p.s*.4, 0, -p.s);
+    ctx.fill();
+    ctx.restore();
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<list.length;i++){
+      const p = list[i];
+      p.sway += .012;
+      p.x += p.vx + Math.sin(p.sway)*.35;
+      p.y += p.vy;
+      p.rot += p.vr;
+      if(p.y > H+24 || p.x < -30 || p.x > W+30) list[i] = spawn(false);
+      drawPetal(p);
+    }
+    if(!document.hidden) requestAnimationFrame(tick);
+  }
+  document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) requestAnimationFrame(tick); });
+  addEventListener("resize", resize);
+  resize();
+  list = Array.from({length:COUNT}, ()=>spawn(true));
+  requestAnimationFrame(tick);
+})();
+
+/* ── 初始化 ── */
+refreshApiHost();
+renderRecent();
+(function initFromUrl(){
+  const sp = new URLSearchParams(location.search);
+  const q = sp.get("id") || sp.get("url");
+  if(q){ els.q.value = q; lookup(q); }
+})();
+</script>
+</body>
+</html>
