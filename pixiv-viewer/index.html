@@ -35,6 +35,7 @@
   --shadow:0 18px 50px rgba(5,2,14,.55);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}   /* 讓 hidden 屬性永遠優先於各 class 的 display 設定 */
 html{scrollbar-color:#3a2f52 transparent}
 body{
   font-family:var(--body);
@@ -107,7 +108,8 @@ button{font-family:inherit}
 .btn-ghost{background:transparent}
 .btn-sm{padding:7px 12px;font-size:.82rem;border-radius:9px}
 
-.chip-rows{margin:16px 4px 34px;display:flex;flex-direction:column;gap:9px;font-size:.84rem}
+.chip-rows{margin:14px 4px 20px;display:flex;flex-direction:column;gap:9px;font-size:.84rem}
+.chip-rows:empty,.chip-row[hidden]{margin:0}
 .chip-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .chip-row .lbl{color:var(--ink-dim);letter-spacing:.2em;flex:none}
 .chip{
@@ -349,12 +351,6 @@ footer button:hover{color:var(--kin)}
   </div>
 
   <div class="chip-rows">
-    <div class="chip-row">
-      <span class="lbl">試玩</span>
-      <button class="chip" data-id="118320473">🌀 Ugoira 動圖</button>
-      <button class="chip" data-id="124748386">📖 多頁作品</button>
-      <button class="chip" data-id="1903">🖌️ 經典單圖</button>
-    </div>
     <div class="chip-row" id="recentRow" hidden>
       <span class="lbl">最近</span>
       <span id="recentChips" style="display:contents"></span>
@@ -871,9 +867,6 @@ els.pasteBtn.addEventListener("click", async ()=>{
     const t = await navigator.clipboard.readText();
     if(t){ els.q.value = t.trim(); lookup(t); }
   }catch(_){ els.q.focus(); toast("瀏覽器未授權讀取剪貼簿，請手動貼上"); }
-});
-document.querySelectorAll(".chip[data-id]").forEach(b=>{
-  b.addEventListener("click", ()=>{ els.q.value = b.dataset.id; lookup(b.dataset.id); });
 });
 els.recentClear.addEventListener("click", ()=>{ store.del(RECENT_KEY); renderRecent(); });
 
