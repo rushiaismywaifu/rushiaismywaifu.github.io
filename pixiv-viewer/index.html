@@ -947,6 +947,7 @@ els.apiChange.addEventListener("click", ()=>{
     ctx.fill();
     ctx.restore();
   }
+  let rafId = 0;
   function tick(){
     ctx.clearRect(0,0,W,H);
     for(let i=0;i<list.length;i++){
@@ -958,13 +959,16 @@ els.apiChange.addEventListener("click", ()=>{
       if(p.y > H+24 || p.x < -30 || p.x > W+30) list[i] = spawn(false);
       drawPetal(p);
     }
-    if(!document.hidden) requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
   }
-  document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) requestAnimationFrame(tick); });
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){ cancelAnimationFrame(rafId); rafId = 0; }
+    else if(!rafId){ rafId = requestAnimationFrame(tick); }
+  });
   addEventListener("resize", resize);
   resize();
   list = Array.from({length:COUNT}, ()=>spawn(true));
-  requestAnimationFrame(tick);
+  rafId = requestAnimationFrame(tick);
 })();
 
 /* ── 初始化 ── */
