@@ -1,835 +1,1268 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <meta name="description" content="X / Twitter 推文媒體檢視器:貼上推文連結即可透過 FxTwitter API 檢視並下載高畫質圖片、影片與 GIF。">
-    <meta name="theme-color" content="#15202b">
-    <title>X/Twitter 推文媒體檢視器</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <style>
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="紅葉帖：貼上 X／Twitter 推文連結或推文 ID，即刻檢視推文中的圖片、影片與 GIF，並下載原始畫質檔案。">
+<meta name="theme-color" content="#140d0b">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rushiaismywaifu.github.io/fx-embed/">
+<meta property="og:title" content="紅葉帖 · X 推文媒體">
+<meta property="og:description" content="貼上推文連結，即刻檢視並下載原圖、影片與 GIF。">
+<title>紅葉帖 · X 推文媒體</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M16 22.6 9.65 14.16 13.42 14.85 10.31 8.68 15.01 13.79 16 5 16.99 13.79 21.69 8.68 18.58 14.85 22.35 14.16Z" fill="%23e2603f"/><path d="M16 21.6v6" stroke="%23e8b86d" stroke-width="1.7" stroke-linecap="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 查詢一定會打 API，先把 TLS 交握做掉；媒體主機只做 DNS 預查（不一定用得到） -->
+<link rel="preconnect" href="https://api.fxtwitter.com">
+<link rel="dns-prefetch" href="https://pbs.twimg.com">
+<link rel="dns-prefetch" href="https://video.fxtwitter.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ 🍁 紅葉設計基調 ═══════════════ */
+:root{
+  --night-0:#140d0b;        /* 夜栗最深處 */
+  --night-1:#211310;        /* 卡片底 */
+  --night-2:#2e1c16;        /* 浮層 */
+  --momiji:#e2603f;         /* 楓紅 */
+  --momiji-deep:#c9472c;
+  --kin:#e8b86d;            /* 落金 */
+  --ink:#f6efe9;            /* 月白 */
+  --ink-dim:#b39d92;
+  --line:rgba(226,96,63,.18);
+  --line-kin:rgba(232,184,109,.30);
+  --seal:#b8342a;           /* 印泥朱 */
+  --err:#f4a0a8;
+  --r-lg:18px; --r-md:12px; --r-sm:8px;
+  --serif:"Noto Serif TC","Noto Serif JP",serif;
+  --body:"Zen Maru Gothic","Noto Sans TC",system-ui,sans-serif;
+  --shadow:0 18px 50px rgba(14,4,2,.55);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}   /* 讓 hidden 屬性永遠優先於各 class 的 display 設定 */
+html{scrollbar-color:#4b2e24 transparent}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 520px at 85% -8%, rgba(232,184,109,.10), transparent 62%),
+    radial-gradient(900px 600px at -12% 108%, rgba(226,96,63,.14), transparent 60%),
+    radial-gradient(600px 380px at 50% 118%, rgba(150,58,38,.16), transparent 70%),
+    var(--night-0);
+  min-height:100vh;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+#leaves{position:fixed;inset:0;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 18px 72px}
+a{color:var(--kin)}
+::selection{background:rgba(226,96,63,.35)}
+:focus-visible{outline:2px solid var(--kin);outline-offset:2px;border-radius:4px}
+button{font-family:inherit}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #15202b;
-            color: #e7e9ea;
-            min-height: 100vh;
-            line-height: 1.6;
-        }
+/* ═══════════════ 標題 ═══════════════ */
+.masthead{text-align:center;margin-bottom:30px}
+.brand{display:inline-flex;align-items:center;gap:14px}
+.brand-seal{
+  width:52px;height:52px;border-radius:12px;flex:none;
+  background:linear-gradient(150deg,#d5503a,#9e2a1e);
+  box-shadow:inset 0 0 0 2px rgba(255,236,220,.28), 0 6px 18px rgba(184,52,42,.35);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:900;font-size:1.5rem;color:#ffefe6;
+  transform:rotate(-4deg);
+}
+.brand h1{
+  font-family:var(--serif);font-weight:900;font-size:clamp(1.7rem,5vw,2.3rem);
+  letter-spacing:.14em;line-height:1.25;
+  background:linear-gradient(120deg,var(--ink) 30%,var(--momiji) 75%,var(--kin));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand .en{display:block;font-family:var(--body);font-weight:500;font-size:.72rem;letter-spacing:.42em;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);margin-top:2px}
+.masthead p{color:var(--ink-dim);font-size:.94rem;margin-top:12px}
 
-        .container {
-            max-width: 680px;
-            margin: 0 auto;
-            padding: 24px 16px 60px;
-        }
+/* ═══════════════ 查詢列 ═══════════════ */
+.search{
+  background:linear-gradient(160deg,rgba(46,28,22,.72),rgba(33,19,16,.86));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow);
+  padding:10px;display:flex;gap:8px;
+}
+.search:focus-within{border-color:rgba(226,96,63,.5)}
+.search input{
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  color:var(--ink);font-size:1rem;font-family:inherit;padding:12px 14px;
+}
+.search input::placeholder{color:#7d6559}
+.btn{
+  border:1px solid var(--line);background:var(--night-2);color:var(--ink);
+  border-radius:var(--r-md);padding:11px 16px;font-size:.92rem;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:transform .12s,background .2s,border-color .2s;
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;line-height:1.35;
+}
+.btn:hover{border-color:rgba(226,96,63,.45);background:#3a231b}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-momiji{
+  background:linear-gradient(135deg,var(--momiji-deep),#e07a3c);
+  border-color:transparent;color:#fff;
+  box-shadow:0 6px 20px rgba(226,96,63,.30);
+}
+.btn-momiji:hover{background:linear-gradient(135deg,#e0563a,#ec8b48)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:7px 12px;font-size:.82rem;border-radius:9px}
 
-        header {
-            text-align: center;
-            padding: 32px 0 24px;
-        }
-        header h1 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1d9bf0, #1df0c8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        header p {
-            color: #8899a6;
-            margin-top: 6px;
-            font-size: 0.95rem;
-        }
+.chip-rows{margin:14px 4px 20px;display:flex;flex-direction:column;gap:9px;font-size:.84rem}
+.chip-rows:empty,.chip-row[hidden]{margin:0}
+.chip-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chip-row .lbl{color:var(--ink-dim);letter-spacing:.2em;flex:none}
+.chip{
+  border:1px solid var(--line);background:rgba(46,28,22,.5);color:#e2d3c9;
+  padding:5px 13px;border-radius:999px;cursor:pointer;font-size:.82rem;
+  transition:border-color .2s,color .2s;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.chip:hover{border-color:var(--momiji);color:#fff}
+.chip-clear{border:none;background:none;color:#7d6559;cursor:pointer;font-size:.78rem;text-decoration:underline dotted}
+.chip-clear:hover{color:var(--err)}
 
-        .input-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .input-section input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 2px solid #38444d;
-            background: #192734;
-            color: #e7e9ea;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color .2s;
-        }
-        .input-section input:focus { border-color: #1d9bf0; }
-        .input-section input::placeholder { color: #8899a6; }
+/* ═══════════════ 狀態 ═══════════════ */
+.notice{display:none;border-radius:var(--r-md);padding:15px 18px;margin-bottom:22px;font-size:.92rem;white-space:pre-wrap;animation:rise .3s ease}
+.notice.on{display:block}
+.notice-err{background:rgba(244,160,168,.10);border:1px solid rgba(244,160,168,.45);color:#ffcdd2}
+.notice-info{background:rgba(232,184,109,.08);border:1px solid var(--line-kin);color:#f0dcbb}
 
-        .btn-primary {
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            background: #1d9bf0;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background .2s, transform .1s;
-        }
-        .btn-primary:hover { background: #1a8cd8; }
-        .btn-primary:active { transform: scale(.97); }
-        .btn-primary:disabled { background: #38444d; cursor: not-allowed; }
+.skeleton{display:none;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--night-1)}
+.skeleton.on{display:block}
+.sk-bar{height:14px;border-radius:7px;margin:14px 22px;background:var(--night-2);position:relative;overflow:hidden}
+.sk-stage{height:340px;margin:14px 22px 22px;border-radius:var(--r-md);background:var(--night-2);position:relative;overflow:hidden}
+.sk-bar::after,.sk-stage::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(232,184,109,.14) 50%,transparent 70%);
+  animation:shimmer 1.4s infinite;
+}
+.sk-loadtext{text-align:center;color:var(--ink-dim);font-size:.86rem;padding:0 0 20px}
+.sk-loadtext .leaf-spin{display:inline-block;animation:twirl 1.6s linear infinite;margin-right:6px}
 
-        .error-msg {
-            background: #67000d;
-            border: 1px solid #a1243b;
-            color: #fca5a5;
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            display: none;
-            font-size: .95rem;
-            animation: fadeIn .3s;
-        }
-        .error-msg.visible { display: block; }
+/* ═══════════════ 推文卡 ═══════════════ */
+/* 卡片刻意不用 backdrop-filter：底色已 88–94% 不透明，模糊幾乎看不出來，
+   但背後的落葉動畫會逼瀏覽器每一幀重算整張卡片的模糊層，代價很大。 */
+.art{
+  display:none;position:relative;
+  background:linear-gradient(165deg,rgba(43,25,20,.94),rgba(30,17,14,.97));
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);
+  animation:rise .45s ease;
+}
+.art.on{display:grid;grid-template-columns:58px 1fr}
 
-        .loading { text-align: center; padding: 40px 0; display: none; }
-        .loading.visible { display: block; }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #38444d;
-            border-top-color: #1d9bf0;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-            margin: 0 auto 12px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+/* — 掛軸式直書資訊條 — */
+.spine{
+  border-right:1px solid var(--line-kin);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  display:flex;align-items:center;justify-content:flex-start;gap:16px;
+  padding:26px 0;letter-spacing:.30em;
+  color:var(--kin);font-size:.8rem;user-select:none;
+}
+.spine .no{font-family:var(--serif);font-weight:700}
+.spine .dot{width:5px;height:5px;border-radius:50%;background:var(--momiji);opacity:.75;letter-spacing:0}
+.spine .pg{color:var(--ink-dim)}
+.spine-mobile{display:none;justify-content:space-between;align-items:center;padding:12px 20px 0;color:var(--kin);font-size:.78rem;letter-spacing:.16em}
+.spine-mobile .pg{color:var(--ink-dim)}
 
-        #result { display: none; animation: fadeIn .4s; }
-        #result.visible { display: block; }
+.art-main{min-width:0;padding:22px 24px 26px}
 
-        .card {
-            background: #192734;
-            border: 1px solid #38444d;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
+.byline{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.avatar{
+  width:44px;height:44px;border-radius:50%;flex:none;overflow:hidden;
+  border:1px solid var(--line-kin);background:radial-gradient(circle at 32% 28%,#4a2b21,#2a1712);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:700;font-size:1.15rem;color:var(--kin);
+}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.byline .who{min-width:0}
+.author-name{font-weight:700;font-size:1.02rem}
+.author-name a{color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--line-kin)}
+.author-name a:hover{color:var(--kin)}
+.handle{color:var(--ink-dim);font-size:.82rem;font-weight:400;margin-left:7px}
+.workmeta{color:var(--ink-dim);font-size:.78rem;display:flex;gap:12px;flex-wrap:wrap}
+.seals{margin-left:auto;display:flex;gap:8px}
+.seal{
+  font-family:var(--serif);font-weight:900;font-size:.8rem;line-height:1;
+  padding:7px 8px;border-radius:7px;transform:rotate(3deg);letter-spacing:.1em;
+  background:linear-gradient(150deg,#d5503a,#9e2a1e);color:#ffefe6;
+  box-shadow:inset 0 0 0 1.5px rgba(255,236,220,.3);
+}
+.seal.grey{background:linear-gradient(150deg,#6b5449,#4d3b33);color:#f0e6df;transform:rotate(-3deg)}
 
-        .tweet-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .avatar {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #38444d;
-        }
-        .author-name { font-weight: 700; font-size: 1.05rem; }
-        .author-handle { color: #8899a6; font-size: .9rem; }
-        .tweet-text {
-            font-size: 1rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin-bottom: 14px;
-            line-height: 1.5;
-        }
-        .tweet-date { color: #8899a6; font-size: .85rem; margin-bottom: 12px; }
-        .tweet-stats { display: flex; flex-wrap: wrap; gap: 18px; color: #8899a6; font-size: .9rem; }
-        .tweet-stats span { display: flex; align-items: center; gap: 5px; }
-        .tweet-stats .stat-num { color: #e7e9ea; font-weight: 700; }
+/* — 推文本文（明朝體引文）— */
+.quote{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(1.02rem,2.7vw,1.16rem);line-height:1.9;letter-spacing:.02em;
+  margin:18px 0 6px;padding:2px 2px 2px 26px;position:relative;
+  white-space:pre-wrap;word-break:break-word;
+  max-height:210px;overflow:hidden;transition:max-height .3s ease;
+}
+.quote::before{
+  content:"「";position:absolute;left:-4px;top:-6px;
+  font-size:1.7em;color:var(--kin);opacity:.5;pointer-events:none;
+}
+.quote.open{max-height:2600px;overflow-y:auto}
+.quote.fade:not(.open)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(transparent,rgba(28,16,13,.97))}
+.quote a{color:var(--momiji);text-decoration:none;border-bottom:1px dotted rgba(226,96,63,.5)}
+.quote a:hover{color:var(--kin);border-bottom-color:var(--line-kin)}
+.quote-toggle{display:none;margin:6px auto 0;color:var(--kin);background:none;border:none;cursor:pointer;font-size:.82rem;letter-spacing:.2em}
+.quote-toggle.on{display:block}
+.quote-toggle:hover{color:var(--momiji)}
 
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .badge {
-            background: #1d9bf0;
-            color: #fff;
-            font-size: .75rem;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-weight: 600;
-        }
+/* — 媒體格 — */
+.stage-wrap{position:relative;margin-top:18px}
+.frames{display:grid;gap:9px}
+.frames.n1{grid-template-columns:1fr}
+.frames.n2{grid-template-columns:1fr 1fr}
+.frames.n3,.frames.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.frames.n3 .frame:first-child{grid-row:1 / 3}
+.frame{
+  position:relative;background:#0d0806;overflow:hidden;
+  border:1px solid var(--line);border-radius:var(--r-md);
+  transition:border-color .2s;
+}
+.frame:hover{border-color:rgba(232,184,109,.42)}
+.frame img,.frame video{width:100%;height:100%;object-fit:cover;display:block;min-height:170px;max-height:520px}
+.frame img{cursor:zoom-in}
+.frames.n1 .frame img,.frames.n1 .frame video{max-height:600px;object-fit:contain;background:#0a0605}
+.frame .fno{
+  position:absolute;top:10px;left:10px;z-index:2;pointer-events:none;
+  font-family:var(--serif);font-weight:700;font-size:.74rem;letter-spacing:.14em;
+  color:var(--kin);background:rgba(12,7,5,.75);border:1px solid var(--line-kin);
+  padding:3px 11px;border-radius:999px;
+}
+.fmeta{position:absolute;top:10px;right:10px;z-index:2;display:flex;gap:6px;pointer-events:none}
+.fmeta span{
+  background:rgba(12,7,5,.75);border:1px solid var(--line);color:var(--ink);
+  font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:7px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.fmeta span.warn{color:#f6c76a;border-color:rgba(232,184,109,.45)}
+.fdl{
+  position:absolute;bottom:10px;right:10px;z-index:2;
+  background:rgba(12,7,5,.78);border:1px solid var(--line-kin);color:var(--ink);
+  padding:6px 12px;border-radius:9px;font-size:.8rem;font-weight:600;
+  text-decoration:none;opacity:0;transition:opacity .2s,background .2s;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.fdl:hover{background:rgba(201,71,44,.85);color:#fff}
+.frame:hover .fdl,.frame:focus-within .fdl{opacity:1}
+.frame.vid .fdl{bottom:auto;top:46px;right:10px}
+@media (hover:none){.fdl{opacity:1}}
+.fail{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;padding:24px;color:var(--ink-dim);text-align:center;gap:6px;
+}
+.fail .ico{font-size:1.9rem}
 
-        .no-media {
-            text-align: center;
-            color: #8899a6;
-            padding: 30px 0;
-            font-size: .95rem;
-        }
+.gate{
+  position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;gap:14px;
+  align-items:center;justify-content:center;text-align:center;border-radius:var(--r-md);
+  background:rgba(20,13,11,.6);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+}
+.gate p{font-size:.92rem;color:#ffdfd0;letter-spacing:.1em}
 
-        .media-grid {
-            display: grid;
-            gap: 8px;
-            border-radius: 14px;
-            overflow: hidden;
-        }
-        .media-grid.count-1 { grid-template-columns: 1fr; }
-        .media-grid.count-2 { grid-template-columns: 1fr 1fr; }
-        .media-grid.count-3 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-        .media-grid.count-3 .media-item:first-child { grid-row: 1 / 3; }
-        .media-grid.count-4 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
+.external{margin-top:12px}
+.external iframe{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:var(--r-md)}
 
-        .media-item {
-            position: relative;
-            background: #0d1117;
-            border-radius: 14px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        .media-item img,
-        .media-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            min-height: 160px;
-            max-height: 520px;
-        }
-        .media-grid.count-1 .media-item img,
-        .media-grid.count-1 .media-item video {
-            max-height: 600px;
-            object-fit: contain;
-            background: #000;
-        }
+/* — 標籤 — */
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tags:empty{display:none}
+.tag{
+  font-size:.8rem;color:var(--momiji);text-decoration:none;
+  border:1px solid rgba(226,96,63,.35);border-radius:999px;padding:4px 12px;
+  background:rgba(226,96,63,.07);transition:background .2s,color .2s;
+}
+.tag:hover{background:rgba(226,96,63,.18);color:#ffd8c6}
 
-        /* GIF rendered as <img> */
-        .media-item .gif-img {
-            object-fit: contain;
-            background: #000;
-        }
+/* — 操作列 — */
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px;padding-top:18px;border-top:1px dashed var(--line-kin)}
 
-        .media-overlay {
-            position: absolute;
-            top: 8px; right: 8px;
-            display: flex;
-            gap: 6px;
-        }
-        .media-badge {
-            background: rgba(0,0,0,.72);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            font-size: .75rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 8px;
-        }
-        .btn-download {
-            position: absolute;
-            bottom: 8px; right: 8px;
-            background: rgba(0,0,0,.72);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: .8rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity .2s;
-            text-decoration: none;
-        }
-        .media-item:hover .btn-download { opacity: 1; }
+/* ═══════════════ 燈箱 / Toast ═══════════════ */
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(10,5,3,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:22px}
+.lightbox.on{display:flex}
+.lightbox img{max-width:96vw;max-height:94vh;object-fit:contain;border-radius:6px}
+.lb-x{position:absolute;top:16px;right:18px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(46,28,22,.7);color:#fff;font-size:1.3rem;cursor:pointer;z-index:61}
+.lb-count{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:var(--ink-dim);font-size:.82rem;letter-spacing:.2em}
+.nav-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:61;
+  width:42px;height:58px;border:1px solid var(--line);border-radius:10px;
+  background:rgba(12,7,5,.62);color:var(--momiji);font-size:1.25rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+}
+.nav-arrow:hover{background:rgba(74,43,33,.85)}
+.nav-arrow.prev{left:10px}.nav-arrow.next{right:10px}
 
-        .gif-indicator {
-            position: absolute;
-            bottom: 8px; left: 8px;
-            background: rgba(0,0,0,.72);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            font-size: .75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 8px;
-        }
+#toast{
+  position:fixed;bottom:26px;left:50%;transform:translate(-50%,16px);z-index:80;
+  background:var(--night-2);border:1px solid var(--line-kin);color:var(--ink);
+  padding:10px 20px;border-radius:999px;font-size:.86rem;opacity:0;pointer-events:none;
+  transition:opacity .25s,transform .25s;box-shadow:var(--shadow);max-width:88vw;
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 
-        .url-copy-row { display: flex; gap: 10px; align-items: center; }
-        .url-copy-row input {
-            flex: 1;
-            padding: 10px 14px;
-            border-radius: 10px;
-            border: 1px solid #38444d;
-            background: #0d1117;
-            color: #1d9bf0;
-            font-size: .92rem;
-            outline: none;
-            cursor: text;
-        }
-        .btn-copy {
-            padding: 10px 18px;
-            border-radius: 10px;
-            border: 1px solid #38444d;
-            background: transparent;
-            color: #e7e9ea;
-            font-size: .9rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all .2s;
-        }
-        .btn-copy:hover { background: #22303c; border-color: #1d9bf0; }
-        .btn-copy.copied { background: #00ba7c; border-color: #00ba7c; color: #fff; }
+/* ═══════════════ 說明 / 頁尾 ═══════════════ */
+.deploy{margin-top:44px;border:1px solid var(--line);border-radius:var(--r-lg);background:rgba(33,19,16,.6);overflow:hidden}
+.deploy summary{cursor:pointer;padding:15px 20px;font-size:.9rem;color:var(--ink-dim);letter-spacing:.14em;list-style:none}
+.deploy summary::-webkit-details-marker{display:none}
+.deploy summary::before{content:"🍁 ";}
+.deploy[open] summary{border-bottom:1px dashed var(--line)}
+.deploy .body{padding:18px 22px 22px;font-size:.88rem;color:#ddcec5}
+.deploy ol{padding-left:22px;display:flex;flex-direction:column;gap:9px}
+.deploy code{background:#0d0806;border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:.82em;color:#f7d9c8}
+footer{margin-top:34px;text-align:center;color:#7d6559;font-size:.78rem;letter-spacing:.1em}
+footer a{color:#7d6559;text-decoration:underline dotted}
+footer a:hover{color:var(--kin)}
 
-        .external-media { margin-top: 10px; }
-        .external-media iframe {
-            width: 100%;
-            aspect-ratio: 16/9;
-            border: none;
-            border-radius: 14px;
-        }
+/* ═══════════════ 動畫 / 響應式 / 減少動態 ═══════════════ */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes twirl{to{transform:rotate(360deg)}}
 
-        .lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.92);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            cursor: zoom-out;
-        }
-        .lightbox.visible { display: flex; animation: fadeIn .2s; }
-        .lightbox img {
-            max-width: 95vw;
-            max-height: 95vh;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 16px; right: 16px;
-            background: rgba(255,255,255,.15);
-            border: none;
-            color: #fff;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            font-size: 1.4rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @media (max-width: 500px) {
-            .input-section { flex-direction: column; }
-            .btn-primary { width: 100%; }
-            .tweet-stats { gap: 12px; }
-            .url-copy-row { flex-direction: column; }
-            .btn-copy { width: 100%; text-align: center; }
-        }
-
-        .footer {
-            text-align: center;
-            color: #8899a6;
-            font-size: .8rem;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #38444d;
-        }
-        .footer a { color: #1d9bf0; text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
-    </style>
+@media (max-width:640px){
+  .wrap{padding-top:28px}
+  .search{flex-wrap:wrap}
+  .search input{flex-basis:100%;padding:10px 12px}
+  .search .btn{flex:1;justify-content:center}
+  .art.on{grid-template-columns:1fr}
+  .spine{display:none}
+  .spine-mobile{display:flex}
+  .art-main{padding:16px 16px 22px}
+  .seals{margin-left:0;width:100%}
+  .actions .btn{flex:1 1 46%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  #leaves{display:none}
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>𝕏 推文媒體檢視器</h1>
-            <p>貼上推文連結，即可檢視、下載圖片與影片</p>
-        </header>
+<canvas id="leaves" aria-hidden="true"></canvas>
 
-        <div class="input-section">
-            <input type="text" id="urlInput" placeholder="貼上推文連結，例如 https://x.com/user/status/123456..." autocomplete="off" spellcheck="false">
-            <button class="btn-primary" id="fetchBtn" onclick="handleFetch()">取得媒體</button>
-        </div>
+<div class="wrap">
 
-        <div class="error-msg" id="errorMsg"></div>
+  <!-- ═ 標題 ═ -->
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-seal" aria-hidden="true">楓</span>
+      <h1>紅葉帖<span class="en">X MEDIA VIEWER</span></h1>
+    </div>
+    <p>貼上 X／Twitter 推文連結 —— 即刻檢視圖片・影片・GIF，並下載原始畫質</p>
+  </header>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <div style="color:#8899a6">正在取得推文資料…</div>
-        </div>
+  <!-- ═ 查詢列 ═ -->
+  <div class="search" role="search">
+    <input id="q" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+           placeholder="https://x.com/user/status/… 或推文 ID"
+           aria-label="X 推文連結或推文 ID">
+    <button class="btn btn-ghost" id="pasteBtn" title="從剪貼簿貼上">📋 貼上</button>
+    <button class="btn btn-momiji" id="goBtn">🍁 取得</button>
+  </div>
 
-        <div id="result">
-            <div class="card" id="tweetCard">
-                <div class="tweet-header">
-                    <img class="avatar" id="avatar" alt="avatar" src="">
-                    <div>
-                        <div class="author-name" id="authorName"></div>
-                        <div class="author-handle" id="authorHandle"></div>
-                    </div>
-                </div>
-                <div class="tweet-text" id="tweetText"></div>
-                <div class="tweet-date" id="tweetDate"></div>
-                <div class="tweet-stats" id="tweetStats"></div>
-            </div>
+  <div class="chip-rows">
+    <div class="chip-row" id="recentRow" hidden>
+      <span class="lbl">最近</span>
+      <span id="recentChips" style="display:contents"></span>
+      <button class="chip-clear" id="recentClear">清除</button>
+    </div>
+  </div>
 
-            <div class="card" id="mediaCard">
-                <div class="section-title">
-                    🖼️ 媒體內容 <span class="badge" id="mediaBadge">0</span>
-                </div>
-                <div id="mediaContainer"></div>
-            </div>
+  <!-- ═ 狀態 ═ -->
+  <div id="noticeInfo" class="notice notice-info"></div>
+  <div id="noticeErr"  class="notice notice-err" role="alert"></div>
 
-            <div class="card">
-                <div class="section-title">🔗 原始連結</div>
-                <div class="url-copy-row">
-                    <input type="text" id="originalUrl" readonly>
-                    <button class="btn-copy" id="copyBtn" onclick="copyUrl()">📋 複製</button>
-                </div>
-            </div>
-        </div>
+  <div id="skeleton" class="skeleton" aria-hidden="true">
+    <div class="sk-bar" style="width:44%"></div>
+    <div class="sk-bar" style="width:68%"></div>
+    <div class="sk-stage"></div>
+    <div class="sk-loadtext"><span class="leaf-spin">🍁</span>正在向 FxEmbed 擷取推文資料…</div>
+  </div>
 
-        <div class="footer">
-            Powered by <a href="https://github.com/FxEmbed/FxEmbed" target="_blank" rel="noopener">FxTwitter API</a>
-        </div>
+  <!-- ═ 推文卡 ═ -->
+  <article id="art" class="art" aria-live="polite">
+    <div class="spine" aria-hidden="true">
+      <span class="no" id="spineNo">＠ ——</span>
+      <span class="dot"></span>
+      <span class="pg" id="spinePg">幀</span>
     </div>
 
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-        <img id="lightboxImg" src="" alt="preview">
+    <div class="art-main">
+      <div class="spine-mobile" aria-hidden="true">
+        <span id="spineNoM">＠ ——</span><span class="pg" id="spinePgM"></span>
+      </div>
+
+      <div class="byline">
+        <div class="avatar">
+          <img id="avatarImg" alt="" referrerpolicy="no-referrer" hidden>
+          <span id="avatarTxt">X</span>
+        </div>
+        <div class="who">
+          <div class="author-name" id="authorName">—</div>
+          <div class="workmeta" id="workMeta"></div>
+        </div>
+        <div class="seals" id="seals"></div>
+      </div>
+
+      <blockquote class="quote" id="tweetText"></blockquote>
+      <button class="quote-toggle" id="textToggle">▾ 展開全文</button>
+
+      <div class="stage-wrap" id="stageWrap">
+        <div id="mediaBox"></div>
+        <div class="gate" id="gate" hidden>
+          <p>此推文標記為敏感內容</p>
+          <button class="btn btn-sm" id="gateBtn">顯示媒體</button>
+        </div>
+      </div>
+
+      <div class="tags" id="tags"></div>
+
+      <div class="actions">
+        <button class="btn btn-momiji" id="copyFx" title="貼到 Discord / Telegram 會自動展開媒體預覽">🍁 複製 FxEmbed 連結</button>
+        <button class="btn" id="copyX">複製 X 網址</button>
+        <a class="btn" id="openX" href="#" target="_blank" rel="noopener">X 開啟 ↗</a>
+        <button class="btn" id="dlAll" hidden>⬇ 下載全部</button>
+      </div>
     </div>
+  </article>
 
-    <script>
-    const SUPPORTED_DOMAINS = [
-        'x.com','twitter.com','fixupx.com','fixvx.com',
-        'fxtwitter.com','vxtwitter.com','xcancel.com',
-        'nitter.net','nitter.privacydev.net'
-    ];
-    const API_BASE = 'https://api.fxtwitter.com/i/status/';
+  <!-- ═ 說明 ═ -->
+  <details class="deploy">
+    <summary>支援的連結格式與取檔說明</summary>
+    <div class="body">
+      <ol>
+        <li>支援 <code>x.com</code>、<code>twitter.com</code>、<code>fxtwitter.com</code>、<code>vxtwitter.com</code>、<code>fixupx.com</code>、<code>fixvx.com</code>、<code>xcancel.com</code>、<code>nitter</code> 等網域的 <code>/status/</code> 連結，也可以直接貼推文 ID。</li>
+        <li>圖片下載會自動加上 <code>?name=orig</code> 取回原始畫質；畫面上顯示的則是 <code>large</code> 尺寸以節省流量。</li>
+        <li>影片透過 <code>video.fxtwitter.com</code> 代理播放（帶有 CORS 與 Range 標頭，可正常拖動），下載鍵指向原始 <code>video.twimg.com</code> 檔案。</li>
+        <li>GIF 會轉為真正的 <code>.gif</code>（<code>gif.fxtwitter.com</code>），代理失敗時退回 mp4 循環播放。</li>
+        <li>「複製 FxEmbed 連結」貼到 Discord／Telegram 會直接展開媒體預覽。</li>
+      </ol>
+      <p style="margin-top:12px;color:var(--ink-dim)">受保護帳戶與已刪除的推文無法取得資料。</p>
+    </div>
+  </details>
 
-    const $ = id => document.getElementById(id);
-    const $input       = $('urlInput');
-    const $fetchBtn     = $('fetchBtn');
-    const $error        = $('errorMsg');
-    const $loading      = $('loading');
-    const $result       = $('result');
-    const $avatar       = $('avatar');
-    const $authorName   = $('authorName');
-    const $authorHandle = $('authorHandle');
-    const $tweetText    = $('tweetText');
-    const $tweetDate    = $('tweetDate');
-    const $tweetStats   = $('tweetStats');
-    const $mediaContainer = $('mediaContainer');
-    const $mediaBadge   = $('mediaBadge');
-    const $originalUrl  = $('originalUrl');
-    const $copyBtn      = $('copyBtn');
-    const $lightbox     = $('lightbox');
-    const $lightboxImg  = $('lightboxImg');
+  <footer>
+    紅葉帖 — 資料來源 X／<a href="https://github.com/FxEmbed/FxEmbed" target="_blank" rel="noopener">FxEmbed</a>・僅供個人預覽收藏之用
+  </footer>
+</div>
 
-    $input.addEventListener('keydown', e => { if (e.key === 'Enter') handleFetch(); });
+<!-- ═ 燈箱 ═ -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-x" id="lbClose" aria-label="關閉">×</button>
+  <button class="nav-arrow prev" id="lbPrev" aria-label="上一張" hidden>‹</button>
+  <img id="lbImg" alt="全螢幕預覽" referrerpolicy="no-referrer">
+  <button class="nav-arrow next" id="lbNext" aria-label="下一張" hidden>›</button>
+  <span class="lb-count" id="lbCount"></span>
+</div>
 
-    /* ========== URL 轉換工具 ========== */
+<div id="toast" role="status"></div>
 
-    /**
-     * 影片：透過 video.fxtwitter.com 代理 (Cloudflare kitchen-sink proxy)
-     *
-     * 修正重點：
-     *   原本用 `api.fxtwitter.com/2/go?url=...` (只是 302 重新導向到 video.twimg.com)。
-     *   這個 302 重新導向在 <video> 元素上會出問題：
-     *     1. 跨域重新導向的 Range 請求 (用於影片拖動/續傳) 容易被瀏覽器拒絕
-     *     2. 重新導向的中間節點 (/2/go) 沒有正確的 CORS 標頭，部分瀏覽器會出錯
-     *     3. 沒有 Accept-Ranges 標頭，導致影片無法 seek
-     *
-     *   改用 `video.fxtwitter.com`，這是 Cloudflare 的 kitchen-sink proxy，
-     *   會直接代理影片位元組 (不是重新導向)，並加上完整的 CORS 標頭和 Accept-Ranges。
-     *   這也是 FxEmbed 官方在 Telegram bot 等直接播放場景使用的方案。
-     *
-     *   變換規則：
-     *     video.twimg.com/abc.mp4  →  video.fxtwitter.com/abc.mp4
-     */
-    function proxyVideoUrl(url) {
-        if (!url) return url;
-        if (url.includes('video.twimg.com')) {
-            return url.replace(
-                'https://video.twimg.com/',
-                'https://video.fxtwitter.com/'
-            );
+<script>
+/* ════════════════════════════════════════════════════════════════
+   紅葉帖 — X／Twitter 推文媒體檢視器（FxEmbed API）
+   ════════════════════════════════════════════════════════════════ */
+const SUPPORTED_DOMAINS = [
+  'x.com','twitter.com','fixupx.com','fixvx.com',
+  'fxtwitter.com','vxtwitter.com','xcancel.com',
+  'nitter.net','nitter.privacydev.net'
+];
+const API_BASE   = 'https://api.fxtwitter.com/i/status/';
+const FX_HOST    = 'https://fxtwitter.com';
+const RECENT_KEY = 'momiji_recent';
+
+/* ── 小工具 ── */
+const $ = id => document.getElementById(id);
+const els = {
+  q:$("q"), goBtn:$("goBtn"), pasteBtn:$("pasteBtn"),
+  noticeErr:$("noticeErr"), noticeInfo:$("noticeInfo"), skeleton:$("skeleton"),
+  art:$("art"), spineNo:$("spineNo"), spinePg:$("spinePg"), spineNoM:$("spineNoM"), spinePgM:$("spinePgM"),
+  avatarImg:$("avatarImg"), avatarTxt:$("avatarTxt"),
+  authorName:$("authorName"), workMeta:$("workMeta"), seals:$("seals"),
+  tweetText:$("tweetText"), textToggle:$("textToggle"),
+  stageWrap:$("stageWrap"), mediaBox:$("mediaBox"), gate:$("gate"), gateBtn:$("gateBtn"), tags:$("tags"),
+  copyFx:$("copyFx"), copyX:$("copyX"), openX:$("openX"), dlAll:$("dlAll"),
+  lightbox:$("lightbox"), lbImg:$("lbImg"), lbClose:$("lbClose"), lbPrev:$("lbPrev"), lbNext:$("lbNext"), lbCount:$("lbCount"),
+  toast:$("toast"), recentRow:$("recentRow"), recentChips:$("recentChips"), recentClear:$("recentClear"),
+};
+
+/* localStorage 需以 try/catch 包覆（隱私模式或沙盒環境可能拋錯） */
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(_){} },
+};
+
+let toastTimer;
+function toast(msg){
+  els.toast.textContent = msg;
+  els.toast.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>els.toast.classList.remove("on"), 2200);
+}
+async function copyText(text, okMsg){
+  try{ await navigator.clipboard.writeText(text); toast(okMsg); }
+  catch(_){
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast(okMsg); }catch(e){ toast("複製失敗，請手動複製"); }
+    ta.remove();
+  }
+}
+function fmtNum(n){
+  if(n == null) return null;
+  if(n >= 1e8) return (n/1e8).toFixed(1).replace(/\.0$/,"") + "億";
+  if(n >= 1e4) return (n/1e4).toFixed(1).replace(/\.0$/,"") + "萬";
+  return n.toLocaleString("zh-TW");
+}
+function fmtDur(sec){
+  if(!sec) return "";
+  const m = Math.floor(sec/60), s = Math.floor(sec%60);
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+function fmtDate(tweet){
+  /* created_timestamp（unix 秒）最可靠；退回解析 created_at 字串 */
+  let d = null;
+  if(tweet.created_timestamp) d = new Date(tweet.created_timestamp * 1000);
+  else if(tweet.created_at)   d = new Date(tweet.created_at);
+  if(!d || isNaN(d)) return tweet.created_at || null;
+  const hh = String(d.getHours()).padStart(2,"0"), mm = String(d.getMinutes()).padStart(2,"0");
+  return `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日 ${hh}:${mm}`;
+}
+const cjkNum = "〇一二三四五六七八九十";
+function toCjk(n){ // 直書資訊條用的漢字數字（1–99）
+  if(n <= 10) return cjkNum[n] || String(n);
+  if(n < 20)  return "十" + (n%10 ? cjkNum[n%10] : "");
+  if(n < 100) return cjkNum[Math.floor(n/10)] + "十" + (n%10 ? cjkNum[n%10] : "");
+  return String(n);
+}
+
+/* ════════ URL 轉換工具 ════════ */
+
+/**
+ * 圖片尺寸：pbs.twimg.com 支援 ?name=large / orig 等尺寸參數
+ *   顯示用 large（省流量）、下載與燈箱用 orig（原始畫質）
+ */
+function photoSize(url, size){
+  try{
+    const u = new URL(url);
+    if(!/(^|\.)twimg\.com$/.test(u.hostname)) return url;
+    u.searchParams.set("name", size);
+    return u.toString();
+  }catch(_){ return url; }
+}
+
+/**
+ * 影片：透過 video.fxtwitter.com 代理 (Cloudflare kitchen-sink proxy)
+ *
+ * 修正重點：
+ *   原本用 `api.fxtwitter.com/2/go?url=...` (只是 302 重新導向到 video.twimg.com)。
+ *   這個 302 重新導向在 <video> 元素上會出問題：
+ *     1. 跨域重新導向的 Range 請求 (用於影片拖動/續傳) 容易被瀏覽器拒絕
+ *     2. 重新導向的中間節點 (/2/go) 沒有正確的 CORS 標頭，部分瀏覽器會出錯
+ *     3. 沒有 Accept-Ranges 標頭，導致影片無法 seek
+ *
+ *   改用 `video.fxtwitter.com`，這是 Cloudflare 的 kitchen-sink proxy，
+ *   會直接代理影片位元組 (不是重新導向)，並加上完整的 CORS 標頭和 Accept-Ranges。
+ *   這也是 FxEmbed 官方在 Telegram bot 等直接播放場景使用的方案。
+ *
+ *   變換規則：
+ *     video.twimg.com/abc.mp4  →  video.fxtwitter.com/abc.mp4
+ */
+function proxyVideoUrl(url){
+  if(!url) return url;
+  if(url.includes('video.twimg.com')){
+    return url.replace('https://video.twimg.com/', 'https://video.fxtwitter.com/');
+  }
+  return url;
+}
+
+/**
+ * GIF：轉換成真正的 .gif 圖檔
+ * video.twimg.com/tweet_video/XXX.mp4 → gif.fxtwitter.com/tweet_video/XXX.gif
+ */
+function convertGifUrl(url){
+  if(!url) return url;
+  if(url.includes('video.twimg.com/tweet_video/')){
+    return url
+      .replace('https://video.twimg.com/', 'https://gif.fxtwitter.com/')
+      .replace(/\.mp4(\?.*)?$/, '.gif');
+  }
+  // 如果不符合 tweet_video 模式，退回走代理
+  return proxyVideoUrl(url);
+}
+
+/**
+ * 判斷影片是否為 HEVC (H.265) 編碼
+ * HEVC 影片在 Firefox / 部分瀏覽器無法播放
+ * FxTwitter API 理論上會過濾掉 HEVC，但保險起見做最後檢查
+ */
+function isHevc(url){
+  if(!url) return false;
+  return /[?&,]tag=\d+.*hevc|\/hevc\/|\.hevc/i.test(url) || url.toLowerCase().includes('hevc');
+}
+
+/* ── 解析推文 ID ── */
+function extractTweetId(input){
+  const trimmed = String(input).trim();
+  if(/^\d{10,}$/.test(trimmed)) return trimmed;
+  try{
+    const url = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed);
+    const host = url.hostname.replace(/^www\./, '');
+    if(!SUPPORTED_DOMAINS.some(d => host === d || host.endsWith('.' + d))) return null;
+    const match = url.pathname.match(/\/status(?:es)?\/(\d+)/);
+    return match ? match[1] : null;
+  }catch(_){ return null; }
+}
+
+/* ── 狀態 ── */
+const state = { tweet:null, items:[], viewable:[], lb:0 };
+let busy = false;                       /* 防止連按 Enter 造成兩次渲染交錯 */
+const TIMEOUT_MS = 15000;
+
+/* ════════ 查詢主流程 ════════ */
+async function lookup(raw){
+  if(busy) return;
+  hideNotices();
+  if(!String(raw).trim()){ showErr("⚠️ 請輸入推文連結或推文 ID"); return; }
+  const id = extractTweetId(raw);
+  if(!id){ showErr("⚠️ 無法辨識的連結格式，請確認網址是否正確（或直接貼上推文 ID）"); return; }
+
+  busy = true;
+  els.art.classList.remove("on");
+  els.skeleton.classList.add("on");
+  els.goBtn.disabled = true;
+
+  /* API 沒回應時不能讓骨架轉到天荒地老 */
+  const ctrl = new AbortController();
+  const killer = setTimeout(()=>ctrl.abort(), TIMEOUT_MS);
+
+  try{
+    const resp = await fetch(API_BASE + id, { signal:ctrl.signal });
+    let data = null;
+    try{ data = await resp.json(); }catch(_){}
+    if(!data || data.code !== 200 || !data.tweet){
+      const errMap = {
+        'PRIVATE_TWEET': '🔒 此推文來自受保護的帳戶，無法存取',
+        'NOT_FOUND':     '❌ 找不到此推文，可能已被刪除',
+        'API_FAIL':      '⚠️ API 暫時無法使用，請稍後再試'
+      };
+      const e = new Error((data && errMap[data.message]) || `⚠️ 取得推文失敗（${(data && data.message) || 'HTTP ' + resp.status}）`);
+      e.friendly = true;   /* 已是可直接顯示的訊息，不要被下方的網路錯誤蓋掉 */
+      throw e;
+    }
+    render(data.tweet);
+    pushRecent(data.tweet);
+    try{ history.replaceState(null, "", `?id=${data.tweet.id || id}`); }catch(_){}
+  }catch(err){
+    console.error(err);
+    showErr(err.friendly ? err.message
+          : err.name === "AbortError" ? `⚠️ 等候超過 ${TIMEOUT_MS/1000} 秒仍無回應，請稍後再試`
+          : "⚠️ 網路錯誤，請檢查連線後重試");
+  }finally{
+    clearTimeout(killer);
+    els.skeleton.classList.remove("on");
+    els.goBtn.disabled = false;
+    busy = false;
+  }
+}
+
+/* ── 把 #標籤 / @提及 / 網址 轉成連結（以 DOM API 建構，不碰 innerHTML）── */
+function linkify(text, into){
+  const re = /(https?:\/\/[^\s]+)|[@＠]([A-Za-z0-9_]{1,15})|[#＃]([\p{L}\p{N}_]+)/gu;
+  const hashtags = [];
+  let last = 0, m;
+  while((m = re.exec(text)) !== null){
+    if(m.index > last) into.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const a = document.createElement("a");
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+    if(m[1]){
+      a.href = m[1];
+      a.textContent = m[1].replace(/^https?:\/\//,"").replace(/\/$/,"");
+    }else if(m[2]){
+      a.href = `https://x.com/${m[2]}`;
+      a.textContent = m[0];
+    }else{
+      a.href = `https://x.com/hashtag/${encodeURIComponent(m[3])}`;
+      a.textContent = m[0];
+      if(!hashtags.includes(m[3])) hashtags.push(m[3]);
+    }
+    into.appendChild(a);
+    last = re.lastIndex;
+  }
+  if(last < text.length) into.appendChild(document.createTextNode(text.slice(last)));
+  return hashtags;
+}
+
+/* ════════ 畫面渲染 ════════ */
+function render(tweet){
+  state.tweet = tweet;
+
+  const a = tweet.author || {};
+  const handle = a.screen_name ? `@${a.screen_name}` : "";
+
+  /* 直書資訊條（頁數在 renderMedia 內補上） */
+  els.spineNo.textContent  = handle || `№ ${tweet.id}`;
+  els.spineNoM.textContent = handle || `№ ${tweet.id}`;
+
+  /* 頭像 */
+  els.avatarTxt.textContent = (a.name || "X").trim().charAt(0) || "X";
+  if(a.avatar_url){
+    els.avatarImg.hidden = false;
+    els.avatarTxt.hidden = true;
+    els.avatarImg.src = a.avatar_url;
+    els.avatarImg.onerror = ()=>{ els.avatarImg.hidden = true; els.avatarTxt.hidden = false; };
+  }else{
+    els.avatarImg.hidden = true;
+    els.avatarTxt.hidden = false;
+  }
+
+  /* 作者列 */
+  els.authorName.innerHTML = "";
+  const nameNode = document.createElement(a.screen_name ? "a" : "span");
+  if(a.screen_name){
+    nameNode.href = `https://x.com/${a.screen_name}`;
+    nameNode.target = "_blank"; nameNode.rel = "noopener";
+  }
+  nameNode.textContent = a.name || "未知使用者";
+  els.authorName.appendChild(nameNode);
+  if(handle){
+    const h = document.createElement("span");
+    h.className = "handle"; h.textContent = handle;
+    els.authorName.appendChild(h);
+  }
+
+  /* 日期・數據列 */
+  els.workMeta.innerHTML = "";
+  const bits = [];
+  const dt = fmtDate(tweet); if(dt) bits.push(dt);
+  const lk = fmtNum(tweet.likes),    rt = fmtNum(tweet.retweets),
+        rp = fmtNum(tweet.replies),  vw = fmtNum(tweet.views);
+  if(lk) bits.push(`❤ ${lk}`);
+  if(rt) bits.push(`🔁 ${rt}`);
+  if(rp) bits.push(`💬 ${rp}`);
+  if(vw) bits.push(`👁 ${vw}`);
+  bits.forEach(t=>{
+    const s = document.createElement("span"); s.textContent = t; els.workMeta.appendChild(s);
+  });
+
+  /* 印章徽記 */
+  els.seals.innerHTML = "";
+  const addSeal = (txt, grey, title)=>{
+    const s = document.createElement("span");
+    s.className = "seal" + (grey ? " grey" : "");
+    s.textContent = txt; if(title) s.title = title;
+    els.seals.appendChild(s);
+  };
+
+  /* 推文本文 */
+  els.tweetText.innerHTML = "";
+  const text = (tweet.text || "").trim();
+  els.tweetText.hidden = !text;
+  els.textToggle.classList.remove("on");
+  els.textToggle.textContent = "▾ 展開全文";
+  els.tweetText.classList.remove("open","fade");
+  const hashtags = text ? linkify(text, els.tweetText) : [];
+
+  /* 標籤列 */
+  els.tags.innerHTML = "";
+  hashtags.forEach(name=>{
+    const el = document.createElement("a");
+    el.className = "tag";
+    el.href = `https://x.com/hashtag/${encodeURIComponent(name)}`;
+    el.target = "_blank"; el.rel = "noopener";
+    el.textContent = `#${name}`;
+    els.tags.appendChild(el);
+  });
+
+  /* 連結類操作 */
+  const xUrl = tweet.url || `https://x.com/i/status/${tweet.id}`;
+  els.openX.href = xUrl;
+
+  /* 媒體 */
+  const counts = renderMedia(tweet.media);
+  if(counts.video) addSeal("影", false, "含影片");
+  if(counts.gif)   addSeal("動", false, "含 GIF 動圖");
+  if(tweet.possibly_sensitive) addSeal("敏", false, "標記為敏感內容");
+  if(tweet.replying_to) addSeal("覆", true, `回覆 @${tweet.replying_to}`);
+
+  /* 敏感內容遮罩 */
+  els.stageWrap.hidden = counts.total === 0 && !counts.external;
+  els.gate.hidden = !(tweet.possibly_sensitive && counts.total > 0);
+
+  /* 下載全部 */
+  els.dlAll.hidden = state.items.length <= 1;
+  if(!els.dlAll.hidden) els.dlAll.textContent = `⬇ 下載全部 ${state.items.length} 幀`;
+
+  if(counts.total === 0 && !counts.external){
+    showInfo("此推文不含媒體內容 —— 以下僅顯示文字。");
+  }
+
+  els.art.classList.add("on");
+  requestAnimationFrame(()=>{
+    /* 本文是否需要「展開」按鈕 */
+    if(els.tweetText.scrollHeight > els.tweetText.clientHeight + 8){
+      els.tweetText.classList.add("fade");
+      els.textToggle.classList.add("on");
+    }
+    els.art.scrollIntoView({behavior:"smooth", block:"start"});
+  });
+}
+
+/* ════════ 媒體渲染 ════════ */
+function renderMedia(media){
+  els.mediaBox.innerHTML = "";
+  state.items = [];
+  state.viewable = [];
+
+  const counts = { photo:0, gif:0, video:0, total:0, external:false };
+  if(!media){ updateSpinePg(counts); return counts; }
+
+  let items = [];
+  if(media.all && media.all.length > 0) items = media.all;
+  else{
+    if(media.photos) items.push(...media.photos);
+    if(media.videos) items.push(...media.videos);
+  }
+  counts.external = !!media.external;
+
+  /* 認得的型別才進版面，免得未知型別留下一個空框、也免得幀序跳號 */
+  items = items.filter(m => m && (m.type === "photo" || m.type === "gif" || m.type === "video"));
+  if(items.length === 0){ updateSpinePg(counts); return counts; }
+
+  const grid = document.createElement("div");
+  grid.className = `frames n${Math.min(items.length, 4)}`;
+
+  /* 圖片可用鍵盤開啟燈箱（原本只吃滑鼠點擊） */
+  const asButton = (img, i, label)=>{
+    img.tabIndex = 0;
+    img.setAttribute("role", "button");
+    img.setAttribute("aria-label", `放大檢視${label}`);
+    img.addEventListener("click", ()=>openLightbox(i));
+    img.addEventListener("keydown", e=>{
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openLightbox(i); }
+    });
+  };
+
+  items.forEach((item, idx)=>{
+    const wrap = document.createElement("div");
+    wrap.className = "frame";
+
+    /* 幀序（多幀時才顯示） */
+    if(items.length > 1){
+      const no = document.createElement("span");
+      no.className = "fno";
+      no.textContent = `第${toCjk(idx+1)}幀`;
+      wrap.appendChild(no);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "fmeta";
+    const badge = txt=>{ const s = document.createElement("span"); s.textContent = txt; meta.appendChild(s); return s; };
+
+    const dl = document.createElement("a");
+    dl.className = "fdl";
+    dl.target = "_blank"; dl.rel = "noopener";
+    dl.addEventListener("click", e=>e.stopPropagation());
+
+    if(item.type === "photo"){
+      /* ═══ 圖片 ═══ */
+      counts.photo++;
+      const showUrl = photoSize(item.url, "large");
+      const origUrl = photoSize(item.url, "orig");
+
+      const img = document.createElement("img");
+      img.src = showUrl;
+      img.alt = `圖片 ${idx+1}`;
+      /* 媒體就是這頁的主體，最多四張 —— 不做 lazy（會多等一輪版面計算才開始下載） */
+      img.decoding = "async";
+      if(idx === 0) img.setAttribute("fetchpriority", "high");
+      img.referrerPolicy = "no-referrer";
+      /* large 取不到時退回原始 URL */
+      img.onerror = ()=>{ if(!img.dataset.fb){ img.dataset.fb = "1"; img.src = item.url; } };
+      const viewIdx = state.viewable.length;
+      state.viewable.push({ src:origUrl, fb:showUrl, label:`圖片 ${idx+1}` });
+      asButton(img, viewIdx, `圖片 ${idx+1}`);
+      wrap.appendChild(img);
+
+      if(item.width && item.height) badge(`${item.width}×${item.height}`);
+      dl.href = origUrl;
+      dl.download = "";
+      dl.textContent = "⬇ 下載原圖";
+      state.items.push({ url:origUrl, kind:"photo" });
+
+    }else if(item.type === "gif"){
+      /* ═══ GIF：轉成真正 .gif 用 <img> 顯示 ═══ */
+      counts.gif++;
+      const gifUrl = convertGifUrl(item.url);
+      const isRealGif = gifUrl.endsWith(".gif");
+
+      if(isRealGif){
+        const img = document.createElement("img");
+        img.src = gifUrl;
+        img.alt = "GIF";
+        img.decoding = "async";
+        img.referrerPolicy = "no-referrer";
+        const viewIdx = state.viewable.length;
+        state.viewable.push({ src:gifUrl, label:"GIF" });
+        asButton(img, viewIdx, " GIF");
+        wrap.appendChild(img);
+      }else{
+        /* 退回 <video> (代理後的 mp4) */
+        wrap.classList.add("vid");
+        const video = document.createElement("video");
+        video.src = gifUrl;
+        video.poster = item.thumbnail_url || "";
+        video.autoplay = true; video.loop = true; video.muted = true;
+        video.playsInline = true;
+        video.setAttribute("playsinline", "");
+        wrap.appendChild(video);
+      }
+
+      badge("GIF");
+      if(item.width && item.height) badge(`${item.width}×${item.height}`);
+      dl.href = gifUrl;
+      dl.textContent = "⬇ 下載 GIF";
+      state.items.push({ url:gifUrl, kind:"gif" });
+
+    }else if(item.type === "video"){
+      /* ═══ 影片：透過 video.fxtwitter.com 代理播放 ═══ */
+      counts.video++;
+      wrap.classList.add("vid");
+      const originalUrl = item.url;
+      const proxyUrl = proxyVideoUrl(originalUrl);
+
+      const video = document.createElement("video");
+      video.src = proxyUrl;
+      video.poster = item.thumbnail_url || "";
+      video.controls = true;
+      video.preload = "metadata";
+      video.playsInline = true;
+      video.setAttribute("playsinline", "");
+      // 使用 crossorigin 確保 Range / 拖動行為正常
+      video.crossOrigin = "anonymous";
+
+      // 載入失敗時的處理：先嘗試直接 URL，再給使用者手動開啟
+      let triedDirect = false;
+      video.onerror = ()=>{
+        if(!triedDirect){
+          triedDirect = true;
+          // 代理失敗時，嘗試用 video.twimg.com 原始 URL
+          video.removeAttribute("crossOrigin");
+          video.src = originalUrl;
+          return;
         }
-        return url;
+        // 兩種方式都失敗（以 DOM API 建構，避免將 API URL 插入 innerHTML）
+        wrap.textContent = "";
+        const fail = document.createElement("div");
+        fail.className = "fail";
+        const ico = document.createElement("div"); ico.className = "ico"; ico.textContent = "⚠️";
+        const msg = document.createElement("div"); msg.textContent = "影片無法播放";
+        const link = document.createElement("a");
+        link.href = originalUrl; link.target = "_blank"; link.rel = "noopener";
+        link.textContent = "在新分頁開啟";
+        fail.append(ico, msg, link);
+        wrap.appendChild(fail);
+      };
+      wrap.appendChild(video);
+
+      let label = "VIDEO";
+      if(item.duration) label += ` ${fmtDur(item.duration)}`;
+      badge(label);
+      if(item.width && item.height) badge(`${item.width}×${item.height}`);
+      if(isHevc(originalUrl)) badge("⚠ HEVC").className = "warn";
+
+      // 下載 — 用原始 URL 才能下載到原始 mp4
+      dl.href = originalUrl;
+      dl.textContent = "⬇ 下載影片";
+      state.items.push({ url:originalUrl, kind:"video" });
     }
 
-    /**
-     * GIF：轉換成真正的 .gif 圖檔
-     * video.twimg.com/tweet_video/XXX.mp4 → gif.fxtwitter.com/tweet_video/XXX.gif
-     */
-    function convertGifUrl(url) {
-        if (!url) return url;
-        if (url.includes('video.twimg.com/tweet_video/')) {
-            return url
-                .replace('https://video.twimg.com/', 'https://gif.fxtwitter.com/')
-                .replace(/\.mp4(\?.*)?$/, '.gif');
-        }
-        // 如果不符合 tweet_video 模式，退回走代理
-        return proxyVideoUrl(url);
+    if(meta.childElementCount) wrap.appendChild(meta);
+    if(dl.href) wrap.appendChild(dl);
+    grid.appendChild(wrap);
+  });
+
+  counts.total = counts.photo + counts.gif + counts.video;
+  els.mediaBox.appendChild(grid);
+
+  /* External (YouTube 等) */
+  if(media.external){
+    const ext = media.external;
+    const extDiv = document.createElement("div");
+    extDiv.className = "external";
+    if(ext.type === "video" && ext.url){
+      const yt = ext.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      if(yt){
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube.com/embed/${yt[1]}`;
+        iframe.setAttribute("allowfullscreen", "");
+        extDiv.appendChild(iframe);
+      }else{
+        // 以 DOM API 建構，避免將 API URL 插入 innerHTML
+        const link = document.createElement("a");
+        link.href = ext.url; link.target = "_blank"; link.rel = "noopener";
+        link.className = "btn btn-sm";
+        link.textContent = "🔗 外部媒體連結 ↗";
+        extDiv.appendChild(link);
+      }
+      els.mediaBox.appendChild(extDiv);
     }
+  }
 
-    /**
-     * 判斷影片是否為 HEVC (H.265) 編碼
-     * HEVC 影片在 Firefox / 部分瀏覽器無法播放
-     * FxTwitter API 理論上會過濾掉 HEVC，但保險起見做最後檢查
-     */
-    function isHevc(url) {
-        if (!url) return false;
-        return /[?&,]tag=\d+.*hevc|\/hevc\/|\.hevc/i.test(url)
-            || url.toLowerCase().includes('hevc');
+  updateSpinePg(counts);
+  return counts;
+}
+
+/* 直書條下半段：媒體概況 */
+function updateSpinePg(counts){
+  let txt;
+  if(counts.total > 1)       txt = `全${toCjk(counts.total)}幀`;
+  else if(counts.total === 1) txt = counts.video ? "影片一幀" : counts.gif ? "動圖一幀" : "單幀作品";
+  else                        txt = counts.external ? "外部媒體" : "純文字推文";
+  els.spinePg.textContent  = txt;
+  els.spinePgM.textContent = txt;
+}
+
+/* ════════ 燈箱 ════════ */
+function openLightbox(i){
+  if(!state.viewable.length) return;
+  state.lb = Math.max(0, Math.min(i, state.viewable.length - 1));
+  els.lightbox.classList.add("on");
+  document.body.style.overflow = "hidden";
+  syncLightbox();
+}
+function syncLightbox(){
+  const v = state.viewable[state.lb]; if(!v) return;
+  els.lbImg.src = v.src;
+  els.lbImg.alt = v.label;
+  /* 原始畫質 (?name=orig) 取不到時，退回畫面上已載入的尺寸 */
+  els.lbImg.onerror = ()=>{
+    if(!v.fb || els.lbImg.dataset.fb === v.src) return;
+    els.lbImg.dataset.fb = v.src;
+    els.lbImg.src = v.fb;
+  };
+  const multi = state.viewable.length > 1;
+  els.lbPrev.hidden = els.lbNext.hidden = !multi;
+  els.lbCount.textContent = multi ? `${state.lb+1} ／ ${state.viewable.length}` : "";
+}
+function stepLightbox(d){
+  if(!els.lightbox.classList.contains("on") || state.viewable.length < 2) return;
+  const n = state.viewable.length;
+  state.lb = (state.lb + d + n) % n;
+  syncLightbox();
+}
+function closeLightbox(){
+  els.lightbox.classList.remove("on");
+  els.lbImg.src = "";
+  document.body.style.overflow = "";
+}
+
+/* ── 下載全部 ──
+   跨網域的 <a download> 會被瀏覽器忽略（只會另開分頁），
+   所以先試著把檔案抓成 blob 再存檔；被 CORS 擋下時才退回開新分頁。 */
+function fileName(it, i){
+  const t = state.tweet || {};
+  const sn = (t.author && t.author.screen_name) || "x";
+  const ext = (it.url.split("?")[0].match(/\.(\w{3,4})$/) || [,"jpg"])[1];
+  return `${sn}_${t.id}_${i+1}.${ext}`;
+}
+async function saveBlob(url, name){
+  try{
+    const r = await fetch(url, { referrerPolicy:"no-referrer" });
+    if(!r.ok) return false;
+    const href = URL.createObjectURL(await r.blob());
+    const a = document.createElement("a");
+    a.href = href; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(href), 8000);
+    return true;
+  }catch(_){ return false; }
+}
+async function downloadAll(){
+  if(!state.items.length) return;
+  els.dlAll.disabled = true;
+  toast(`開始下載 ${state.items.length} 個檔案…`);
+  let saved = 0;
+  for(let i=0;i<state.items.length;i++){
+    const it = state.items[i];
+    if(await saveBlob(it.url, fileName(it, i))){ saved++; }
+    else{
+      const a = document.createElement("a");
+      a.href = it.url; a.target = "_blank"; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
     }
+    await new Promise(r=>setTimeout(r, 420));
+  }
+  els.dlAll.disabled = false;
+  toast(saved === state.items.length ? `已下載 ${saved} 個檔案`
+      : saved ? `已下載 ${saved} 個，其餘已開新分頁`
+      : "瀏覽器不允許直接下載，已改為開新分頁");
+}
 
-    /* ========== 解析推文 ID ========== */
-    function extractTweetId(input) {
-        const trimmed = input.trim();
-        if (/^\d{10,}$/.test(trimmed)) return trimmed;
-        try {
-            const url = new URL(trimmed.startsWith('http') ? trimmed : 'https://' + trimmed);
-            const host = url.hostname.replace(/^www\./, '');
-            if (!SUPPORTED_DOMAINS.some(d => host === d || host.endsWith('.' + d))) return null;
-            const match = url.pathname.match(/\/status(?:es)?\/(\d+)/);
-            return match ? match[1] : null;
-        } catch { return null; }
+/* ── 最近查詢 ── */
+function readRecent(){
+  try{ return JSON.parse(store.get(RECENT_KEY) || "[]"); }catch(_){ return []; }
+}
+function pushRecent(tweet){
+  const a = tweet.author || {};
+  const label = a.screen_name ? `@${a.screen_name}` : (tweet.text || "").slice(0,16) || `#${tweet.id}`;
+  const list = readRecent().filter(x=>x.id !== tweet.id);
+  list.unshift({ id:tweet.id, label });
+  store.set(RECENT_KEY, JSON.stringify(list.slice(0,8)));
+  renderRecent();
+}
+function renderRecent(){
+  const list = readRecent();
+  els.recentRow.hidden = list.length === 0;
+  els.recentChips.innerHTML = "";
+  list.forEach(x=>{
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = x.label || `#${x.id}`;
+    b.title = `#${x.id}`;
+    b.addEventListener("click", ()=>{ els.q.value = x.id; lookup(x.id); });
+    els.recentChips.appendChild(b);
+  });
+}
+
+/* ── 通知 ── */
+function showErr(msg){ els.noticeErr.textContent = msg; els.noticeErr.classList.add("on"); }
+function showInfo(msg){ els.noticeInfo.textContent = msg; els.noticeInfo.classList.add("on"); }
+function hideNotices(){ els.noticeErr.classList.remove("on"); els.noticeInfo.classList.remove("on"); }
+
+/* ════════ 事件繫結 ════════ */
+els.goBtn.addEventListener("click", ()=>lookup(els.q.value));
+els.q.addEventListener("keydown", e=>{ if(e.key === "Enter") lookup(els.q.value); });
+els.pasteBtn.addEventListener("click", async ()=>{
+  try{
+    const t = await navigator.clipboard.readText();
+    if(t){ els.q.value = t.trim(); lookup(t); }
+  }catch(_){ els.q.focus(); toast("瀏覽器未授權讀取剪貼簿，請手動貼上"); }
+});
+els.recentClear.addEventListener("click", ()=>{ store.del(RECENT_KEY); renderRecent(); });
+
+els.lbClose.addEventListener("click", closeLightbox);
+els.lbPrev.addEventListener("click", ()=>stepLightbox(-1));
+els.lbNext.addEventListener("click", ()=>stepLightbox(1));
+els.lightbox.addEventListener("click", e=>{ if(e.target === els.lightbox) closeLightbox(); });
+
+document.addEventListener("keydown", e=>{
+  if(e.target === els.q) return;
+  if(e.key === "Escape"){ closeLightbox(); return; }
+  if(e.key === "ArrowLeft")  stepLightbox(-1);
+  if(e.key === "ArrowRight") stepLightbox(1);
+});
+
+els.gateBtn.addEventListener("click", ()=>{ els.gate.hidden = true; });
+els.textToggle.addEventListener("click", ()=>{
+  const open = els.tweetText.classList.toggle("open");
+  els.textToggle.textContent = open ? "▴ 收合" : "▾ 展開全文";
+});
+
+els.copyFx.addEventListener("click", ()=>{
+  const t = state.tweet; if(!t) return;
+  const sn = t.author && t.author.screen_name;
+  const url = sn ? `${FX_HOST}/${sn}/status/${t.id}` : `${FX_HOST}/i/status/${t.id}`;
+  copyText(url, "已複製 FxEmbed 連結 — 貼到 Discord 即會展開媒體");
+});
+els.copyX.addEventListener("click", ()=>{
+  const t = state.tweet; if(!t) return;
+  copyText(t.url || `https://x.com/i/status/${t.id}`, "已複製 X 網址");
+});
+els.dlAll.addEventListener("click", downloadAll);
+
+/* ════════ 紅葉飄落（尊重「減少動態」設定；分頁隱藏時暫停）════════ */
+(function maple(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = $("leaves"), ctx = cv.getContext("2d");
+  let W, H, list = [];
+  const COUNT = innerWidth < 640 ? 8 : 15;
+  /* 五裂楓葉輪廓：以中心為原點，向上為葉尖 */
+  const LOB = [-1.15,-.6,0,.6,1.15];        // 各裂片與垂直軸的夾角
+  const LEN = [.58,.84,1,.84,.58];          // 各裂片長度比例
+  const HUES = ["rgba(226,96,63,","rgba(232,184,109,","rgba(201,71,44,","rgba(214,138,74,"];
+
+  /* 手機捲動時網址列縮放會狂發 resize；尺寸沒變就別重配畫布 */
+  let W0 = 0, H0 = 0;
+  function resize(){
+    if(innerWidth === W0 && innerHeight === H0) return;
+    W = cv.width = W0 = innerWidth;
+    H = cv.height = H0 = innerHeight;
+  }
+  function spawn(init){
+    return {
+      x: Math.random()*W,
+      y: init ? Math.random()*H : -24,
+      s: 6 + Math.random()*7,
+      vy: .35 + Math.random()*.6,
+      vx: -.25 + Math.random()*.5,
+      rot: Math.random()*Math.PI*2,
+      vr: -.014 + Math.random()*.028,
+      sway: Math.random()*Math.PI*2,
+      flip: Math.random()*Math.PI*2,
+      vf: .008 + Math.random()*.018,        // 翻面速度（葉片打轉的立體感）
+      hue: HUES[(Math.random()*HUES.length)|0],
+      op: .32 + Math.random()*.42,
+    };
+  }
+  function drawLeaf(p){
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.scale(Math.cos(p.flip) || .01, 1);   // 翻面：橫向壓縮 / 鏡射
+    ctx.fillStyle = p.hue + p.op + ")";
+    ctx.beginPath();
+    ctx.moveTo(0, p.s*.62);                   // 葉柄根部
+    for(let i=0;i<5;i++){
+      if(i){                                  // 裂片之間的凹口
+        const m = (LOB[i-1]+LOB[i])/2, r = p.s*.28;
+        ctx.lineTo(Math.sin(m)*r, -Math.cos(m)*r);
+      }
+      const L = p.s*LEN[i];
+      ctx.lineTo(Math.sin(LOB[i])*L, -Math.cos(LOB[i])*L);
     }
-
-    /* ========== UI helpers ========== */
-    function showError(msg) { $error.textContent = msg; $error.classList.add('visible'); }
-    function hideError()    { $error.classList.remove('visible'); }
-    function showLoading()  { $loading.classList.add('visible'); }
-    function hideLoading()  { $loading.classList.remove('visible'); }
-    function showResult()   { $result.classList.add('visible'); }
-    function hideResult()   { $result.classList.remove('visible'); }
-
-    function fmtNum(n) {
-        if (n == null) return '—';
-        if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M';
-        if (n >= 1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'') + 'K';
-        return n.toLocaleString();
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  let rafId = 0;
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<list.length;i++){
+      const p = list[i];
+      p.sway += .012;
+      p.x += p.vx + Math.sin(p.sway)*.45;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.flip += p.vf;
+      if(p.y > H+28 || p.x < -34 || p.x > W+34) list[i] = spawn(false);
+      drawLeaf(p);
     }
-    function fmtDur(sec) {
-        if (!sec) return '';
-        const m = Math.floor(sec/60), s = Math.floor(sec%60);
-        return `${m}:${s.toString().padStart(2,'0')}`;
-    }
+    rafId = requestAnimationFrame(tick);
+  }
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){ cancelAnimationFrame(rafId); rafId = 0; }
+    else if(!rafId){ rafId = requestAnimationFrame(tick); }
+  });
+  addEventListener("resize", resize);
+  resize();
+  list = Array.from({length:COUNT}, ()=>spawn(true));
+  rafId = requestAnimationFrame(tick);
+})();
 
-    /* ========== Fetch ========== */
-    async function handleFetch() {
-        hideError(); hideResult();
-        const raw = $input.value;
-        if (!raw.trim()) { showError('⚠️ 請輸入推文連結或推文 ID'); return; }
-
-        const tweetId = extractTweetId(raw);
-        if (!tweetId) { showError('⚠️ 無法辨識的連結格式，請確認網址是否正確'); return; }
-
-        $fetchBtn.disabled = true;
-        showLoading();
-
-        try {
-            const resp = await fetch(API_BASE + tweetId);
-            const data = await resp.json();
-
-            if (data.code !== 200 || !data.tweet) {
-                const errMap = {
-                    'PRIVATE_TWEET': '🔒 此推文來自受保護的帳戶，無法存取',
-                    'NOT_FOUND':     '❌ 找不到此推文，可能已被刪除',
-                    'API_FAIL':      '⚠️ API 暫時無法使用，請稍後再試'
-                };
-                showError(errMap[data.message] || `⚠️ 取得推文失敗 (${data.message || resp.status})`);
-                return;
-            }
-            renderTweet(data.tweet);
-        } catch (err) {
-            console.error(err);
-            showError('⚠️ 網路錯誤，請檢查連線後重試');
-        } finally {
-            hideLoading();
-            $fetchBtn.disabled = false;
-        }
-    }
-
-    /* ========== Render Tweet ========== */
-    function renderTweet(tweet) {
-        const author = tweet.author || {};
-        $avatar.src = author.avatar_url || '';
-        $avatar.onerror = () => { $avatar.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='24' fill='%2338444d'/><text x='24' y='30' text-anchor='middle' fill='%238899a6' font-size='20'>?</text></svg>"; };
-        $authorName.textContent  = author.name || '未知使用者';
-        $authorHandle.textContent = author.screen_name ? `@${author.screen_name}` : '';
-        $tweetText.textContent = tweet.text || '';
-        $tweetDate.textContent = tweet.created_at || '';
-        $tweetStats.innerHTML = `
-            <span>❤️ <span class="stat-num">${fmtNum(tweet.likes)}</span></span>
-            <span>🔁 <span class="stat-num">${fmtNum(tweet.retweets)}</span></span>
-            <span>💬 <span class="stat-num">${fmtNum(tweet.replies)}</span></span>
-            ${tweet.views != null ? `<span>👁️ <span class="stat-num">${fmtNum(tweet.views)}</span></span>` : ''}
-        `;
-        const origUrl = tweet.url || `https://x.com/i/status/${tweet.id}`;
-        $originalUrl.value = origUrl;
-        $copyBtn.textContent = '📋 複製';
-        $copyBtn.classList.remove('copied');
-
-        renderMedia(tweet.media);
-        showResult();
-    }
-
-    /* ========== Render Media ========== */
-    function renderMedia(media) {
-        $mediaContainer.innerHTML = '';
-
-        if (!media) {
-            $mediaBadge.textContent = '0';
-            $mediaContainer.innerHTML = '<div class="no-media">此推文不含媒體內容</div>';
-            return;
-        }
-
-        let items = [];
-        if (media.all && media.all.length > 0) {
-            items = media.all;
-        } else {
-            if (media.photos) items.push(...media.photos);
-            if (media.videos) items.push(...media.videos);
-        }
-
-        const hasExternal = media.external;
-
-        if (items.length === 0 && !hasExternal) {
-            $mediaBadge.textContent = '0';
-            $mediaContainer.innerHTML = '<div class="no-media">此推文不含媒體內容</div>';
-            return;
-        }
-
-        $mediaBadge.textContent = items.length + (hasExternal ? 1 : 0);
-
-        if (items.length > 0) {
-            const grid = document.createElement('div');
-            grid.className = `media-grid count-${Math.min(items.length, 4)}`;
-
-            items.forEach((item, idx) => {
-                const wrap = document.createElement('div');
-                wrap.className = 'media-item';
-
-                if (item.type === 'photo') {
-                    /* ===== 圖片 ===== */
-                    const img = document.createElement('img');
-                    img.src = item.url;
-                    img.alt = `圖片 ${idx + 1}`;
-                    img.loading = 'lazy';
-                    img.onclick = () => openLightbox(item.url);
-                    wrap.appendChild(img);
-
-                    const overlay = document.createElement('div');
-                    overlay.className = 'media-overlay';
-                    overlay.innerHTML = `<span class="media-badge">${item.width}×${item.height}</span>`;
-                    wrap.appendChild(overlay);
-
-                    const dl = document.createElement('a');
-                    dl.className = 'btn-download';
-                    dl.href = item.url;
-                    dl.target = '_blank';
-                    dl.rel = 'noopener';
-                    dl.textContent = '⬇ 下載';
-                    dl.onclick = e => e.stopPropagation();
-                    wrap.appendChild(dl);
-
-                } else if (item.type === 'gif') {
-                    /* ===== GIF：轉成真正 .gif 用 <img> 顯示 ===== */
-                    const gifUrl = convertGifUrl(item.url);
-                    const isRealGif = gifUrl.endsWith('.gif');
-
-                    if (isRealGif) {
-                        // 使用 <img> 顯示 .gif
-                        const img = document.createElement('img');
-                        img.src = gifUrl;
-                        img.alt = 'GIF';
-                        img.className = 'gif-img';
-                        img.loading = 'lazy';
-                        img.onclick = () => openLightbox(gifUrl);
-                        wrap.appendChild(img);
-                    } else {
-                        // 退回 <video> (代理後的 mp4)
-                        const video = document.createElement('video');
-                        video.src = gifUrl;
-                        video.poster = item.thumbnail_url || '';
-                        video.autoplay = true;
-                        video.loop = true;
-                        video.muted = true;
-                        video.playsInline = true;
-                        video.setAttribute('playsinline', '');
-                        wrap.appendChild(video);
-                    }
-
-                    // GIF badge
-                    const overlay = document.createElement('div');
-                    overlay.className = 'media-overlay';
-                    overlay.innerHTML = '<span class="media-badge">GIF</span>';
-                    if (item.width && item.height) {
-                        overlay.innerHTML += `<span class="media-badge">${item.width}×${item.height}</span>`;
-                    }
-                    wrap.appendChild(overlay);
-
-                    // 下載
-                    const dl = document.createElement('a');
-                    dl.className = 'btn-download';
-                    dl.href = gifUrl;
-                    dl.target = '_blank';
-                    dl.rel = 'noopener';
-                    dl.textContent = '⬇ 下載 GIF';
-                    dl.onclick = e => e.stopPropagation();
-                    wrap.appendChild(dl);
-
-                } else if (item.type === 'video') {
-                    /* ===== 影片：透過 video.fxtwitter.com 代理播放 ===== */
-                    const originalUrl = item.url;
-                    const proxyUrl = proxyVideoUrl(originalUrl);
-
-                    const video = document.createElement('video');
-                    video.src = proxyUrl;
-                    video.poster = item.thumbnail_url || '';
-                    video.controls = true;
-                    video.preload = 'metadata';
-                    video.playsInline = true;
-                    video.setAttribute('playsinline', '');
-                    // 使用 crossorigin 確保 Range / 拖動行為正常
-                    video.crossOrigin = 'anonymous';
-
-                    // 載入失敗時的處理：先嘗試直接 URL，再給使用者手動開啟
-                    let triedDirect = false;
-                    const handleError = () => {
-                        if (!triedDirect) {
-                            triedDirect = true;
-                            // 代理失敗時，嘗試用 video.twimg.com 原始 URL
-                            video.removeAttribute('crossOrigin');
-                            video.src = originalUrl;
-                            return;
-                        }
-                        // 兩種方式都失敗（以 DOM API 建構，避免將 API URL 插入 innerHTML）
-                        wrap.textContent = '';
-                        const fail = document.createElement('div');
-                        fail.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;padding:20px;color:#8899a6;text-align:center;';
-                        const icon = document.createElement('div');
-                        icon.style.cssText = 'font-size:2rem;margin-bottom:8px;';
-                        icon.textContent = '⚠️';
-                        const msg = document.createElement('div');
-                        msg.textContent = '影片無法播放';
-                        const link = document.createElement('a');
-                        link.href = originalUrl;
-                        link.target = '_blank';
-                        link.rel = 'noopener';
-                        link.style.cssText = 'color:#1d9bf0;margin-top:8px;';
-                        link.textContent = '在新分頁開啟';
-                        fail.append(icon, msg, link);
-                        wrap.appendChild(fail);
-                    };
-                    video.onerror = handleError;
-
-                    wrap.appendChild(video);
-
-                    // Overlay
-                    const overlay = document.createElement('div');
-                    overlay.className = 'media-overlay';
-                    let label = 'VIDEO';
-                    if (item.duration) label += ` ${fmtDur(item.duration)}`;
-                    overlay.innerHTML = `<span class="media-badge">${label}</span>`;
-                    if (item.width && item.height) {
-                        overlay.innerHTML += `<span class="media-badge">${item.width}×${item.height}</span>`;
-                    }
-                    wrap.appendChild(overlay);
-
-                    // HEVC 警告 (若有的話)
-                    if (isHevc(originalUrl)) {
-                        const warn = document.createElement('div');
-                        warn.style.cssText = 'position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.72);color:#fbbf24;font-size:.75rem;padding:4px 10px;border-radius:8px;';
-                        warn.textContent = '⚠ HEVC (瀏覽器可能不支援)';
-                        wrap.appendChild(warn);
-                    }
-
-                    // 下載 — 用原始 URL 才能下載到原始 mp4
-                    const dl = document.createElement('a');
-                    dl.className = 'btn-download';
-                    dl.href = originalUrl;
-                    dl.target = '_blank';
-                    dl.rel = 'noopener';
-                    dl.textContent = '⬇ 下載';
-                    dl.onclick = e => e.stopPropagation();
-                    wrap.appendChild(dl);
-                }
-
-                grid.appendChild(wrap);
-            });
-
-            $mediaContainer.appendChild(grid);
-        }
-
-        // External (YouTube 等)
-        if (hasExternal) {
-            const ext = media.external;
-            const extDiv = document.createElement('div');
-            extDiv.className = 'external-media';
-            extDiv.style.marginTop = items.length > 0 ? '12px' : '0';
-
-            if (ext.type === 'video' && ext.url) {
-                const ytMatch = ext.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-                if (ytMatch) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = `https://www.youtube.com/embed/${ytMatch[1]}`;
-                    iframe.setAttribute('allowfullscreen', '');
-                    extDiv.appendChild(iframe);
-                } else {
-                    // 以 DOM API 建構，避免將 API URL 插入 innerHTML
-                    const extLink = document.createElement('a');
-                    extLink.href = ext.url;
-                    extLink.target = '_blank';
-                    extLink.rel = 'noopener';
-                    extLink.style.color = '#1d9bf0';
-                    extLink.textContent = '🔗 外部媒體連結';
-                    extDiv.appendChild(extLink);
-                }
-            }
-            $mediaContainer.appendChild(extDiv);
-        }
-    }
-
-    /* ========== Copy URL ========== */
-    function copyUrl() {
-        const url = $originalUrl.value;
-        if (!url) return;
-        navigator.clipboard.writeText(url).then(() => {
-            $copyBtn.textContent = '✅ 已複製';
-            $copyBtn.classList.add('copied');
-            setTimeout(() => { $copyBtn.textContent = '📋 複製'; $copyBtn.classList.remove('copied'); }, 2000);
-        }).catch(() => {
-            $originalUrl.select();
-            document.execCommand('copy');
-            $copyBtn.textContent = '✅ 已複製';
-            $copyBtn.classList.add('copied');
-            setTimeout(() => { $copyBtn.textContent = '📋 複製'; $copyBtn.classList.remove('copied'); }, 2000);
-        });
-    }
-
-    /* ========== Lightbox ========== */
-    function openLightbox(src) {
-        $lightboxImg.src = src;
-        $lightbox.classList.add('visible');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeLightbox() {
-        $lightbox.classList.remove('visible');
-        $lightboxImg.src = '';
-        document.body.style.overflow = '';
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-    </script>
+/* ── 初始化 ── */
+renderRecent();
+(function initFromUrl(){
+  const sp = new URLSearchParams(location.search);
+  const q = sp.get("id") || sp.get("url");
+  if(q){ els.q.value = q; lookup(q); }
+})();
+</script>
 </body>
 </html>
