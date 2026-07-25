@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /pixiv-viewer/
 
 Sitemap: https://rushiaismywaifu.github.io/sitemap.xml

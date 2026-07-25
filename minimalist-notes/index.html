@@ -31,14 +31,24 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Notes">
-    <link rel="apple-touch-icon" href="./assets/icon-192.png">
-    
-    <!-- Open Graph -->
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://rushiaismywaifu.github.io/minimalist-notes/">
+
+    <!-- Open Graph（爬蟲不解析相對路徑，一律用絕對網址） -->
     <meta property="og:title" content="📝 Minimalist Notes">
     <meta property="og:description" content="極簡暗黑筆記本 — 你的思緒值得一個安靜的角落">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="./assets/icon-512.png">
-    
+    <meta property="og:url" content="https://rushiaismywaifu.github.io/minimalist-notes/">
+    <meta property="og:image" content="https://rushiaismywaifu.github.io/minimalist-notes/assets/icon-512.png">
+    <meta property="og:site_name" content="Rushia My Beloved">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="📝 Minimalist Notes">
+    <meta name="twitter:description" content="極簡暗黑筆記本 — 你的思緒值得一個安靜的角落">
+    <meta name="twitter:image" content="https://rushiaismywaifu.github.io/minimalist-notes/assets/icon-512.png">
+
     <!-- Favicon -->
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="./assets/icon-192.png" sizes="192x192" type="image/png">
@@ -79,6 +89,8 @@
                          'Lucida Console', 'Courier New', monospace;
             caret-color: #6cf;
             -webkit-font-smoothing: antialiased;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #1a1a1a;
         }
         
         @supports not (height: 100dvh) {
@@ -98,8 +110,7 @@
             border: 2px solid #1a1a1a; 
         }
         #doc::-webkit-scrollbar-thumb:hover { background: #444; }
-        #doc { scrollbar-width: thin; scrollbar-color: #333 #1a1a1a; }
-        
+
         /* Status */
         #status {
             position: fixed;
@@ -114,6 +125,7 @@
             font-size: 0.75rem;
             font-family: system-ui, -apple-system, sans-serif;
             color: #888;
+            max-width: calc(100% - 2rem);
             opacity: 0;
             transform: translateY(10px);
             transition:
@@ -122,17 +134,60 @@
             pointer-events: none;
             z-index: 1000;
         }
-        
+
         #status.show {
             opacity: 1;
             transform: translateY(0);
         }
-        
+
+        /* Counter — 常駐但刻意低調，有 status 時讓位 */
+        #count {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(30, 30, 30, 0.9);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid #2a2a2a;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-variant-numeric: tabular-nums;
+            color: #555;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+            white-space: nowrap;
+            z-index: 999;
+        }
+
+        #count.show { opacity: 1; }
+
+        /* No-JS fallback */
+        #nojs {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: #111;
+            color: #888;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            text-align: center;
+            z-index: 2000;
+        }
+
         @supports (padding: env(safe-area-inset-bottom)) {
             #doc {
                 padding-bottom: calc(3rem + env(safe-area-inset-bottom));
             }
-            #status {
+            #status, #count {
                 bottom: calc(1rem + env(safe-area-inset-bottom));
             }
         }
@@ -157,8 +212,13 @@
 ───────────────────────────"
     ></textarea>
     
+    <div id="count"></div>
     <div id="status" role="status" aria-live="polite" aria-atomic="true"></div>
-    
+
+    <noscript>
+        <div id="nojs">⚠️ 這個筆記本需要 JavaScript 才能運作<br>請在瀏覽器設定中啟用後重新整理。</div>
+    </noscript>
+
     <script>
     (() => {
         'use strict';
@@ -166,18 +226,35 @@
         const CONFIG = Object.freeze({
             STORAGE_KEY_DOC: 'notes-content-v2',
             STORAGE_KEY_TIME: 'notes-timestamp-v2',
+            STORAGE_KEY_VIEW: 'notes-view-v2',
             DEBOUNCE_DELAY: 300,
+            VIEW_SAVE_DELAY: 500,
+            COUNT_DELAY: 120,
             STATUS_DISPLAY_TIME: 2000,
-            SYNC_INTERVAL: 2000
+            // storage 事件才是主要同步管道，輪詢只是保險，不需要太密
+            SYNC_INTERVAL: 5000
         });
-        
+
         const doc = document.getElementById('doc');
         const status = document.getElementById('status');
-        
+        const count = document.getElementById('count');
+
         let lastSaveTime = 0;
         let statusTimeoutId = null;
         let dirty = false;
-        
+        let warnedConflictTime = 0;
+        let applyingRemote = false;   // 抑制我們自己觸發的 input 事件
+        let lastViewJSON = '';
+
+        // 各瀏覽器的配額例外名稱／代碼都不一樣
+        function isQuotaError(e) {
+            return e instanceof DOMException && (
+                e.name === 'QuotaExceededError' ||
+                e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+                e.code === 22 || e.code === 1014
+            );
+        }
+
         // Storage
         const storage = {
             isAvailable: (() => {
@@ -195,13 +272,17 @@
             },
             
             set(key, value) {
-                try { 
-                    localStorage.setItem(key, value); 
-                    return true; 
+                try {
+                    localStorage.setItem(key, value);
+                    return true;
                 } catch (e) {
-                    if (e.name === 'QuotaExceededError') {
-                        showStatus('⚠️ 儲存空間已滿', 3000);
-                    }
+                    // 任何寫入失敗都必須讓使用者知道，否則就是靜默掉資料
+                    showStatus(
+                        isQuotaError(e)
+                            ? '⚠️ 儲存空間已滿，請用 Ctrl+Shift+S 匯出備份'
+                            : '⚠️ 儲存失敗，請匯出備份',
+                        5000
+                    );
                     return false;
                 }
             }
@@ -211,24 +292,131 @@
         function showStatus(message, duration = CONFIG.STATUS_DISPLAY_TIME) {
             status.textContent = message;
             status.classList.add('show');
+            count.classList.remove('show');   // 窄螢幕上兩顆膠囊會撞在一起
             clearTimeout(statusTimeoutId);
-            statusTimeoutId = setTimeout(() => status.classList.remove('show'), duration);
+            statusTimeoutId = setTimeout(() => {
+                status.classList.remove('show');
+                updateCount();
+            }, duration);
         }
-        
+
         function debounce(fn, delay) {
             let id;
             return (...args) => { clearTimeout(id); id = setTimeout(() => fn(...args), delay); };
         }
-        
+
+        function updateCount() {
+            const value = doc.value;
+            if (!value) {
+                count.classList.remove('show');
+                return;
+            }
+
+            const selected = doc.selectionEnd - doc.selectionStart;
+            if (selected > 0) {
+                count.textContent = `選取 ${selected} 字`;
+            } else {
+                let lines = 1;
+                for (let i = value.indexOf('\n'); i !== -1; i = value.indexOf('\n', i + 1)) lines++;
+                count.textContent = `${value.length} 字 · ${lines} 行`;
+            }
+
+            // status 佔用中就先不搶版面，等它收起來時再補上
+            if (!status.classList.contains('show')) count.classList.add('show');
+        }
+
+        const scheduleCount = debounce(updateCount, CONFIG.COUNT_DELAY);
+
+        // View state（游標與捲動位置）
+        // 寫兩份：sessionStorage 是這個分頁自己的、精確；localStorage 讓下次開瀏覽器
+        // 還能回到原位。失敗一律靜默 —— 這只是 UI 狀態，不值得跳警告嚇人。
+        // 傳 getter 而非物件本身：sandboxed iframe 連讀 sessionStorage 屬性都會丟 SecurityError
+        function writeView(getStore, view) {
+            try { getStore().setItem(CONFIG.STORAGE_KEY_VIEW, view); } catch { /* 無所謂 */ }
+        }
+
+        function readView(getStore) {
+            try { return getStore().getItem(CONFIG.STORAGE_KEY_VIEW); } catch { return null; }
+        }
+
+        function saveView() {
+            const view = JSON.stringify({
+                s: doc.selectionStart,
+                e: doc.selectionEnd,
+                t: Math.round(doc.scrollTop)
+            });
+            if (view === lastViewJSON) return;
+            lastViewJSON = view;
+            writeView(() => sessionStorage, view);
+            writeView(() => localStorage, view);
+        }
+
+        const debouncedSaveView = debounce(saveView, CONFIG.VIEW_SAVE_DELAY);
+
+        function restoreView(len) {
+            // 同分頁的紀錄優先，多開分頁時才不會互相搶游標
+            const raw = readView(() => sessionStorage) ?? readView(() => localStorage);
+            if (!raw) return;
+
+            let view;
+            try { view = JSON.parse(raw); } catch { return; }
+            if (!view || typeof view.s !== 'number') return;
+
+            lastViewJSON = raw;
+            doc.setSelectionRange(Math.min(view.s, len), Math.min(view.e ?? view.s, len));
+            // 等 textarea 完成排版後再捲，否則 scrollTop 會被夾成 0。
+            // 這一幀之間使用者可能已經自己捲過了，那就別跟人家搶。
+            requestAnimationFrame(() => {
+                if (doc.scrollTop === 0) doc.scrollTop = view.t || 0;
+            });
+        }
+
+        // 用可復原的方式換掉全文，保住瀏覽器原生的 undo stack。
+        // execCommand 已廢棄，但仍是 textarea 唯一的跨瀏覽器做法，失敗就退回直接指派。
+        function replaceValue(next) {
+            const start = doc.selectionStart;
+            const end = doc.selectionEnd;
+            const top = doc.scrollTop;
+            let ok = false;
+
+            applyingRemote = true;
+            try {
+                if (document.activeElement === doc && document.execCommand) {
+                    doc.setSelectionRange(0, doc.value.length);
+                    ok = next === ''
+                        ? document.execCommand('delete')
+                        : document.execCommand('insertText', false, next);
+                }
+            } catch { ok = false; }
+
+            if (!ok || doc.value !== next) doc.value = next;
+            applyingRemote = false;
+
+            const len = next.length;
+            doc.setSelectionRange(Math.min(start, len), Math.min(end, len));
+            doc.scrollTop = top;
+        }
+
         // Core
         function loadContent() {
             const content = storage.get(CONFIG.STORAGE_KEY_DOC);
             const time = storage.get(CONFIG.STORAGE_KEY_TIME);
             lastSaveTime = time ? Number(time) : 0;
-            if (content !== null) doc.value = content;
+            if (content !== null) {
+                doc.value = content;
+                restoreView(content.length);
+            }
+            updateCount();
         }
-        
+
         function saveContent(notify = true) {
+            // 沒有變動就不要寫入：localStorage 是同步的，而且推進 timestamp
+            // 會讓其他分頁全部收到 storage 事件白跑一輪
+            if (!dirty) {
+                if (notify) showStatus('✓ 已是最新');
+                return true;
+            }
+
             const now = Date.now();
             if (
                 storage.set(CONFIG.STORAGE_KEY_DOC, doc.value) &&
@@ -236,6 +424,7 @@
             ) {
                 lastSaveTime = now;
                 dirty = false;
+                warnedConflictTime = 0;
                 if (notify) showStatus('✓ 已保存');
                 return true;
             }
@@ -247,24 +436,29 @@
         function syncFromStorage(force = false) {
             const storedTime = Number(storage.get(CONFIG.STORAGE_KEY_TIME)) || 0;
             if (storedTime <= lastSaveTime) return;
-            
+
             if (!force && dirty && document.activeElement === doc) {
-                showStatus('⚠️ 另一分頁有新內容，暫未覆蓋目前輸入', 3000);
+                // 不打斷正在打字的人，但待存的變更 300ms 後就會蓋掉對方 —
+                // 訊息要照實說。同一個 storedTime 只提醒一次，否則每輪都跳。
+                if (storedTime !== warnedConflictTime) {
+                    warnedConflictTime = storedTime;
+                    showStatus('⚠️ 另一分頁也改過，將以此分頁的內容為準', 3000);
+                }
                 return;
             }
-            
+
             const content = storage.get(CONFIG.STORAGE_KEY_DOC);
-            if (content !== null && content !== doc.value) {
-                const start = doc.selectionStart;
-                const end = doc.selectionEnd;
-                doc.value = content;
-                lastSaveTime = storedTime;
-                dirty = false;
-                const len = content.length;
-                doc.setSelectionRange(
-                    Math.min(start, len),
-                    Math.min(end, len)
-                );
+            if (content === null) return;   // 資料不完整，等下一輪再說
+
+            // 不論內容是否真的不同都要推進 lastSaveTime，
+            // 否則之後每一輪都會重讀整份筆記再比對一次，永遠停不下來
+            lastSaveTime = storedTime;
+            warnedConflictTime = 0;
+            dirty = false;
+
+            if (content !== doc.value) {
+                replaceValue(content);
+                updateCount();
                 showStatus('🔄 已同步');
             }
         }
@@ -276,18 +470,34 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = `notes-${new Date().toISOString().slice(0, 10)}.txt`;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
+            a.remove();
+            // 立刻 revoke 會讓部分瀏覽器中斷下載
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
             showStatus('⬇️ 已匯出');
         }
         
         // Events
         function setupEvents() {
             doc.addEventListener('input', () => {
+                scheduleCount();
+                if (applyingRemote) return;   // replaceValue 造成的，不是使用者打的
                 dirty = true;
                 debouncedSave();
+                debouncedSaveView();
             });
-            
+
+            // selectionchange 在 textarea 上不是每個瀏覽器都可靠，補幾個保險
+            document.addEventListener('selectionchange', () => {
+                if (document.activeElement !== doc) return;
+                scheduleCount();
+                debouncedSaveView();
+            });
+            doc.addEventListener('keyup', debouncedSaveView);
+            doc.addEventListener('mouseup', debouncedSaveView);
+            doc.addEventListener('scroll', debouncedSaveView, { passive: true });
+
             // Only listen to timestamp key — let syncFromStorage decide
             window.addEventListener('storage', (e) => {
                 if (e.key === CONFIG.STORAGE_KEY_TIME) {
@@ -298,27 +508,27 @@
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
                     saveContent(false);
+                    saveView();
                 } else {
                     syncFromStorage();
                 }
             });
-            
-            window.addEventListener('pagehide', () => saveContent(false));
-            window.addEventListener('beforeunload', () => saveContent(false));
-            
-            doc.addEventListener('keydown', (e) => {
-                // Ctrl+Shift+S → 匯出備份
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    exportBackup();
-                    return;
-                }
-                // Ctrl+S → 手動保存
-                if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    saveContent(true);
-                    showStatus('💾 已保存');
-                }
+
+            // 只用 pagehide：它涵蓋 beforeunload 的所有情境，
+            // 而註冊 beforeunload 會讓頁面失去 bfcache 資格
+            window.addEventListener('pagehide', () => {
+                saveContent(false);
+                saveView();
+            });
+
+            // 綁在 document 上，焦點不在 textarea 時也不會漏給瀏覽器的「儲存網頁」
+            document.addEventListener('keydown', (e) => {
+                if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+                if (e.key.toLowerCase() !== 's') return;
+
+                e.preventDefault();
+                if (e.shiftKey) exportBackup();   // Ctrl+Shift+S → 匯出備份
+                else saveContent(true);           // Ctrl+S → 手動保存
             });
         }
         
@@ -340,7 +550,11 @@
             loadContent();
             setupEvents();
             registerSW();
-            setInterval(syncFromStorage, CONFIG.SYNC_INTERVAL);
+
+            // 背景分頁不需要輪詢，回到前景時 visibilitychange 會補同步
+            setInterval(() => {
+                if (document.visibilityState === 'visible') syncFromStorage();
+            }, CONFIG.SYNC_INTERVAL);
         }
         
         if (document.readyState === 'loading') {
