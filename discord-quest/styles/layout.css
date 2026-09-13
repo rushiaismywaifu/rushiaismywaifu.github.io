@@ -58,18 +58,21 @@
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(12rem, auto) minmax(16rem, 1fr) auto;
+  grid-template-columns: auto minmax(12rem, 1fr) auto;
   grid-template-areas: "copy search actions";
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-5);
   min-height: var(--topbar-height);
   padding: var(--space-4) clamp(var(--space-5), 2.4vw, var(--space-8));
-  background: rgba(18, 21, 29, 0.97);
+  background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
 .topbar-copy {
   grid-area: copy;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   min-width: 0;
 }
 
@@ -98,7 +101,7 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
   width: min(100%, var(--content-max));
   margin: 0 auto;
   padding:
@@ -138,7 +141,7 @@
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
-  overflow-x: auto;
+  flex-wrap: wrap;
   overscroll-behavior-inline: contain;
   scrollbar-width: none;
 }
@@ -189,6 +192,7 @@
   opacity: 1;
   pointer-events: auto;
   transition-delay: 0s;
+  transition-property: opacity;
 }
 
 .modal {
@@ -233,7 +237,7 @@ body.modal-open {
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .topbar {
-    background: rgba(18, 21, 29, 0.9);
+    background: rgba(49, 51, 56, 0.96);
     -webkit-backdrop-filter: saturate(115%) blur(8px);
     backdrop-filter: saturate(115%) blur(8px);
   }

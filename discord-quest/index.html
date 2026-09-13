@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
   <meta name="description" content="瀏覽、搜尋與篩選 Discord Quests，查看任務狀態、獎勵、參與方式、地區及年齡限制。">
-  <meta name="theme-color" content="#0b0d12">
+  <meta name="theme-color" content="#313338">
   <title>Discord Quest Explorer</title>
   <link rel="icon" href="../favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="./styles/tokens.css">
@@ -21,10 +21,10 @@
     <aside class="sidebar" id="sidebar" aria-label="任務篩選">
       <div class="sidebar-head">
         <a class="brand" href="./" aria-label="Discord Quest Explorer 首頁">
-          <span class="brand-mark" aria-hidden="true">Q</span>
+          <span class="brand-mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10a4 4 0 0 1 4 3.4l1 6a2.6 2.6 0 0 1-4.4 2.3L15 16H9l-2.6 2.7A2.6 2.6 0 0 1 2 16.4l1-6A4 4 0 0 1 7 7Z"/><path d="M8 10v4m-2-2h4m5-1h.01M18 13h.01M10 7l1-3h3"/></svg></span>
           <span class="brand-copy">
             <strong>Quest Explorer</strong>
-            <small>GitHub 公開任務資料</small>
+            <small>你的 Discord 任務探索指南</small>
           </span>
         </a>
         <button class="sidebar-close" id="sidebarClose" type="button" aria-label="關閉篩選">
@@ -108,11 +108,12 @@
             <h2 id="regionHeading">參與條件</h2>
           </div>
           <label class="select-field" for="regionSel">
-            <span>國家或地區</span>
-            <select id="regionSel">
+            <span>我所在的國家或地區</span>
+            <select id="regionSel" aria-describedby="regionHint">
               <option value="">全部地區</option>
             </select>
           </label>
+          <p class="field-hint" id="regionHint">依公開限制資料篩選，實際資格以 Discord 顯示為準。</p>
           <label class="select-field" for="ageSel">
             <span>年齡限制</span>
             <select id="ageSel">
@@ -123,22 +124,9 @@
           </label>
         </section>
 
-        <section class="filter-section" aria-labelledby="sortHeading">
-          <div class="section-heading">
-            <h2 id="sortHeading">排序</h2>
-          </div>
-          <label class="select-field" for="sortSel">
-            <span class="visually-hidden">任務排序方式</span>
-            <select id="sortSel">
-              <option value="newest">最新開始</option>
-              <option value="ending">即將結束</option>
-              <option value="name">任務名稱 A–Z</option>
-              <option value="game">遊戲名稱 A–Z</option>
-            </select>
-          </label>
-        </section>
       </div>
 
+      <button class="apply-filters" id="applyFilters" type="button">查看篩選結果 <span aria-hidden="true">→</span></button>
       <footer class="sidebar-footer">
         <span>資料來自非官方公開來源</span>
         <span class="source-links">
@@ -155,8 +143,10 @@
     <section class="main">
       <header class="topbar">
         <div class="topbar-copy">
-          <p class="eyebrow">Quest database</p>
-          <h1 class="page-title">Discord 任務總覽</h1>
+          <span class="channel-icon" aria-hidden="true">#</span>
+          <h1 class="page-title">任務探索</h1>
+          <span class="topbar-divider" aria-hidden="true"></span>
+          <span class="topbar-description">Discord Quests</span>
         </div>
 
         <div class="topbar-actions">
@@ -177,47 +167,88 @@
           </button>
         </div>
 
-        <label class="search-bar" for="searchInput">
-          <span class="visually-hidden">搜尋任務</span>
+        <div class="search-bar" role="search">
+          <label class="visually-hidden" for="searchInput">搜尋任務</label>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <circle cx="11" cy="11" r="7"></circle>
             <path d="m20 20-3.2-3.2"></path>
           </svg>
           <input id="searchInput" type="search" placeholder="搜尋任務、遊戲、發行商或 ID…" autocomplete="off">
+          <button class="search-clear" id="searchClear" type="button" aria-label="清除搜尋" hidden>×</button>
           <kbd aria-hidden="true">/</kbd>
-        </label>
+        </div>
       </header>
 
       <main class="content" id="questResults" tabindex="-1">
+        <section class="discovery-banner" aria-labelledby="discoveryTitle">
+          <div class="discovery-copy">
+            <p class="banner-eyebrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></svg> PLAY. WATCH. COLLECT.</p>
+            <h2 id="discoveryTitle">下一個任務，<br>下一份驚喜。</h2>
+            <p>探索喜歡的遊戲，發現值得解鎖的獎勵。<br class="mobile-break">你的下一場冒險，從這裡開始。</p>
+          </div>
+          <div class="quest-art" aria-hidden="true">
+            <svg viewBox="0 0 340 220" fill="none">
+              <ellipse cx="180" cy="120" rx="143" ry="68" stroke="#A5ACFF" stroke-opacity=".35" transform="rotate(-21 180 120)"/>
+              <circle cx="279" cy="58" r="10" fill="#B6F5DF"/><circle cx="51" cy="155" r="6" fill="#B6F5DF"/>
+              <path d="m48 55 4 11 12 4-12 4-4 12-4-12-11-4 11-4Z" fill="#E0E3FF"/>
+              <path d="m290 159 3 8 9 3-9 3-3 9-3-9-8-3 8-3Z" fill="#E0E3FF"/>
+              <g transform="rotate(-12 164 109)">
+                <rect x="94" y="30" width="133" height="163" rx="17" fill="#292C51"/>
+                <rect x="87" y="23" width="133" height="163" rx="17" fill="#F2F3FF"/>
+                <rect x="97" y="33" width="113" height="106" rx="10" fill="#DDE0FF"/>
+                <path d="M130 73h49v36h-49z" fill="#5865F2"/><path d="M125 64h59v16h-59z" fill="#7782FF"/>
+                <path d="M154 65v44" stroke="#B9F5DD" stroke-width="8"/>
+                <path d="M154 64c-30 0-20-26-8-16 5 4 8 16 8 16Zm0 0c30 0 20-26 8-16-5 4-8 16-8 16Z" stroke="#5865F2" stroke-width="6" stroke-linejoin="round"/>
+                <rect x="104" y="151" width="55" height="6" rx="3" fill="#5865F2"/><rect x="104" y="164" width="83" height="5" rx="2.5" fill="#C5C9E8"/>
+                <circle cx="190" cy="154" r="13" fill="#B6F5DF"/><path d="m184 154 4 4 8-8" stroke="#22715D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <circle cx="244" cy="142" r="34" fill="#292C51"/>
+              <circle cx="240" cy="137" r="34" fill="#B6F5DF"/>
+              <circle cx="240" cy="137" r="25" stroke="#70C9A7" stroke-width="2"/>
+              <path d="m240 119 5 12 13 6-13 5-5 13-5-13-13-5 13-6Z" fill="#2F826C"/>
+            </svg>
+          </div>
+          <span class="banner-tag">非官方任務指南</span>
+        </section>
         <section class="summary-strip" aria-label="任務摘要">
-          <article class="summary-card live-summary">
+          <button class="summary-card live-summary" type="button" data-quick-filter="live" aria-pressed="true">
             <span class="summary-icon" aria-hidden="true">●</span>
             <strong class="summary-value" id="summaryLive">0</strong>
             <small class="summary-label">進行中</small>
-          </article>
-          <article class="summary-card upcoming-summary">
-            <span class="summary-icon" aria-hidden="true">◷</span>
+            <span class="summary-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button class="summary-card upcoming-summary" type="button" data-quick-filter="upcoming" aria-pressed="false">
+            <span class="summary-icon" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg></span>
             <strong class="summary-value" id="summaryUpcoming">0</strong>
             <small class="summary-label">即將開始</small>
-          </article>
-          <article class="summary-card orb-summary">
-            <span class="summary-icon" aria-hidden="true">✦</span>
+            <span class="summary-arrow" aria-hidden="true">↗</span>
+          </button>
+          <button class="summary-card orb-summary" type="button" data-quick-filter="orbs" aria-pressed="false">
+            <span class="summary-icon" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></svg></span>
             <strong class="summary-value" id="summaryOrbs">0</strong>
-            <small class="summary-label">Orbs 任務</small>
-          </article>
+            <small class="summary-label">可賺取 Orbs</small>
+            <span class="summary-arrow" aria-hidden="true">↗</span>
+          </button>
         </section>
 
         <section class="results-section" aria-labelledby="resultsTitle">
           <div class="results-head">
             <div class="results-copy">
-              <p class="eyebrow">Discover</p>
               <h2 class="results-title" id="resultsTitle">進行中的任務</h2>
               <p class="results-meta" id="resultsMeta">正在整理公開任務資料…</p>
             </div>
             <div class="results-toolbar">
-              <div class="active-filters" id="activeFilters" aria-label="目前篩選條件"></div>
-              <button class="clear-filters" id="clearFilters" type="button" hidden>清除篩選</button>
+              <label class="sort-control" for="sortSel"><span>排序</span><select id="sortSel">
+                <option value="newest">最新開始</option>
+                <option value="ending">即將結束</option>
+                <option value="name">任務名稱 A–Z</option>
+                <option value="game">遊戲名稱 A–Z</option>
+              </select></label>
             </div>
+          </div>
+          <div class="filter-toolbar">
+            <div class="active-filters" id="activeFilters" aria-label="目前篩選條件"></div>
+            <button class="clear-filters" id="clearFilters" type="button" hidden>清除全部</button>
           </div>
 
           <div class="state" id="state" role="status" aria-live="polite">

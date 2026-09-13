@@ -60,6 +60,7 @@ function calculateCounts() {
   const counts = {all: 0, live: 0, upcoming: 0, ended: 0};
   const rewardCounts = {all: 0, orbs: 0, avatar: 0, ingame: 0, nitro: 0};
   const taskCounts = {all: 0, play: 0, watch: 0};
+  let liveOrbs = 0;
 
   state.quests.forEach(quest => {
     const meta = questMeta.get(quest.id);
@@ -67,11 +68,12 @@ function calculateCounts() {
     counts[meta.status] += 1;
     rewardCounts.all += 1;
     meta.rewards.forEach(category => { rewardCounts[category] += 1; });
+    if (meta.status === 'live' && meta.rewards.has('orbs')) liveOrbs += 1;
     taskCounts.all += 1;
     meta.tasks.forEach(category => { taskCounts[category] += 1; });
   });
 
-  return {counts, rewardCounts, taskCounts};
+  return {counts, rewardCounts, taskCounts, liveOrbs};
 }
 
 function filteredQuests() {
@@ -113,11 +115,17 @@ function timestamp(value, fallback) {
 }
 
 function render() {
+  const focusedChip = elements.activeFilters.contains(document.activeElement)
+    ? document.activeElement.closest('[data-clear-filter]')
+    : null;
+  const chipIndex = focusedChip
+    ? [...elements.activeFilters.querySelectorAll('[data-clear-filter]')].indexOf(focusedChip)
+    : -1;
   buildQuestMeta();
-  const {counts, rewardCounts, taskCounts} = calculateCounts();
+  const {counts, rewardCounts, taskCounts, liveOrbs} = calculateCounts();
   const quests = filteredQuests();
 
-  updateCounts(counts, rewardCounts, taskCounts);
+  updateCounts(counts, rewardCounts, taskCounts, liveOrbs);
   updateFilterButtons(state);
   renderActiveFilters(state);
   updateResultsHeader({
@@ -129,6 +137,14 @@ function render() {
     warningCount: state.warnings.length,
   });
   renderQuestGrid(quests, questMeta, state.regionsMap);
+
+  if (focusedChip) {
+    const chips = [...elements.activeFilters.querySelectorAll('[data-clear-filter]')];
+    const focusTarget = chips.find(chip => chip.dataset.clearFilter === focusedChip.dataset.clearFilter)
+      || chips[Math.min(chipIndex, chips.length - 1)]
+      || elements.search;
+    focusTarget.focus({preventScroll: true});
+  }
 }
 
 async function load() {
@@ -168,7 +184,8 @@ function bindFilterGroup(attribute, stateKey) {
   });
 }
 
-function clearFilters() {
+function resetFilterState() {
+  window.cancelAnimationFrame(searchFrame);
   state.filter = 'all';
   state.reward = 'all';
   state.task = 'all';
@@ -176,6 +193,24 @@ function clearFilters() {
   state.searchRaw = '';
   state.region = '';
   state.age = 'all';
+}
+
+function clearFilters() {
+  const restoreFocus = document.activeElement === elements.clearFilters
+    || document.activeElement?.matches('[data-reset-filters]');
+  resetFilterState();
+  render();
+  if (restoreFocus) elements.search.focus({preventScroll: true});
+}
+
+function clearFilter(key) {
+  const defaults = {filter: 'all', reward: 'all', task: 'all', region: '', age: 'all', search: ''};
+  if (!Object.hasOwn(defaults, key)) return;
+  state[key] = defaults[key];
+  if (key === 'search') {
+    window.cancelAnimationFrame(searchFrame);
+    state.searchRaw = '';
+  }
   render();
 }
 
@@ -184,10 +219,14 @@ function openFilterPanel() {
   filterTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   setInert(elements.sidebar, false);
   elements.sidebar.removeAttribute('aria-hidden');
+  elements.sidebar.setAttribute('role', 'dialog');
+  elements.sidebar.setAttribute('aria-modal', 'true');
   setInert(elements.main, true);
   document.body.classList.add('filter-open');
   elements.filterToggle.setAttribute('aria-expanded', 'true');
-  window.setTimeout(() => elements.sidebarClose.focus(), 80);
+  window.setTimeout(() => {
+    if (document.body.classList.contains('filter-open')) elements.sidebarClose.focus();
+  }, 80);
 }
 
 function closeFilterPanel({restoreFocus = true} = {}) {
@@ -199,6 +238,8 @@ function closeFilterPanel({restoreFocus = true} = {}) {
   }
   document.body.classList.remove('filter-open');
   elements.filterToggle.setAttribute('aria-expanded', 'false');
+  elements.sidebar.removeAttribute('role');
+  elements.sidebar.removeAttribute('aria-modal');
   filterTrigger = null;
   syncSidebarAccessibility();
 }
@@ -206,9 +247,31 @@ function closeFilterPanel({restoreFocus = true} = {}) {
 function syncSidebarAccessibility() {
   const mobile = window.matchMedia('(max-width: 880px)').matches;
   const open = document.body.classList.contains('filter-open');
+  if (mobile && !open && elements.sidebar.contains(document.activeElement)) {
+    elements.filterToggle.focus({preventScroll: true});
+  }
   setInert(elements.sidebar, mobile && !open);
   if (mobile && !open) elements.sidebar.setAttribute('aria-hidden', 'true');
   else elements.sidebar.removeAttribute('aria-hidden');
+}
+
+function trapFilterFocus(event) {
+  if (event.key !== 'Tab' || !document.body.classList.contains('filter-open') || isQuestModalOpen()) return;
+  const focusable = [...elements.sidebar.querySelectorAll('button, a[href], select, input, [tabindex]:not([tabindex="-1"])')]
+    .filter(element => !element.disabled && element.getClientRects().length > 0 && !element.closest('[hidden], [inert]'));
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (!first) return;
+  if (!elements.sidebar.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function bindEvents() {
@@ -219,8 +282,8 @@ function bindEvents() {
   elements.search.addEventListener('input', event => {
     window.cancelAnimationFrame(searchFrame);
     searchFrame = window.requestAnimationFrame(() => {
-      state.searchRaw = event.target.value.trim();
-      state.search = state.searchRaw.toLowerCase();
+      state.searchRaw = event.target.value;
+      state.search = state.searchRaw.trim().toLowerCase();
       render();
     });
   });
@@ -238,6 +301,27 @@ function bindEvents() {
   });
   elements.clearFilters.addEventListener('click', clearFilters);
   elements.refreshBtn.addEventListener('click', load);
+  document.getElementById('searchClear')?.addEventListener('click', () => {
+    clearFilter('search');
+    elements.search.focus({preventScroll: true});
+  });
+  elements.activeFilters.addEventListener('click', event => {
+    const chip = event.target.closest('[data-clear-filter]');
+    if (chip) clearFilter(chip.dataset.clearFilter);
+  });
+  document.querySelectorAll('[data-quick-filter]').forEach(button => {
+    button.addEventListener('click', () => {
+      const quickFilter = button.dataset.quickFilter;
+      if (!['live', 'upcoming', 'orbs'].includes(quickFilter)) return;
+      resetFilterState();
+      state.filter = quickFilter === 'orbs' ? 'live' : quickFilter;
+      if (quickFilter === 'orbs') state.reward = 'orbs';
+      render();
+    });
+  });
+  elements.state.addEventListener('click', event => {
+    if (event.target.closest('[data-reset-filters]')) clearFilters();
+  });
 
   elements.grid.addEventListener('click', event => {
     const card = event.target.closest('.card[data-id]');
@@ -256,6 +340,7 @@ function bindEvents() {
   elements.filterToggle.addEventListener('click', openFilterPanel);
   elements.sidebarClose.addEventListener('click', () => closeFilterPanel());
   elements.sidebarBackdrop.addEventListener('click', () => closeFilterPanel());
+  document.getElementById('applyFilters')?.addEventListener('click', () => closeFilterPanel());
 
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
@@ -264,12 +349,13 @@ function bindEvents() {
       return;
     }
     trapModalFocus(event);
+    trapFilterFocus(event);
 
     if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       const target = event.target;
       const isTyping = target instanceof HTMLElement
         && (target.matches('input, textarea, select, button') || target.isContentEditable);
-      if (!isTyping && !isQuestModalOpen()) {
+      if (!isTyping && !isQuestModalOpen() && !document.body.classList.contains('filter-open')) {
         event.preventDefault();
         elements.search.focus();
       }

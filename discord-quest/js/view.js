@@ -6,11 +6,11 @@ import {
   assetURL,
   daysLeft,
   escapeHtml,
-  flag,
   fmtDate,
   getRewards,
   getTasks,
-  regName,
+  regionInfo,
+  regionLabel,
   safeLink,
   setInert,
   statusOf,
@@ -27,6 +27,7 @@ export const elements = {
   grid: document.getElementById('grid'),
   state: document.getElementById('state'),
   search: document.getElementById('searchInput'),
+  searchClear: document.getElementById('searchClear'),
   regionSel: document.getElementById('regionSel'),
   ageSel: document.getElementById('ageSel'),
   sortSel: document.getElementById('sortSel'),
@@ -69,6 +70,8 @@ const FILTER_LABELS = Object.freeze({
   age: {age: '需要年齡驗證', noage: '無年齡限制'},
 });
 
+const SPARK_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></svg>';
+
 let lastFocusedElement = null;
 
 export function setLoading(isRefreshing = false) {
@@ -109,15 +112,15 @@ export function renderRegionOptions(regionsMap, selectedValue = '') {
   });
 
   const options = [...countries]
-    .sort((a, b) => regName(a).localeCompare(regName(b), 'zh-Hant'))
-    .map(code => `<option value="${escapeHtml(code)}">${escapeHtml(`${flag(code)} ${regName(code)} (${code})`)}</option>`)
+    .sort((a, b) => regionInfo(a).nameZh.localeCompare(regionInfo(b).nameZh, 'zh-Hant'))
+    .map(code => `<option value="${escapeHtml(code)}">${escapeHtml(regionLabel(code))}</option>`)
     .join('');
 
   elements.regionSel.innerHTML = `<option value="">全部地區</option>${options}`;
   elements.regionSel.value = selectedValue;
 }
 
-export function updateCounts(counts, rewardCounts, taskCounts) {
+export function updateCounts(counts, rewardCounts, taskCounts, liveOrbs) {
   elements.cntAll.textContent = counts.all;
   elements.cntLive.textContent = counts.live;
   elements.cntUpcoming.textContent = counts.upcoming;
@@ -132,7 +135,7 @@ export function updateCounts(counts, rewardCounts, taskCounts) {
   elements.tcntWatch.textContent = taskCounts.watch;
   elements.summaryLive.textContent = counts.live;
   elements.summaryUpcoming.textContent = counts.upcoming;
-  elements.summaryOrbs.textContent = rewardCounts.orbs;
+  elements.summaryOrbs.textContent = liveOrbs;
 }
 
 export function updateFilterButtons(state) {
@@ -147,24 +150,34 @@ export function updateFilterButtons(state) {
   elements.ageSel.value = state.age;
   elements.sortSel.value = state.sort;
   if (elements.search.value !== state.searchRaw) elements.search.value = state.searchRaw;
+  elements.searchClear.hidden = !state.searchRaw;
+  document.querySelectorAll('[data-quick-filter]').forEach(button => {
+    const quick = button.dataset.quickFilter;
+    const otherFiltersClear = state.task === 'all' && !state.region && state.age === 'all' && !state.search;
+    const active = otherFiltersClear && (quick === 'orbs'
+      ? state.filter === 'live' && state.reward === 'orbs'
+      : state.filter === quick && state.reward === 'all');
+    button.setAttribute('aria-pressed', String(active));
+  });
 }
 
 export function renderActiveFilters(state) {
   const filters = [];
-  if (state.filter !== 'all') filters.push(FILTER_LABELS.filter[state.filter]);
-  if (state.reward !== 'all') filters.push(FILTER_LABELS.reward[state.reward]);
-  if (state.task !== 'all') filters.push(FILTER_LABELS.task[state.task]);
-  if (state.region) filters.push(`${flag(state.region)} ${regName(state.region)}`);
-  if (state.age !== 'all') filters.push(FILTER_LABELS.age[state.age]);
-  if (state.searchRaw) filters.push(`「${state.searchRaw}」`);
+  if (state.filter !== 'all') filters.push(['filter', FILTER_LABELS.filter[state.filter]]);
+  if (state.reward !== 'all') filters.push(['reward', FILTER_LABELS.reward[state.reward]]);
+  if (state.task !== 'all') filters.push(['task', FILTER_LABELS.task[state.task]]);
+  if (state.region) filters.push(['region', regionLabel(state.region)]);
+  if (state.age !== 'all') filters.push(['age', FILTER_LABELS.age[state.age]]);
+  if (state.search) filters.push(['search', `「${state.searchRaw.trim()}」`]);
 
   elements.activeFilters.innerHTML = filters
-    .filter(Boolean)
-    .map(label => `<span class="filter-chip">${escapeHtml(label)}</span>`)
+    .filter(([, label]) => Boolean(label))
+    .map(([key, label]) => `<button class="filter-chip" type="button" data-clear-filter="${key}" aria-label="移除篩選：${escapeHtml(label)}"><span>${escapeHtml(label)}</span><span class="chip-dismiss" aria-hidden="true">×</span></button>`)
     .join('');
   elements.clearFilters.hidden = filters.length === 0;
   elements.activeFilterCount.hidden = filters.length === 0;
   elements.activeFilterCount.textContent = filters.length;
+  elements.activeFilters.parentElement.hidden = filters.length === 0;
 }
 
 export function updateResultsHeader({visibleCount, totalCount, filter, lastUpdated, sourceMode, warningCount}) {
@@ -187,6 +200,7 @@ export function renderQuestGrid(quests, meta, regionsMap) {
       <span class="state-icon" aria-hidden="true">⌕</span>
       <strong>找不到符合條件的任務</strong>
       <span>調整搜尋文字或清除部分篩選條件再試一次。</span>
+      <button class="empty-reset" type="button" data-reset-filters>清除篩選，查看全部任務</button>
     `;
     return;
   }
@@ -203,7 +217,7 @@ function cardTemplate(quest, meta, restriction) {
   const messages = config.messages || {};
   const id = String(quest.id);
   const status = meta.status;
-  const hero = assetURL(id, config.assets?.quest_bar_hero || config.assets?.hero || config.assets?.hero_video);
+  const hero = heroImageURL(id, config.assets);
   const logotype = assetURL(id, config.assets?.logotype_dark || config.assets?.logotype_light || config.assets?.logotype);
   const tile = assetURL(id, config.assets?.game_tile_dark || config.assets?.game_tile_light || config.assets?.game_tile);
   const rewards = getRewards(config);
@@ -216,25 +230,26 @@ function cardTemplate(quest, meta, restriction) {
   const gameName = messages.game_title || config.application?.name || '未知遊戲';
   const publisher = messages.game_publisher || '';
   const statusInfo = statusPresentation(status, config.expires_at);
-  const regionInfo = compactRegionTemplate(restriction);
+  const regionSummary = compactRegionTemplate(restriction);
 
   return `
     <button class="card" type="button" data-id="${escapeHtml(id)}" aria-label="查看 ${escapeHtml(questName)} 詳情">
       <span class="hero">
-        ${hero ? `<img loading="lazy" decoding="async" src="${hero}" alt="">` : '<span class="media-placeholder" aria-hidden="true">Q</span>'}
+        <span class="media-placeholder" aria-hidden="true">${SPARK_ICON}<strong>${escapeHtml(gameName)}</strong></span>
+        ${hero ? `<img loading="lazy" decoding="async" src="${hero}" alt="">` : ''}
         <span class="gradient" aria-hidden="true"></span>
         ${logotype ? `<img class="logotype" loading="lazy" decoding="async" src="${logotype}" alt="">` : ''}
         <span class="badge ${statusInfo.className}">${statusInfo.label}</span>
-        ${restriction?.show_age_gate ? '<span class="age">18+</span>' : ''}
+        ${restriction?.show_age_gate ? '<span class="age">年齡驗證</span>' : ''}
       </span>
       <span class="card-body">
         <span class="game-row">
-          ${tile ? `<img class="tile" loading="lazy" decoding="async" src="${tile}" alt="">` : '<span class="tile tile-placeholder" aria-hidden="true">Q</span>'}
+          ${tile ? `<img class="tile" loading="lazy" decoding="async" src="${tile}" alt="">` : `<span class="tile tile-placeholder" aria-hidden="true">${SPARK_ICON}</span>`}
           <span class="game">${escapeHtml(gameName)}</span>
         </span>
         <strong class="title">${escapeHtml(questName)}</strong>
         <span class="reward-row">
-          ${rewardImage ? `<img loading="lazy" decoding="async" src="${rewardImage}" alt="">` : '<span class="reward-placeholder" aria-hidden="true">✦</span>'}
+          ${rewardImage ? `<img loading="lazy" decoding="async" src="${rewardImage}" alt="">` : `<span class="reward-placeholder" aria-hidden="true">${SPARK_ICON}</span>`}
           <span class="reward-meta">
             <small class="reward-label">${[...meta.rewards].map(category => escapeHtml(REWARD_CAT_LABEL[category] || category)).join(' · ') || '獎勵'}</small>
             <strong class="reward-name" title="${escapeHtml(rewardName)}">${escapeHtml(rewardName)}</strong>
@@ -244,16 +259,22 @@ function cardTemplate(quest, meta, restriction) {
           ${[...meta.tasks].map(category => `<span class="chip">${escapeHtml(TASK_CAT_LABEL[category] || category)}</span>`).join('')}
         </span>
         <span class="footer-row">
-          <span class="regions">${regionInfo}</span>
-          <span class="publisher">${escapeHtml(publisher)}</span>
+          <span class="regions">${regionSummary}</span>
         </span>
+        <span class="card-bottom"><span class="publisher">${escapeHtml(publisher)}</span><span class="card-cta">查看任務 <span aria-hidden="true">→</span></span></span>
       </span>
     </button>
   `;
 }
 
+function heroImageURL(id, assets = {}) {
+  const image = [assets?.quest_bar_hero, assets?.hero]
+    .find(value => typeof value === 'string' && value.trim() && !/\.(webm|mp4)(?:[?#]|$)/i.test(value));
+  return assetURL(id, image);
+}
+
 function statusPresentation(status, expiresAt) {
-  if (status === 'upcoming') return {className: 'up', label: '◷ 即將開始'};
+  if (status === 'upcoming') return {className: 'up', label: '即將開始'};
   if (status === 'ended') return {className: 'end', label: '✓ 已結束'};
 
   const remaining = daysLeft(expiresAt);
@@ -262,23 +283,20 @@ function statusPresentation(status, expiresAt) {
 }
 
 function compactRegionTemplate(restriction) {
-  if (!restriction) return '<span class="region-note">地區未指定</span>';
+  if (!restriction) return '<span class="region-note">🌐 未提供地區資料</span>';
 
   const include = restriction.regions?.include || [];
   const exclude = restriction.regions?.exclude || [];
   if (restriction.is_global && include.length === 0 && exclude.length === 0) {
-    return '<span class="flag" title="全球可用">🌐</span><span class="region-note">全球</span>';
+    return '<span class="region-note global-region">🌐 全球適用</span>';
   }
-  if (include.length === 0 && exclude.length > 0) {
-    return `<span class="flag" aria-hidden="true">🌐</span><span class="region-note">排除 ${exclude.length} 個地區</span>`;
-  }
-  if (include.length === 0) return '<span class="region-note">地區未指定</span>';
-
-  const visible = include.slice(0, 3)
-    .map(code => `<span class="flag" title="${escapeHtml(regName(code))}">${escapeHtml(flag(code))}</span>`)
-    .join('');
-  const more = include.length > 3 ? `<span class="region-more">+${include.length - 3}</span>` : '';
-  return `${visible}${more}`;
+  if (!include.length && !exclude.length) return '<span class="region-note">🌐 未指定地區限制</span>';
+  const group = (codes, excluded = false) => {
+    if (!codes.length) return '';
+    const limit = include.length && exclude.length ? 1 : 2;
+    return `<span class="compact-region-group${excluded ? ' excluded' : ''}"><span class="region-caption">${excluded ? '不適用' : '限定地區'}</span>${codes.slice(0, limit).map(code => `<span class="compact-country">${escapeHtml(regionLabel(code))}</span>`).join('')}${codes.length > limit ? `<span class="region-more">另 ${codes.length - limit} 個地區 · 查看詳情</span>` : ''}</span>`;
+  };
+  return group(include) + group(exclude, true);
 }
 
 export function openQuestModal(quest, restriction) {
@@ -288,7 +306,7 @@ export function openQuestModal(quest, restriction) {
   const config = quest.config || {};
   const messages = config.messages || {};
   const id = String(quest.id);
-  const hero = assetURL(id, config.assets?.quest_bar_hero || config.assets?.hero);
+  const hero = heroImageURL(id, config.assets);
   const heroVideo = assetURL(id, config.assets?.hero_video);
   const questBarVideo = assetURL(
     id,
@@ -307,13 +325,12 @@ export function openQuestModal(quest, restriction) {
   const includeRegions = restriction?.regions?.include || [];
   const excludeRegions = restriction?.regions?.exclude || [];
   const gameLink = safeLink(config.application?.link);
-  const heroMedia = heroVideo
-    ? `<video src="${heroVideo}" autoplay muted loop playsinline poster="${hero || ''}"></video>`
-    : questBarVideo
-      ? `<video src="${questBarVideo}" autoplay muted loop playsinline poster="${hero || ''}"></video>`
-      : hero
-        ? `<img src="${hero}" alt="">`
-        : '<span class="media-placeholder" aria-hidden="true">Q</span>';
+  const video = heroVideo || questBarVideo;
+  const heroMedia = `
+    <span class="media-placeholder" aria-hidden="true">${SPARK_ICON}<strong>${escapeHtml(messages.game_title || config.application?.name || 'Discord Quest')}</strong></span>
+    ${hero ? `<img src="${hero}" alt="">` : ''}
+    ${video ? `<video src="${video}" autoplay muted loop playsinline poster="${hero || ''}"></video>` : ''}
+  `;
 
   elements.modalCard.innerHTML = `
     <button class="modal-close" type="button" aria-label="關閉任務詳情">
@@ -327,7 +344,7 @@ export function openQuestModal(quest, restriction) {
       ${logo ? `<img class="logo" src="${logo}" alt="">` : ''}
       <div class="modal-status">
         <span class="badge ${statusInfo.className}">${statusInfo.label}</span>
-        ${restriction?.show_age_gate ? '<span class="age">18+</span>' : ''}
+        ${restriction?.show_age_gate ? '<span class="age">年齡驗證</span>' : ''}
       </div>
     </div>
     <div class="modal-body">
@@ -352,7 +369,7 @@ export function openQuestModal(quest, restriction) {
 
       ${tasks.length ? `
         <section class="section">
-          <div class="section-title-row"><h3>任務內容</h3><span>條件：${escapeHtml(joinOperator)}</span></div>
+          <div class="section-title-row"><h3>如何完成任務</h3><span>${joinOperator === 'OR' ? '完成任一條件' : joinOperator === 'AND' ? '完成所有條件' : '請依 Discord 說明完成'}</span></div>
           <div class="tasks">
             ${tasks.map(task => taskTemplate(task)).join('')}
           </div>
@@ -370,10 +387,9 @@ export function openQuestModal(quest, restriction) {
 
       <section class="section">
         <div class="section-title-row"><h3>適用地區</h3></div>
-        <div class="region-chips">${regionDetailTemplate(restriction, includeRegions, excludeRegions)}</div>
+        <div class="region-details">${regionDetailTemplate(restriction, includeRegions, excludeRegions)}</div>
+        <p class="region-disclaimer">參與資格與獎勵以 Discord 內顯示的任務資訊為準。</p>
       </section>
-
-      ${colorSectionTemplate(config.colors)}
     </div>
   `;
 
@@ -381,7 +397,9 @@ export function openQuestModal(quest, restriction) {
   elements.modal.setAttribute('aria-hidden', 'false');
   setInert(elements.appShell, true);
   document.body.classList.add('modal-open');
-  requestAnimationFrame(() => elements.modalCard.querySelector('.modal-close')?.focus());
+  requestAnimationFrame(() => {
+    if (isQuestModalOpen()) elements.modalCard.querySelector('.modal-close')?.focus({preventScroll: true});
+  });
 }
 
 function infoItem(label, value) {
@@ -389,10 +407,22 @@ function infoItem(label, value) {
 }
 
 function taskTemplate(task) {
+  const type = String(task.type).toUpperCase();
+  const [label, instruction] = type.startsWith('WATCH_VIDEO')
+    ? ['觀看影片', '在 Discord 任務中觀看指定影片']
+    : type.startsWith('WATCH')
+      ? ['觀看內容', '依任務要求觀看指定內容']
+      : type.startsWith('STREAM')
+        ? ['直播遊戲', '透過 Discord 分享指定遊戲的畫面']
+        : type.startsWith('PLAY_ACTIVITY')
+          ? ['參與活動', '在 Discord 中參與指定活動']
+          : type.startsWith('PLAY')
+            ? ['遊玩遊戲', '依任務要求遊玩指定遊戲']
+            : ['任務條件', '請依 Discord 中的任務說明完成'];
   return `
     <div class="task">
-      <span class="ttype">${escapeHtml(String(task.type))}</span>
-      <span class="task-copy">完成目標</span>
+      <span class="ttype">${label}</span>
+      <span class="task-copy">${instruction}</span>
       <strong class="ttarget">${escapeHtml(formatTaskTarget(task))}</strong>
     </div>
   `;
@@ -416,7 +446,7 @@ function rewardTemplate(questId, reward) {
 
   return `
     <article class="reward-card">
-      ${image ? `<img src="${image}" alt="">` : '<span class="reward-placeholder" aria-hidden="true">✦</span>'}
+      ${image ? `<img src="${image}" alt="">` : `<span class="reward-placeholder" aria-hidden="true">${SPARK_ICON}</span>`}
       <div class="reward-copy">
         <strong class="rn">${escapeHtml(name)}</strong>
         <span class="rs">${escapeHtml(REWARD_TYPES[reward.type] || 'Reward')}${escapeHtml(quantity)}</span>
@@ -427,33 +457,24 @@ function rewardTemplate(questId, reward) {
 }
 
 function regionDetailTemplate(restriction, includeRegions, excludeRegions) {
-  if (!restriction) return '<span class="chip">未指定地區限制</span>';
+  if (!restriction) return '<p class="region-message">🌐 尚未提供地區限制資料</p>';
   if (restriction.is_global && includeRegions.length === 0 && excludeRegions.length === 0) {
-    return '<span class="chip">🌐 所有地區皆可參與</span>';
+    return '<p class="region-message global-region">🌐 全球適用 · 未列出地區限制</p>';
   }
 
-  const included = includeRegions
-    .map(code => `<span class="chip">${escapeHtml(flag(code))} ${escapeHtml(regName(code))}</span>`)
-    .join('');
-  const excluded = excludeRegions
-    .map(code => `<span class="chip exclude">⊘ ${escapeHtml(flag(code))} ${escapeHtml(regName(code))}</span>`)
-    .join('');
-  return included || excluded ? `${included}${excluded}` : '<span class="chip">未指定地區限制</span>';
-}
-
-function colorSectionTemplate(colors) {
-  const values = [colors?.primary, colors?.secondary]
-    .filter(value => typeof value === 'string' && /^#[0-9a-f]{3,8}$/i.test(value));
-  if (values.length === 0) return '';
-
-  return `
-    <section class="section">
-      <div class="section-title-row"><h3>任務主題色</h3></div>
-      <div class="colorbar">
-        ${values.map(value => `<span class="color-token"><span class="swatch" style="--swatch:${escapeHtml(value)}"></span><code class="color-value">${escapeHtml(value)}</code></span>`).join('')}
-      </div>
-    </section>
-  `;
+  const group = (codes, excluded = false) => codes.length ? `
+    <div class="region-group${excluded ? ' excluded' : ''}">
+      <h4>${excluded ? '無法參與的地區' : '限定參與地區'} <span>${codes.length}</span></h4>
+      <div class="region-chips">${codes.map(code => {
+        const country = regionInfo(code);
+        return `<span class="country-chip"><span class="country-flag" aria-hidden="true">${escapeHtml(country.flag)}</span><span class="country-names"><strong lang="zh-Hant">${escapeHtml(country.nameZh)}</strong><span lang="en">${escapeHtml(country.nameEn)}</span></span><code>${escapeHtml(country.code)}</code></span>`;
+      }).join('')}</div>
+    </div>` : '';
+  const lists = group(includeRegions) + group(excludeRegions, true);
+  const priorityNote = includeRegions.length && excludeRegions.length
+    ? '<p class="region-disclaimer">若地區同時出現在兩份清單，以「無法參與的地區」為準。</p>'
+    : '';
+  return lists ? `${priorityNote}${lists}` : '<p class="region-message">🌐 未指定地區限制</p>';
 }
 
 export function closeQuestModal() {

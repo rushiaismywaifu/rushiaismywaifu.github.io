@@ -1,6 +1,7 @@
 import {
   QUEST_CDN,
   REGION_NAMES,
+  REGION_NAMES_ZH,
   PLATFORM_NAMES,
   REWARD_TYPES,
   REWARD_CAT_LABEL,
@@ -32,17 +33,26 @@ export function setInert(element, value) {
 }
 
 export function normalizeRegionCode(value) {
-  return String(value ?? '').trim().toUpperCase();
+  return typeof value === 'string' ? value.trim().toUpperCase() : '';
+}
+
+export function canonicalRegionCode(value) {
+  const code = normalizeRegionCode(value);
+  return code === 'UK' ? 'GB' : code;
 }
 
 export function normalizeRegions(regions) {
-  const normalizeList = values => [
-    ...new Set(
-      (Array.isArray(values) ? values : [])
-        .map(normalizeRegionCode)
-        .filter(Boolean),
-    ),
-  ];
+  const normalizeList = values => {
+    const seen = new Set();
+    return (Array.isArray(values) ? values : [])
+      .map(normalizeRegionCode)
+      .filter(code => {
+        const canonical = canonicalRegionCode(code);
+        if (!canonical || seen.has(canonical)) return false;
+        seen.add(canonical);
+        return true;
+      });
+  };
 
   if (Array.isArray(regions)) {
     return {include: normalizeList(regions), exclude: []};
@@ -58,21 +68,69 @@ export function normalizeRegions(regions) {
   return {include: [], exclude: []};
 }
 
+function createRegionNames(locale) {
+  try {
+    if (Intl.DisplayNames.supportedLocalesOf([locale]).length === 0) return null;
+    return new Intl.DisplayNames([locale], {type: 'region', fallback: 'none'});
+  } catch {
+    return null;
+  }
+}
+
+const regionNamesZh = createRegionNames('zh-Hant');
+const regionNamesEn = createRegionNames('en');
+const regionInfoCache = new Map();
+
+function localizedRegionName(displayNames, code, fallback) {
+  try {
+    const name = displayNames?.of(code);
+    return typeof name === 'string' && name && name !== code ? name : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// Return plain text only; callers that build HTML must escape these fields.
+// Preserve the source code for display while using ISO GB for the UK alias.
+export function regionInfo(countryCode) {
+  const code = normalizeRegionCode(countryCode);
+  if (regionInfoCache.has(code)) return regionInfoCache.get(code);
+
+  const canonicalCode = canonicalRegionCode(code);
+  const known = /^[A-Z]{2}$/.test(canonicalCode)
+    && Object.prototype.hasOwnProperty.call(REGION_NAMES, canonicalCode);
+  const info = Object.freeze({
+    code,
+    canonicalCode,
+    known,
+    flag: known
+      ? String.fromCodePoint(...[...canonicalCode].map(character => 127397 + character.charCodeAt(0)))
+      : code ? '🏳️' : '🌐',
+    nameZh: known
+      ? localizedRegionName(regionNamesZh, canonicalCode, REGION_NAMES_ZH[canonicalCode])
+      : code ? '未知地區' : '全部地區',
+    nameEn: known
+      ? localizedRegionName(regionNamesEn, canonicalCode, REGION_NAMES[canonicalCode])
+      : code ? 'Unknown region' : 'All regions',
+  });
+
+  // The finite country registry bounds the cache even for malformed input.
+  if (known || !code) regionInfoCache.set(code, info);
+  return info;
+}
+
+export function regionLabel(countryCode) {
+  const info = regionInfo(countryCode);
+  return `${info.flag} ${info.nameZh} ${info.nameEn}${info.code ? ` · ${info.code}` : ''}`;
+}
+
 export function flag(countryCode) {
-  if (!countryCode) return '🌐';
-
-  const normalized = normalizeRegionCode(countryCode);
-  const code = normalized === 'UK' ? 'GB' : normalized;
-  if (code.length !== 2 || !/^[A-Z]{2}$/.test(code)) return '🏳️';
-
-  return String.fromCodePoint(
-    ...[...code].map(character => 127397 + character.charCodeAt(0)),
-  );
+  return regionInfo(countryCode).flag;
 }
 
 export function regName(countryCode) {
-  const code = normalizeRegionCode(countryCode);
-  return REGION_NAMES[code] || countryCode || '';
+  const info = regionInfo(countryCode);
+  return info.known ? info.nameEn : info.code;
 }
 
 export function statusOf(quest, now = Date.now()) {
@@ -188,21 +246,17 @@ function restrictionFor(quest, regionsMap) {
 }
 
 export function matchesRegion(quest, countryCode, regionsMap) {
-  const selectedCode = normalizeRegionCode(countryCode);
+  const selectedCode = canonicalRegionCode(countryCode);
   if (!selectedCode) return true;
 
   const restriction = restrictionFor(quest, regionsMap);
   if (!restriction) return true;
 
   const {include, exclude} = normalizeRegions(restriction.regions);
-  const aliases = selectedCode === 'UK' || selectedCode === 'GB'
-    ? new Set(['UK', 'GB'])
-    : new Set([selectedCode]);
-
   // Exclusions remain authoritative even when a record is marked global.
-  if (exclude.some(code => aliases.has(code))) return false;
+  if (exclude.some(code => canonicalRegionCode(code) === selectedCode)) return false;
   if (include.length === 0) return true;
-  return include.some(code => aliases.has(code));
+  return include.some(code => canonicalRegionCode(code) === selectedCode);
 }
 
 export function matchesAge(quest, ageFilter, regionsMap) {

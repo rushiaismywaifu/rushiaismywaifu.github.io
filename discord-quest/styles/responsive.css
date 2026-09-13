@@ -4,8 +4,36 @@
   }
 
   .topbar {
-    grid-template-columns: minmax(10rem, auto) minmax(12rem, 1fr) auto;
-    gap: var(--space-4);
+    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    gap: var(--space-3);
+  }
+
+  .topbar-description,
+  .topbar-divider,
+  .result-pill {
+    display: none;
+  }
+
+  .refresh-btn > span {
+    display: none;
+  }
+
+  .refresh-btn {
+    width: 2.75rem;
+    padding-inline: 0;
+  }
+
+  .discovery-banner {
+    padding: 1.5rem;
+  }
+
+  .discovery-copy > p:last-child {
+    max-width: 24rem;
+  }
+
+  .quest-art {
+    margin-right: -1rem;
+    flex-basis: 34%;
   }
 }
 
@@ -48,7 +76,8 @@
   }
 
   .sidebar-close,
-  .mobile-filter-btn {
+  .mobile-filter-btn,
+  .apply-filters {
     display: inline-flex;
   }
 
@@ -99,7 +128,7 @@
 
 @media (max-width: 40rem) {
   .page-title {
-    font-size: 1.28rem;
+    font-size: 1rem;
   }
 
   .topbar-actions {
@@ -146,6 +175,40 @@
     grid-row: 2;
   }
 
+  .summary-arrow {
+    display: none;
+  }
+
+  .discovery-banner {
+    min-height: 13rem;
+    padding: 1.3rem;
+  }
+
+  .quest-art {
+    position: absolute;
+    top: 2.6rem;
+    right: -1.8rem;
+    width: 10.5rem;
+    opacity: 0.65;
+  }
+
+  .discovery-copy > p:last-child {
+    max-width: 16rem;
+    font-size: 0.72rem;
+  }
+
+  .discovery-copy h2 {
+    font-size: 1.65rem;
+  }
+
+  .mobile-break {
+    display: block;
+  }
+
+  .banner-tag {
+    display: none;
+  }
+
   .results-head {
     flex-direction: column;
     align-items: stretch;
@@ -153,7 +216,7 @@
   }
 
   .results-toolbar {
-    justify-content: flex-start;
+    justify-content: flex-end;
     width: 100%;
   }
 
@@ -208,7 +271,8 @@
   }
 
   .kv,
-  .rewards {
+  .rewards,
+  .region-chips {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -244,7 +308,7 @@
   }
 
   .search-bar input {
-    padding-right: 0.85rem;
+    padding-right: 2.75rem;
   }
 
   .refresh-btn {
@@ -258,7 +322,7 @@
   }
 
   .summary-label {
-    font-size: 0.64rem;
+    font-size: 0.68rem;
   }
 
   .reward-row {
@@ -267,6 +331,19 @@
 
   .footer-row {
     align-items: flex-end;
+  }
+
+  .filter-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sort-control {
+    width: 100%;
+  }
+
+  .sort-control select {
+    flex: 1;
   }
 }
 
