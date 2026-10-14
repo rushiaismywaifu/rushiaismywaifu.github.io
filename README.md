@@ -9,6 +9,7 @@
 ## 📌 功能模組與頁面盤點
 
 ### 🏠 1. 主頁面 (`/index.html`)
+* **幽蝶庭園主題**：首頁採用露西婭靈感的墨黑、薄荷綠與象牙白，搭配自繪 SVG 蝴蝶、哥德拱框及襯線標題。樣式位於 `home.css`、裝飾位於 `assets/rushia-emblem.svg`，不影響各子專案。支援手機排版、鍵盤導覽與減少動態偏好；不依賴外部字型或圖片服務。
 * **主頁面導航區塊**：快速前往各個前端子專案與獨立工具網頁（新分頁開啟）。
 * **🧪 表單元件測試**：提供標準 HTML 各類輸入框、核取方塊、單選鈕、下拉選單及文字區域的樣式與互動測試。
 * **🎧 Ayame 音訊播放器**：收錄百鬼綾目（Nakiri Ayame）經典可愛語音片段的即時播放器。
@@ -65,13 +66,25 @@
 python3 -m unittest discover -s tests
 ```
 
+主頁瀏覽器測試共用音樂播放器已有的 Playwright 開發依賴（正式網站仍為純靜態）：
+
+```sh
+npm ci --prefix music-player
+cd music-player && npx playwright install chromium && cd ..
+node --test tests/homepage.browser.cjs
+```
+
+可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及 Bilibili 工具的輸入驗證與模擬回應，不呼叫外部音訊或 Worker。
+
 ---
 
 ## 📂 專案目錄結構
 
 ```text
 rushiaismywaifu.github.io/
-├── index.html                  # 網站首頁（整合導航、表單測試、語音、B站短網址）
+├── index.html                  # 幽蝶庭園首頁（導航、表單、語音、B站短網址）
+├── home.css                    # 首頁專屬露西婭主題
+├── assets/rushia-emblem.svg     # 自繪哥德蝴蝶裝飾
 ├── 404.html                    # 自訂 404 頁面（GitHub Pages 自動套用）
 ├── robots.txt / sitemap.xml    # 搜尋引擎索引設定
 ├── favicon.ico                 # 網站圖示

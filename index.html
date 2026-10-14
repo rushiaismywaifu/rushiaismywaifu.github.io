@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Rushia My Beloved 的 GitHub Pages 華麗入口網站：前台工具、數位花園、遊戲與影音實驗室。" />
-  <meta name="theme-color" content="#090a1a" />
+  <meta name="description" content="Rushia My Beloved 的幽蝶庭園：薄荷綠與哥德蝴蝶交織的個人首頁，收錄前端工具、遊戲與影音實驗。" />
+  <meta name="theme-color" content="#0b1210" />
 
-  <title>Rushia My Beloved · Digital Garden & Lab</title>
+  <title>Rushia My Beloved · 幽蝶庭園</title>
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="canonical" href="https://rushiaismywaifu.github.io/" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Rushia我婆 · Digital Garden" />
-  <meta property="og:description" content="雖然她死ㄌ，但數位花園與前端工具永存！" />
+  <meta property="og:title" content="Rushia我婆 · 幽蝶庭園" />
+  <meta property="og:description" content="讓靈感有處棲息。收錄程式、音樂，以及日常的小小魔法。" />
   <meta property="og:url" content="https://rushiaismywaifu.github.io" />
   <meta property="og:image" content="https://rushiaismywaifu.github.io/image.png" />
   <meta property="og:type" content="website" />
@@ -21,561 +21,70 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Rushia我婆 · Digital Garden" />
-  <meta name="twitter:description" content="雖然她死ㄌ，但數位花園與前端工具永存！" />
+  <meta name="twitter:title" content="Rushia我婆 · 幽蝶庭園" />
+  <meta name="twitter:description" content="讓靈感有處棲息。收錄程式、音樂，以及日常的小小魔法。" />
   <meta name="twitter:image" content="https://rushiaismywaifu.github.io/image.png" />
 
-  <style>
-    :root {
-      --bg: #070812;
-      --bg-2: rgba(13, 16, 38, 0.75);
-      --text: #f8fbff;
-      --muted: rgba(248, 251, 255, 0.7);
-      --soft: rgba(248, 251, 255, 0.12);
-      --line: rgba(255, 255, 255, 0.15);
-      --line-glow: rgba(110, 231, 255, 0.45);
-      --cyan: #6ee7ff;
-      --blue: #7796ff;
-      --violet: #ba7cff;
-      --pink: #ff6ec7;
-      --gold: #ffd166;
-      --green: #75f7b1;
-      --radius: 24px;
-      color-scheme: dark;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      overflow-x: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 15% 15%, rgba(110, 231, 255, 0.22), transparent 32%),
-        radial-gradient(circle at 85% 85%, rgba(255, 110, 199, 0.2), transparent 32%),
-        radial-gradient(circle at 50% 60%, rgba(186, 124, 255, 0.18), transparent 40%),
-        linear-gradient(135deg, #050611 0%, #0b0d24 50%, #120719 100%);
-      background-attachment: fixed;
-    }
-
-    /* 網格背景 */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -4;
-      background-image:
-        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-      background-size: 50px 50px;
-      mask-image: radial-gradient(circle at 50% 30%, #000 0 60%, transparent 90%);
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 50;
-      background: linear-gradient(transparent 0 49%, rgba(255,255,255,.02) 50%, transparent 51%);
-      background-size: 100% 4px;
-      opacity: 0.35;
-    }
-
-    a { color: inherit; text-decoration: none; }
-    
-    /* 極光與星空 */
-    #stars {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -3;
-      pointer-events: none;
-    }
-
-    .aurora {
-      position: fixed;
-      inset: -20vh -20vw;
-      z-index: -5;
-      background:
-        conic-gradient(from 120deg at 30% 40%, rgba(110,231,255,.15), transparent 25%, rgba(255,110,199,.15), transparent 60%, rgba(110,231,255,.15)),
-        conic-gradient(from 260deg at 70% 60%, rgba(186,124,255,.18), transparent 30%, rgba(255,209,102,.12), transparent 65%, rgba(110,231,255,.14));
-      filter: blur(65px) saturate(1.3);
-      animation: auroraSpin 30s linear infinite alternate;
-    }
-    @keyframes auroraSpin {
-      0% { transform: rotate(0deg) scale(1); }
-      100% { transform: rotate(360deg) scale(1.15); }
-    }
-
-    .glow-cursor {
-      position: fixed;
-      width: 400px;
-      height: 400px;
-      left: 0;
-      top: 0;
-      z-index: -2;
-      border-radius: 50%;
-      pointer-events: none;
-      translate: -50% -50%;
-      background: radial-gradient(circle, rgba(110,231,255,.22), rgba(255,110,199,.08) 45%, transparent 70%);
-      filter: blur(15px);
-      opacity: 0; /* 觸控裝置無滑鼠事件,預設隱藏避免光暈卡在左上角 */
-      transition: opacity .3s ease;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .aurora { animation: none; }
-      .pulse-dot { animation: none; }
-    }
-
-    .wrap {
-      width: min(1180px, calc(100% - 40px));
-      margin: 0 auto;
-    }
-
-    /* 頂部導航 */
-    .site-header {
-      position: sticky;
-      top: 16px;
-      z-index: 30;
-      margin-top: 16px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      padding: 12px 20px;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 999px;
-      background: rgba(7, 8, 18, 0.65);
-      backdrop-filter: blur(24px) saturate(1.4);
-      box-shadow: 0 16px 50px rgba(0,0,0,.35);
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: .02em;
-    }
-
-    .brand-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--cyan), var(--violet) 50%, var(--pink));
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      box-shadow: 0 0 25px rgba(110,231,255,.35);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      transition: all .2s;
-    }
-
-    .nav-links a:hover {
-      color: #fff;
-      background: rgba(255,255,255,.08);
-    }
-
-    .nav-links .btn-gh {
-      background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.2);
-      color: #fff;
-      padding: 8px 18px;
-    }
-
-    .nav-links .btn-gh:hover {
-      background: rgba(255,255,255,.2);
-      box-shadow: 0 0 20px rgba(255,255,255,.15);
-    }
-
-    /* Hero */
-    .hero {
-      padding: 70px 0 50px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color: var(--cyan);
-      margin-bottom: 24px;
-    }
-
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #75f7b1;
-      box-shadow: 0 0 10px #75f7b1;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.3); }
-    }
-
-    h1 {
-      font-size: clamp(2.4rem, 5vw, 4.2rem);
-      font-weight: 900;
-      line-height: 1.15;
-      margin: 0 0 20px;
-    }
-
-    .gradient-text {
-      background: linear-gradient(135deg, #fff 0%, var(--cyan) 50%, var(--pink) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-subtitle {
-      font-size: clamp(1.05rem, 2vw, 1.3rem);
-      color: var(--muted);
-      max-width: 680px;
-      margin: 0 auto 36px;
-      line-height: 1.6;
-    }
-
-    .stats-row {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .stat-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.1);
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .stat-badge strong { color: #fff; font-size: 15px; }
-
-    /* Sections */
-    section.section-block {
-      padding: 50px 0;
-    }
-
-    .section-head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 28px;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-      padding-bottom: 16px;
-    }
-
-    .section-head h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-head p {
-      color: var(--muted);
-      margin: 0;
-      font-size: 0.95rem;
-    }
-
-    /* Grid Cards */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 16px;
-      transition: all .3s cubic-bezier(0.2,0.8,0.2,1);
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(16px);
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--cyan), var(--pink));
-      opacity: 0;
-      transition: opacity .3s;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      border-color: var(--line-glow);
-      box-shadow: 0 20px 45px rgba(0,0,0,.5), 0 0 30px rgba(110,231,255,.15);
-    }
-
-    .card:hover::before { opacity: 1; }
-
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
-      display: grid;
-      place-items: center;
-      font-size: 24px;
-    }
-
-    .card-tag {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(110,231,255,.12);
-      color: var(--cyan);
-      border: 1px solid rgba(110,231,255,.25);
-    }
-
-    .card-tag.pink { background: rgba(255,110,199,.12); color: var(--pink); border-color: rgba(255,110,199,.25); }
-    .card-tag.gold { background: rgba(255,209,102,.12); color: var(--gold); border-color: rgba(255,209,102,.25); }
-    .card-tag.green { background: rgba(117,247,177,.12); color: var(--green); border-color: rgba(117,247,177,.25); }
-
-    .card h3 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin: 0 0 8px;
-      color: #fff;
-    }
-
-    .card p {
-      font-size: 0.9rem;
-      color: var(--muted);
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--cyan);
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,.08);
-    }
-
-    .card:hover .card-footer { color: var(--pink); }
-
-    .ecosystem-repos {
-      display: inline-block;
-      margin-top: 12px;
-      color: var(--cyan);
-      font-size: 0.9rem;
-      text-decoration: underline;
-      text-underline-offset: 4px;
-    }
-
-    .ecosystem-repos:hover { color: var(--pink); }
-
-    #ecosystem .card:focus-visible,
-    .ecosystem-repos:focus-visible {
-      outline: 2px solid var(--cyan);
-      outline-offset: 4px;
-    }
-
-    /* 內嵌實驗室面板 */
-    .lab-panel {
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 30px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(16px);
-    }
-
-    .lab-head {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      font-size: 1.3rem;
-      font-weight: 800;
-    }
-
-    /* 表單與控制項 */
-    .input-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    input[type="text"], input[type="url"], input[type="email"], select, textarea {
-      flex: 1;
-      min-width: 240px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 14px;
-      padding: 12px 16px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-      transition: all .2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 0 3px rgba(110,231,255,.2);
-    }
-
-    .btn-action {
-      background: linear-gradient(135deg, var(--cyan), var(--blue));
-      color: #000;
-      font-weight: 800;
-      border: none;
-      border-radius: 14px;
-      padding: 12px 24px;
-      cursor: pointer;
-      transition: all .2s;
-      box-shadow: 0 6px 20px rgba(110,231,255,.3);
-    }
-
-    .btn-action:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(110,231,255,.5);
-    }
-
-    .btn-action:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .result-box {
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 14px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px dashed rgba(255,255,255,.2);
-      font-size: 14px;
-      display: none;
-    }
-
-    .copy-btn {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      color: #fff;
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-
-    .copy-btn:hover { background: rgba(255,255,255,.2); }
-
-    /* Footer */
-    footer {
-      padding: 60px 0 40px;
-      text-align: center;
-      border-top: 1px solid rgba(255,255,255,.1);
-      color: var(--muted);
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="home.css" />
 </head>
-<body>
-  <div class="aurora"></div>
-  <canvas id="stars"></canvas>
-  <div class="glow-cursor" id="glowCursor"></div>
+<body id="top">
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <div class="garden-haze" aria-hidden="true"></div>
+  <canvas id="stars" aria-hidden="true"></canvas>
 
   <!-- 頂部導航 -->
   <header class="site-header wrap">
-    <nav class="nav">
+    <nav class="nav" aria-label="主要導覽">
       <a href="/" class="brand">
-        <div class="brand-mark">🦋</div>
-        <span>Rushia's Lab</span>
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M20 21C15 7 5 5 4 8C2 17 10 21 16 23C7 22 6 29 9 32C14 34 19 28 20 24C21 28 26 34 31 32C34 29 33 22 24 23C30 21 38 17 36 8C35 5 25 7 20 21Z" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M20 17V27M20 18L16 12M20 18L24 12" stroke="currentColor"/>
+        </svg>
+        <span><span class="brand-name">Rushia's Garden</span><span class="brand-caption">CODE · MUSIC · LITTLE MAGIC</span></span>
       </a>
       <div class="nav-links">
-        <a href="#featured">🎮 實用專案</a>
-        <a href="#lab">🧪 互動實驗室</a>
-        <a href="#ecosystem">🔗 生態連結</a>
+        <a href="#featured">實用專案</a>
+        <a href="#lab">互動實驗室</a>
+        <a href="#ecosystem">生態連結</a>
         <a href="https://github.com/rushiaismywaifu" target="_blank" rel="noreferrer" class="btn-gh">GitHub ↗</a>
       </div>
     </nav>
   </header>
 
-  <main>
-    <!-- Hero Banner -->
-    <section class="hero wrap">
-      <div class="eyebrow"><span class="pulse-dot"></span> GitHub Pages Live · Rushia My Beloved</div>
-      <h1><span class="gradient-text">Digital Garden</span><br />for Cyber-VTuber Builds.</h1>
-      <p class="hero-subtitle">
-        收錄 Discord 任務探索器、Web Audio 頻譜音樂播放器、二分搜尋猜數字，以及各項前端技術與 API 實驗室。
-      </p>
-      <div class="stats-row">
-        <div class="stat-badge">📦 核心模組 <strong>8+ 款</strong></div>
-        <div class="stat-badge">🎨 視覺風格 <strong>Glassmorphism</strong></div>
-        <div class="stat-badge">⚡ 網站響應 <strong>100% Client-side</strong></div>
+  <main id="main">
+    <!-- 幽蝶庭園：以露西婭的薄荷綠、蝴蝶與哥德線條為靈感 -->
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow">A little sanctuary on the web</div>
+        <h1 id="hero-title">讓靈感，<br />在<em>幽蝶庭園</em>棲息。</h1>
+        <p class="hero-subtitle">歡迎來到 Rushia 的小小世界。<br />在程式與音樂之間，收藏實用工具、奇妙實驗，<br class="desktop-break" />以及那些值得留下的日常魔法。</p>
+        <div class="hero-actions">
+          <a class="hero-primary" href="#featured">探索庭園 <span aria-hidden="true">↗</span></a>
+          <a class="hero-secondary" href="#ecosystem">漫遊其他作品 ↗</a>
+        </div>
+        <p class="hero-note">For Rushia, with a little love. — ずっと、大好き。</p>
       </div>
+      <figure class="hero-art" aria-hidden="true">
+        <img src="assets/rushia-emblem.svg" width="460" height="520" alt="" />
+        <figcaption>THE BUTTERFLY KEEPS OUR LITTLE SECRETS</figcaption>
+      </figure>
     </section>
+
+    <div class="garden-index wrap" aria-label="庭園一覽">
+      <div><strong>08</strong><span>工具與遊戲 · TOOLS</span></div>
+      <div><strong>08</strong><span>獨立作品 · PROJECTS</span></div>
+      <div><strong>∞</strong><span>未完的靈感 · IDEAS</span></div>
+    </div>
 
     <!-- 主打專案區 -->
     <section id="featured" class="section-block wrap">
       <div class="section-head">
         <div>
-          <h2>🎮 實用專案與遊戲</h2>
-          <p>點擊卡片新分頁開啟各獨立模組（Clean URLs 支援）</p>
+          <span class="section-kicker">01 / THE COLLECTION</span>
+          <h2>實用專案與遊戲</h2>
+          <p>一些讓日常更輕鬆的小作品。點擊卡片，在新分頁與它相遇。</p>
         </div>
+        <span class="section-ornament" aria-hidden="true"></span>
       </div>
 
       <div class="grid">
@@ -689,24 +198,25 @@
     <section id="lab" class="section-block wrap">
       <div class="section-head">
         <div>
-          <h2>🧪 內嵌互動實驗室</h2>
-          <p>首頁專屬前端 API 與互動元件測試台</p>
+          <span class="section-kicker">02 / LITTLE EXPERIMENTS</span>
+          <h2>互動實驗室</h2>
+          <p>不必離開庭園，在這裡聽首歌、試點新東西。</p>
         </div>
       </div>
 
       <!-- Ayame 語音板 -->
       <div class="lab-panel">
         <div class="lab-head"><span>🌸</span> 百鬼綾目 (Ayame) 經典音軌板</div>
-        <p style="color: var(--muted); margin-bottom: 16px;">點擊下方播放音訊，體驗即時控制：</p>
+        <p class="lab-description">點擊下方播放音訊，體驗即時控制：</p>
         <audio id="ayameAudio" controls preload="none" src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"></audio>
       </div>
 
       <!-- Bilibili 短網址 -->
       <div class="lab-panel">
         <div class="lab-head"><span>🔗</span> Bilibili 短網址生成與過濾器</div>
-        <p style="color: var(--muted); margin-bottom: 16px;">自動過濾 B 站繁雜追蹤參數，呼叫 Cloudflare Worker 生成純淨短網址：</p>
+        <p class="lab-description">自動過濾 B 站繁雜追蹤參數，呼叫 Cloudflare Worker 生成純淨短網址：</p>
         <div class="input-group">
-          <input type="url" id="biliUrlInput" placeholder="請輸入 Bilibili 網址 (如 https://www.bilibili.com/video/BV...)" />
+          <input type="url" id="biliUrlInput" aria-label="Bilibili 網址" placeholder="請輸入 Bilibili 網址 (如 https://www.bilibili.com/video/BV...)" />
           <button type="button" class="btn-action" id="genBtn">產生短網址</button>
         </div>
         <div id="shortUrlResult" class="result-box"></div>
@@ -716,13 +226,13 @@
       <div class="lab-panel">
         <div class="lab-head"><span>⚙️</span> UI 元件樣式展示</div>
         <div class="input-group">
-          <input type="text" placeholder="文字輸入框展示..." />
-          <select>
-            <option>選項 A：Cyber Pink</option>
-            <option>選項 B：Neon Cyan</option>
-            <option>選項 C：Digital Purple</option>
+          <input type="text" aria-label="文字輸入框展示" placeholder="寫下一點靈感..." />
+          <select aria-label="主題配色展示">
+            <option>選項 A：幽蝶薄荷</option>
+            <option>選項 B：月光象牙</option>
+            <option>選項 C：森林墨黑</option>
           </select>
-          <button type="button" class="btn-action" style="background: linear-gradient(135deg, var(--pink), var(--violet)); color: #fff;">測試按鈕</button>
+          <button type="button" class="btn-action btn-outline">測試按鈕</button>
         </div>
       </div>
     </section>
@@ -731,10 +241,12 @@
     <section id="ecosystem" class="section-block wrap">
       <div class="section-head">
         <div>
-          <h2>🔗 作者生態專案連結</h2>
+          <span class="section-kicker">03 / BEYOND THE GARDEN</span>
+          <h2>作者生態專案連結</h2>
           <p>同帳號下、由其他儲存庫獨立維護的 GitHub Pages；點擊卡片於新分頁開啟。</p>
           <a class="ecosystem-repos" href="https://github.com/rushiaismywaifu?tab=repositories" target="_blank" rel="noopener noreferrer">查看所有 GitHub 儲存庫 ↗</a>
         </div>
+        <span class="section-ornament" aria-hidden="true"></span>
       </div>
 
       <div class="grid">
@@ -831,81 +343,33 @@
   </main>
 
   <footer>
-    <div class="wrap">
-      <p>Powered by <strong>Rushia My Beloved 🌸</strong> · Built with Digital Garden Glassmorphism Aesthetics.</p>
+    <div class="wrap footer-inner">
+      <div><div class="footer-name">Rushia My Beloved</div><div class="footer-note">用一點程式，留住一點喜歡。 · Made with love, always.</div></div>
+      <a class="footer-top" href="#top">回到庭園入口 ↑</a>
     </div>
   </footer>
 
   <script>
     "use strict";
 
-    /* ========================================================
-     * 1. 視覺特效：星空 Canvas 與游標跟隨發光
-     * ======================================================== */
+    // 靜態微光：只在載入與視窗變更時繪製，不持續執行動畫迴圈。
     document.addEventListener("DOMContentLoaded", () => {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      // 游標微光跟隨(首次移動才顯示,觸控裝置不會出現殘留光暈)
-      const cursor = document.getElementById("glowCursor");
-      window.addEventListener("mousemove", (e) => {
-        cursor.style.opacity = "1";
-        cursor.style.left = `${e.clientX}px`;
-        cursor.style.top = `${e.clientY}px`;
-      });
-
-      // 星空 Canvas
       const canvas = document.getElementById("stars");
       const ctx = canvas.getContext("2d");
-      let width, height;
-      let stars = [];
-
-      function resize() {
-        const oldW = width, oldH = height;
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        // 視窗尺寸改變時,等比例重佈星點,避免星星集中在舊區域
-        if (stars.length && oldW && oldH) {
-          stars.forEach(s => {
-            s.x = (s.x / oldW) * width;
-            s.y = (s.y / oldH) * height;
-          });
-          if (reduceMotion) drawStarsOnce();
-        }
-      }
-      window.addEventListener("resize", resize);
-      resize();
-
-      stars = Array.from({ length: 80 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: Math.random() * 1.8 + 0.5,
-        alpha: Math.random(),
-        speed: (Math.random() - 0.5) * 0.015
+      if (!ctx) return;
+      const lights = Array.from({ length: 42 }, () => ({
+        x: Math.random(), y: Math.random(), alpha: Math.random() * 0.5 + 0.1
       }));
-
-      function drawStarsOnce() {
-        ctx.clearRect(0, 0, width, height);
-        stars.forEach(s => {
-          ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
-          ctx.fillRect(s.x, s.y, s.size, s.size);
+      function drawLights() {
+        canvas.width = window.innerWidth;
+        canvas.height = 850;
+        lights.forEach(light => {
+          ctx.fillStyle = `rgba(167, 217, 185, ${light.alpha})`;
+          ctx.fillRect(light.x * canvas.width, light.y * canvas.height, 1, 1);
         });
       }
-
-      function renderStars() {
-        stars.forEach(s => {
-          s.alpha += s.speed;
-          if (s.alpha > 1 || s.alpha < 0.2) s.speed = -s.speed;
-        });
-        drawStarsOnce();
-        requestAnimationFrame(renderStars);
-      }
-
-      // 尊重減少動態偏好:僅繪製靜態星空,不啟動閃爍動畫
-      if (reduceMotion) {
-        drawStarsOnce();
-      } else {
-        renderStars();
-      }
+      window.addEventListener("resize", drawLights);
+      drawLights();
     });
 
     /* ========================================================

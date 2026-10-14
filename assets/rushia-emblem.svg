@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="520" viewBox="0 0 460 520" fill="none">
+  <defs>
+    <radialGradient id="mist"><stop stop-color="#83cdb0" stop-opacity=".15"/><stop offset="1" stop-color="#83cdb0" stop-opacity="0"/></radialGradient>
+    <linearGradient id="wing" x1="130" y1="185" x2="260" y2="340" gradientUnits="userSpaceOnUse"><stop stop-color="#bcecd1"/><stop offset="1" stop-color="#477763"/></linearGradient>
+    <path id="leftWing" d="M228 267C213 222 163 177 121 177C115 222 137 253 183 270C148 269 132 289 135 319C176 332 211 307 228 276Z"/>
+    <path id="vine" d="M92 410C71 353 65 305 81 256M81 336C62 333 53 320 50 304C68 307 80 320 81 336ZM79 305C99 296 109 281 109 264C90 273 79 286 79 305ZM78 367C57 365 43 353 39 338C59 341 73 354 78 367Z"/>
+  </defs>
+  <ellipse cx="230" cy="264" rx="220" ry="230" fill="url(#mist)"/>
+  <g stroke="#8eb6a0" stroke-opacity=".38">
+    <path d="M92 423V212C92 127 150 79 230 32C310 79 368 127 368 212V423Z"/>
+    <path d="M104 411V216C104 138 156 91 230 47C304 91 356 138 356 216V411Z" stroke-opacity=".2"/>
+    <path d="M117 399V220C117 148 170 103 230 66C290 103 343 148 343 220V399Z"/>
+    <path d="M230 18V70M207 49H253M71 423H389M90 435H370"/>
+    <circle cx="230" cy="259" r="121" stroke-dasharray="2 8"/>
+    <circle cx="230" cy="259" r="102" stroke-opacity=".16"/>
+    <path d="M230 82V103M218 94H242M230 370V393M218 382H242"/>
+    <use href="#vine"/>
+    <use href="#vine" transform="translate(460 0) scale(-1 1)"/>
+  </g>
+  <path d="M243 115A19 19 0 1 1 220 88A17 17 0 0 0 243 115Z" fill="#c9c3a4"/>
+  <g fill="url(#wing)" stroke="#b1e0c5" stroke-width=".8">
+    <use href="#leftWing"/>
+    <use href="#leftWing" transform="translate(460 0) scale(-1 1)"/>
+  </g>
+  <g stroke="#193f31" stroke-opacity=".65" stroke-width="1.2">
+    <path d="M225 265L132 191M226 267L147 231M224 279L149 307M218 283L174 319M235 265L328 191M234 267L313 231M236 279L311 307M242 283L286 319"/>
+    <path d="M160 213L161 184M181 231L191 204M164 238L142 250M300 213L299 184M279 231L269 204M296 238L318 250"/>
+  </g>
+  <path d="M230 246V290" stroke="#d0ead7" stroke-width="4" stroke-linecap="round"/>
+  <path d="M228 249Q223 228 214 230M232 249Q237 228 246 230" stroke="#d0ead7" stroke-width="1.2"/>
+  <g fill="#c9c3a4">
+    <path d="M230 444L235 452L230 460L225 452Z"/>
+    <path d="M54 214L58 223L54 232L50 223ZM406 214L410 223L406 232L402 223Z"/>
+    <circle cx="172" cy="141" r="2"/><circle cx="288" cy="141" r="2"/>
+    <circle cx="67" cy="180" r="1.5"/><circle cx="393" cy="180" r="1.5"/>
+  </g>
+  <path d="M230 460V492M216 479L230 493L244 479M173 454H205M255 454H287" stroke="#8eb6a0" stroke-opacity=".4"/>
+</svg>
