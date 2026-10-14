@@ -14,6 +14,8 @@ before(async () => {
   const routes = {
     '/': ['index.html', 'text/html; charset=utf-8'],
     '/home.css': ['home.css', 'text/css'],
+    '/ui-demo.css': ['ui-demo.css', 'text/css'],
+    '/ui-demo.js': ['ui-demo.js', 'text/javascript'],
     '/assets/rushia-emblem.svg': ['assets/rushia-emblem.svg', 'image/svg+xml'],
     '/favicon.ico': ['favicon.ico', 'image/x-icon'],
   };
@@ -40,7 +42,7 @@ async function openPage(options = {}) {
   const page = await browser.newPage(options);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  // All assets are local. Do not depend on production audio or Worker services.
+  // All assets are local. Do not depend on production audio services.
   await page.route('**/*', route => route.request().url().startsWith(`${baseURL}/`)
     ? route.continue() : route.abort());
   await page.goto(baseURL);
@@ -95,24 +97,162 @@ test('default theme uses the mint palette and gentle butterfly animation', async
   }
 });
 
-test('Bilibili validation and result UI still work after the theme change', async () => {
+test('lab retains audio and form controls without the removed short URL feature', async () => {
   const { page, errors } = await openPage({ reducedMotion: 'reduce' });
   try {
-    await page.locator('#genBtn').click();
-    await expect(page.locator('#shortUrlResult')).toContainText('請輸入');
-    await page.locator('#biliUrlInput').fill('https://example.com');
-    await page.locator('#biliUrlInput').press('Enter');
-    await expect(page.locator('#shortUrlResult')).toContainText('域名必須');
-    await page.route('https://soft-boat-f648.csgtung88.workers.dev', route => route.fulfill({
-      json: { code: 0, data: { content: 'https://b23.tv/testLink' } },
-    }));
-    await page.locator('#biliUrlInput').fill('https://www.bilibili.com/video/BVtest');
-    await page.locator('#biliUrlInput').press('Enter');
-    await expect(page.locator('#shortUrlResult a')).toHaveAttribute('href', 'https://b23.tv/testLink');
-    await expect(page.locator('#shortUrlResult .copy-btn')).toBeVisible();
-    await expect(page.locator('#genBtn')).toBeEnabled();
+    await page.locator('.nav-links a[href="#lab"]').click();
+    await expect(page).toHaveURL(`${baseURL}/#lab`);
+    await expect(page.locator('#lab .lab-panel')).toHaveCount(2);
+    await expect(page.locator('#ayameAudio')).toBeVisible();
+    await expect(page.locator('#ayameAudio')).toHaveAttribute('controls', '');
+    await expect(page.locator('#biliUrlInput, #genBtn, #shortUrlResult, .copy-btn')).toHaveCount(0);
+    assert.doesNotMatch(await page.content(), /bilibili|b23\.tv|workers\.dev|generateShortUrl|fallbackCopyText/i);
+    const input = page.getByRole('textbox', { name: '文字輸入框展示' });
+    await input.fill('庭園的新靈感');
+    await expect(input).toHaveValue('庭園的新靈感');
+    const select = page.getByRole('combobox', { name: '主題配色展示' });
+    await select.selectOption({ label: '選項 B：月光象牙' });
+    await expect(select).toHaveValue('ivory');
+    await expect(page.locator('#demoPreviewCard')).toHaveAttribute('data-theme', 'ivory');
+    await page.getByRole('tab', { name: '03 互動回饋' }).click();
+    await page.getByRole('button', { name: '測試按鈕' }).click();
     assert.deepEqual(errors, []);
   } finally {
     await page.close();
   }
 });
+
+test('playground text preview is safe and email validation stays local', async () => {
+  const { page, errors } = await openPage({ reducedMotion: 'reduce' });
+  try {
+    await page.locator('#demoTitle').fill('<b>這是文字</b>');
+    await expect(page.locator('#demoPreviewTitle')).toHaveText('<b>這是文字</b>');
+    await expect(page.locator('#demoPreviewTitle b')).toHaveCount(0);
+    await page.locator('#demoDescription').fill('新的靈感');
+    await expect(page.locator('#demoCharCount')).toHaveText('4 / 120');
+    await expect(page.locator('#demoPreviewDescription')).toHaveText('新的靈感');
+    await page.locator('#demoTitle').fill('');
+    await expect(page.locator('#demoPreviewTitle')).toHaveText('尚未命名的靈感');
+    await page.locator('#demoValidate').click();
+    await expect(page.locator('#demoEmail')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#demoValidation')).toContainText('請先輸入');
+    await page.locator('#demoEmail').fill('invalid-email');
+    await page.locator('#demoEmail').press('Enter');
+    await expect(page.locator('#demoValidation')).toContainText('格式不正確');
+    await page.locator('#demoEmail').fill('garden@example.com');
+    await page.locator('#demoEmail').press('Enter');
+    await expect(page.locator('#demoEmail')).toHaveAttribute('aria-invalid', 'false');
+    await expect(page.locator('#demoValidation')).toContainText('格式正確');
+    assert.equal(await page.evaluate(() => localStorage.length), 0);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
+test('tabs support keyboard navigation and settings only affect the preview card', async () => {
+  const { page, errors } = await openPage({ reducedMotion: 'reduce' });
+  try {
+    await page.locator('#demoTabInput').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#demoTabChoice')).toBeFocused();
+    await expect(page.locator('#demoPanelInput')).toBeHidden();
+    await expect(page.locator('#demoPanelChoice')).toBeVisible();
+    await page.getByRole('switch', { name: '柔光效果' }).uncheck();
+    await expect(page.locator('#demoPreviewCard')).toHaveAttribute('data-glow', 'false');
+    await page.locator('#demoBadge').uncheck();
+    await expect(page.locator('#demoPreviewBadge')).toBeHidden();
+    await page.getByRole('radio', { name: '緊湊' }).check();
+    await expect(page.locator('#demoPreviewCard')).toHaveAttribute('data-density', 'compact');
+    await page.locator('#demoRadius').fill('24');
+    await expect(page.locator('#demoRadiusValue')).toHaveText('24 px');
+    await expect(page.locator('#demoPreviewCard')).toHaveCSS('border-radius', '24px');
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(11, 18, 16)');
+    await page.locator('#demoTabChoice').focus();
+    await page.keyboard.press('End');
+    await expect(page.locator('#demoTabFeedback')).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#demoTabInput')).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('#demoTabFeedback')).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(page.locator('#demoTabInput')).toBeFocused();
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
+test('dialog supports focus, Escape, cancel and confirmation; notifications can be dismissed', async () => {
+  const { page, errors } = await openPage({ reducedMotion: 'reduce' });
+  try {
+    await page.locator('#demoTabFeedback').click();
+    await page.locator('#demoDialogButton').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.locator('#demoDialogCancel')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.locator('#demoDialogButton')).toBeFocused();
+    await page.locator('#demoDialogButton').click();
+    await page.locator('#demoDialogCancel').click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await page.locator('#demoDialogButton').click();
+    await page.locator('#demoDialogConfirm').click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.locator('#demoToastText')).toContainText('未儲存任何資料');
+    await page.getByRole('button', { name: '關閉通知' }).click();
+    await expect(page.locator('#demoToastText')).toBeEmpty();
+    await page.locator('#demoToastButton').click();
+    await expect(page.locator('#demoToastText')).toContainText('操作成功');
+    await page.locator('#demoDetails summary').click();
+    await expect(page.locator('#demoDetails')).toHaveAttribute('open', '');
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
+test('progress simulation completes, resets cancel timers, and reload does not retain inputs', async () => {
+  const { page, errors } = await openPage({ reducedMotion: 'reduce' });
+  try {
+    await page.clock.install();
+    await page.locator('#demoTitle').fill('暫時的筆記');
+    await page.locator('#demoTabFeedback').click();
+    await page.locator('#demoLoad').click();
+    await expect(page.locator('#demoLoad')).toBeDisabled();
+    await page.clock.runFor(2000);
+    await expect(page.locator('#demoProgressValue')).toHaveText('100%');
+    await expect(page.locator('#demoLoad')).toBeEnabled();
+    await expect(page.locator('#demoLoadStatus')).toContainText('模擬完成');
+    await page.locator('#demoLoad').click();
+    await page.clock.runFor(400);
+    await page.locator('#demoReset').click();
+    await page.clock.runFor(3000);
+    await expect(page.locator('#demoProgress')).toHaveJSProperty('value', 0);
+    await expect(page.locator('#demoTitle')).toHaveValue('一點靈感，一點魔法');
+    await expect(page.locator('#demoTheme')).toHaveValue('mint');
+    await expect(page.locator('#demoEmail')).toHaveValue('');
+    await expect(page.locator('#demoTabInput')).toHaveAttribute('aria-selected', 'true');
+    await page.clock.runFor(3000);
+    await expect(page.locator('#demoToastText')).toBeEmpty();
+    await page.locator('#demoTitle').fill('重新整理會消失');
+    await page.reload();
+    await expect(page.locator('#demoTitle')).toHaveValue('一點靈感，一點魔法');
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
+
+for (const width of [320, 390, 768, 1440]) {
+  test(`all playground panels and dialog fit at ${width}px`, async () => {
+    const { page, errors } = await openPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+    try {
+      for (const id of ['demoTabInput', 'demoTabChoice', 'demoTabFeedback']) {
+        await page.locator(`#${id}`).click();
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        const overflow = await page.locator('#ui-showcase').evaluate(root => [...root.querySelectorAll('.demo-panel:not([hidden]), .demo-preview, .demo-preview-card')]
+          .some(el => el.scrollWidth > el.clientWidth + 1));
+        assert.equal(overflow, false);
+      }
+      await page.locator('#demoDialogButton').click();
+      const bounds = await page.locator('#demoDialog').boundingBox();
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width);
+      await page.getByRole('button', { name: '確認體驗' }).click();
+      await expect(page.locator('#demoToastText')).toBeVisible();
+      assert.deepEqual(errors, []);
+    } finally { await page.close(); }
+  });
+}

@@ -104,8 +104,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--mint); }
 .btn-action:disabled { opacity: .55; cursor: wait; }
 .btn-outline { background: transparent; color: var(--mint); border-color: #65826e; }
 .btn-outline:hover:not(:disabled) { background: #203529; }
-.result-box { display: none; margin-top: 18px; padding: 18px; border: 1px dashed #54745d; color: var(--text); font-size: 13px; overflow-wrap: anywhere; }
-.copy-btn { color: var(--text); background: #263d2d; border: 1px solid #65826e; padding: 5px 10px; cursor: pointer; margin-left: 10px; }
 .ecosystem-repos { display: inline-block; margin-top: 16px; color: var(--mint); font-size: 12px; text-decoration: underline; text-underline-offset: 5px; }
 .ecosystem-repos:hover { color: #d4efd8; }
 footer { position: relative; margin-top: 76px; padding-block: 32px; border-top: 1px solid var(--line); }

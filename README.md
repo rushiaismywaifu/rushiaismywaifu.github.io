@@ -11,9 +11,8 @@
 ### 🏠 1. 主頁面 (`/index.html`)
 * **幽蝶庭園主題**：首頁採用露西婭靈感的墨黑、薄荷綠與象牙白，搭配自繪 SVG 蝴蝶、哥德拱框及襯線標題。樣式位於 `home.css`、裝飾位於 `assets/rushia-emblem.svg`，不影響各子專案。支援手機排版、鍵盤導覽與減少動態偏好；不依賴外部字型或圖片服務。
 * **主頁面導航區塊**：快速前往各個前端子專案與獨立工具網頁（新分頁開啟）。
-* **🧪 表單元件測試**：提供標準 HTML 各類輸入框、核取方塊、單選鈕、下拉選單及文字區域的樣式與互動測試。
+* **🧪 UI 元件互動展示台**：三個分類頁籤展示文字／Email 驗證、字數計算、下拉配色、開關、核取方塊、單選間距與圓角滑桿，搭配即時預覽卡片。另有通知、對話框、停用按鈕、模擬載入進度與可展開說明；可一鍵重設。狀態只保留於目前分頁，不傳送或儲存輸入資料。樣式與互動分別位於 `ui-demo.css`、`ui-demo.js`。
 * **🎧 Ayame 音訊播放器**：收錄百鬼綾目（Nakiri Ayame）經典可愛語音片段的即時播放器。
-* **🔗 Bilibili 短網址產生器**：能自動過濾與清理 Bilibili 網址追蹤參數，或轉換生成 `b23.tv` 短網址。
 
 ---
 
@@ -74,7 +73,7 @@ cd music-player && npx playwright install chromium && cd ..
 node --test tests/homepage.browser.cjs
 ```
 
-可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及 Bilibili 工具的輸入驗證與模擬回應，不呼叫外部音訊或 Worker。
+可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及互動展示台的驗證、即時預覽、鍵盤頁籤、對話框焦點、通知、進度與重設，並檢查短網址功能保持移除，不呼叫外部音訊服務。
 
 ---
 
@@ -82,7 +81,7 @@ node --test tests/homepage.browser.cjs
 
 ```text
 rushiaismywaifu.github.io/
-├── index.html                  # 幽蝶庭園首頁（導航、表單、語音、B站短網址）
+├── index.html                  # 幽蝶庭園首頁（導航、表單、語音）
 ├── home.css                    # 首頁專屬露西婭主題
 ├── assets/rushia-emblem.svg     # 自繪哥德蝴蝶裝飾
 ├── 404.html                    # 自訂 404 頁面（GitHub Pages 自動套用）

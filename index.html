@@ -26,6 +26,8 @@
   <meta name="twitter:image" content="https://rushiaismywaifu.github.io/image.png" />
 
   <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="ui-demo.css" />
+  <script src="ui-demo.js" defer></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main">跳至主要內容</a>
@@ -211,29 +213,105 @@
         <audio id="ayameAudio" controls preload="none" src="https://raw.githubusercontent.com/rushiaismywaifu/PageTest/gh-pages/ayame.mp3"></audio>
       </div>
 
-      <!-- Bilibili 短網址 -->
-      <div class="lab-panel">
-        <div class="lab-head"><span>🔗</span> Bilibili 短網址生成與過濾器</div>
-        <p class="lab-description">自動過濾 B 站繁雜追蹤參數，呼叫 Cloudflare Worker 生成純淨短網址：</p>
-        <div class="input-group">
-          <input type="url" id="biliUrlInput" aria-label="Bilibili 網址" placeholder="請輸入 Bilibili 網址 (如 https://www.bilibili.com/video/BV...)" />
-          <button type="button" class="btn-action" id="genBtn">產生短網址</button>
+      <!-- 可互動的元件展示台：不傳送或儲存輸入資料 -->
+      <div class="lab-panel ui-demo" id="ui-showcase">
+        <div class="demo-heading">
+          <div>
+            <span class="section-kicker">COMPONENT PLAYGROUND</span>
+            <h3 class="lab-head">UI 元件樣式展示</h3>
+            <p class="lab-description">轉動一點設定，看看介面如何回應。所有變更都只留在這個分頁。</p>
+          </div>
+          <button type="button" class="demo-reset" id="demoReset">↺ 重設展示</button>
         </div>
-        <div id="shortUrlResult" class="result-box"></div>
-      </div>
-
-      <!-- 表單測試 -->
-      <div class="lab-panel">
-        <div class="lab-head"><span>⚙️</span> UI 元件樣式展示</div>
-        <div class="input-group">
-          <input type="text" aria-label="文字輸入框展示" placeholder="寫下一點靈感..." />
-          <select aria-label="主題配色展示">
-            <option>選項 A：幽蝶薄荷</option>
-            <option>選項 B：月光象牙</option>
-            <option>選項 C：森林墨黑</option>
-          </select>
-          <button type="button" class="btn-action btn-outline">測試按鈕</button>
+        <noscript><p>請啟用 JavaScript 以使用即時預覽、分頁切換與互動示範。</p></noscript>
+        <div class="demo-layout">
+          <div class="demo-controls">
+            <div class="demo-tabs" role="tablist" aria-label="元件展示分類">
+              <button type="button" role="tab" id="demoTabInput" aria-selected="true" aria-controls="demoPanelInput">01 基本輸入</button>
+              <button type="button" role="tab" id="demoTabChoice" aria-selected="false" aria-controls="demoPanelChoice" tabindex="-1">02 選擇與調整</button>
+              <button type="button" role="tab" id="demoTabFeedback" aria-selected="false" aria-controls="demoPanelFeedback" tabindex="-1">03 互動回饋</button>
+            </div>
+            <div class="demo-panel" id="demoPanelInput" role="tabpanel" aria-labelledby="demoTabInput">
+              <div class="demo-fields">
+                <label class="demo-field" for="demoTitle">卡片標題
+                  <input id="demoTitle" type="text" aria-label="文字輸入框展示" value="一點靈感，一點魔法" maxlength="40" placeholder="寫下一點靈感..." />
+                </label>
+                <label class="demo-field" for="demoTheme">主題配色
+                  <select id="demoTheme" aria-label="主題配色展示">
+                    <option value="mint">選項 A：幽蝶薄荷</option>
+                    <option value="ivory">選項 B：月光象牙</option>
+                    <option value="forest">選項 C：森林墨黑</option>
+                  </select>
+                </label>
+              </div>
+              <label class="demo-field" for="demoDescription">靈感筆記
+                <textarea id="demoDescription" rows="3" maxlength="120" aria-describedby="demoCharCount" placeholder="寫下今天想做的小作品...">把喜歡的事物，慢慢寫成自己的小小世界。</textarea>
+              </label>
+              <div class="demo-field-foot"><span>會即時出現在預覽卡片</span><span id="demoCharCount">19 / 120</span></div>
+              <label class="demo-field" for="demoEmail">Email 驗證示範 <span class="demo-optional">僅供測試，不會寄信</span>
+                <input id="demoEmail" type="email" required autocomplete="off" placeholder="garden@example.com" aria-describedby="demoEmailHint" />
+              </label>
+              <p class="demo-hint" id="demoEmailHint">輸入 Email，再按驗證，試試成功與錯誤狀態。</p>
+              <button type="button" class="btn-action btn-outline" id="demoValidate">驗證格式</button>
+              <p id="demoValidation" class="demo-status" role="status"></p>
+            </div>
+            <div class="demo-panel" id="demoPanelChoice" role="tabpanel" aria-labelledby="demoTabChoice" hidden>
+              <div class="demo-setting">
+                <div><span class="demo-setting-label">柔光效果</span><p>替預覽卡片加上一點薄荷色微光。</p></div>
+                <label class="demo-switch"><input id="demoGlow" type="checkbox" role="switch" aria-label="柔光效果" checked /><span aria-hidden="true"></span></label>
+              </div>
+              <label class="demo-check"><input id="demoBadge" type="checkbox" checked /> 顯示「靈感收藏」徽章</label>
+              <fieldset class="demo-density">
+                <legend>卡片間距</legend>
+                <label><input type="radio" name="demoDensity" value="comfortable" checked /> 舒適</label>
+                <label><input type="radio" name="demoDensity" value="compact" /> 緊湊</label>
+              </fieldset>
+              <div class="demo-range-label"><label for="demoRadius">圓角大小</label><output id="demoRadiusValue" for="demoRadius">12 px</output></div>
+              <input id="demoRadius" class="demo-range" type="range" min="0" max="32" value="12" />
+              <div class="demo-field-foot"><span>俐落直角</span><span>柔和圓角</span></div>
+              <p class="demo-hint">這些設定只改變旁邊的預覽卡片，不影響主頁主題。</p>
+            </div>
+            <div class="demo-panel" id="demoPanelFeedback" role="tabpanel" aria-labelledby="demoTabFeedback" hidden>
+              <p class="demo-hint">按一下，感受不同的操作回饋。這裡不會發出網路請求。</p>
+              <div class="demo-actions">
+                <button type="button" class="btn-action" id="demoToastButton">測試按鈕</button>
+                <button type="button" class="btn-action btn-outline" id="demoDialogButton">開啟對話框</button>
+                <button type="button" class="btn-action btn-outline" disabled>停用狀態</button>
+              </div>
+              <div class="demo-progress-heading"><label for="demoProgress">模擬載入</label><output id="demoProgressValue" for="demoProgress">0%</output></div>
+              <progress id="demoProgress" max="100" value="0"></progress>
+              <div class="demo-progress-actions">
+                <button type="button" class="demo-text-button" id="demoLoad">開始模擬 →</button>
+                <span id="demoLoadStatus" class="demo-hint" role="status">尚未開始，不會上傳檔案。</span>
+              </div>
+              <details class="demo-details" id="demoDetails">
+                <summary>這些元件可以怎麼操作？</summary>
+                <p>可用 Tab 移動焦點；分類頁籤支援左右方向鍵，滑桿也能用方向鍵調整。對話框可按 Esc 關閉。重設展示會清除輸入與模擬進度。</p>
+              </details>
+            </div>
+          </div>
+          <aside class="demo-preview" aria-label="即時預覽">
+            <div class="demo-preview-label"><span class="demo-live-dot" aria-hidden="true"></span> LIVE PREVIEW <span>即時預覽</span></div>
+            <div class="demo-preview-stage">
+              <article id="demoPreviewCard" class="demo-preview-card" data-theme="mint" data-glow="true" data-density="comfortable">
+                <svg class="demo-butterfly" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 21C15 7 5 5 4 8C2 17 10 21 16 23C7 22 6 29 9 32C14 34 19 28 20 24C21 28 26 34 31 32C34 29 33 22 24 23C30 21 38 17 36 8C35 5 25 7 20 21Z" stroke="currentColor"/><path d="M20 17V27" stroke="currentColor"/></svg>
+                <span id="demoPreviewBadge" class="demo-preview-badge">靈感收藏</span>
+                <h4 id="demoPreviewTitle">一點靈感，一點魔法</h4>
+                <p id="demoPreviewDescription">把喜歡的事物，慢慢寫成自己的小小世界。</p>
+                <div class="demo-preview-footer">RUSHIA'S GARDEN <span aria-hidden="true">✦</span></div>
+              </article>
+            </div>
+            <p class="demo-preview-note">從左側調整設定，觀察每個細節。<br />重新整理後，一切回到最初的樣子。</p>
+          </aside>
         </div>
+        <div class="demo-toast" id="demoToast" role="status" aria-live="polite" aria-atomic="true"><span id="demoToastText"></span><button type="button" id="demoToastClose" aria-label="關閉通知" hidden>×</button></div>
+        <dialog class="demo-dialog" id="demoDialog" aria-labelledby="demoDialogTitle" aria-describedby="demoDialogDescription">
+          <span class="section-kicker">A LITTLE CONFIRMATION</span>
+          <h3 id="demoDialogTitle">收藏這個靈感？</h3>
+          <p id="demoDialogDescription">這是對話框示範，確認後只會顯示通知，不會儲存資料。</p>
+          <p class="demo-dialog-selection" id="demoDialogSelection"></p>
+          <div class="demo-actions"><button type="button" class="btn-action btn-outline" id="demoDialogCancel" autofocus>取消</button><button type="button" class="btn-action" id="demoDialogConfirm">確認體驗</button></div>
+        </dialog>
       </div>
     </section>
 
@@ -371,194 +449,6 @@
       window.addEventListener("resize", drawLights);
       drawLights();
     });
-
-    /* ========================================================
-     * 2. Bilibili 短網址產生邏輯 (100% 繼承)
-     * ======================================================== */
-    const WORKER_URL = "https://soft-boat-f648.csgtung88.workers.dev";
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const input = document.getElementById("biliUrlInput");
-      const btn = document.getElementById("genBtn");
-
-      btn.addEventListener("click", generateShortUrl);
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          generateShortUrl();
-        }
-      });
-    });
-
-    async function generateShortUrl() {
-      const input = document.getElementById("biliUrlInput");
-      const btn = document.getElementById("genBtn");
-      if (btn.disabled) return;
-
-      const rawUrl = input.value.trim();
-      if (!rawUrl) {
-        showMessage("⚠️ 請輸入 Bilibili 網址", "error");
-        return;
-      }
-
-      let normalizedUrl;
-      try {
-        normalizedUrl = normalizeBilibiliUrl(rawUrl);
-      } catch (error) {
-        showMessage(`⚠️ ${error.message}`, "error");
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = "處理中…";
-      showMessage("⏳ 產生中，請稍候…", "muted");
-
-      const params = new URLSearchParams({
-        platform: "unix",
-        share_channel: "COPY",
-        share_id: "public.webview.0.0.pv",
-        share_mode: "4",
-        oid: normalizedUrl,
-        buvid: "qwq",
-        build: "6114514"
-      });
-
-      try {
-        const resp = await fetch(WORKER_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-          body: params.toString()
-        });
-
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
-
-        if (data.code === 0 && data.data && typeof data.data.content !== "undefined") {
-          const content = String(data.data.content);
-          const shortUrl = extractB23Url(content);
-          if (shortUrl) {
-            renderShortUrl(shortUrl, content);
-          } else {
-            renderReturnedContent(content);
-          }
-        } else {
-          const message = data && data.message ? String(data.message) : JSON.stringify(data);
-          showMessage(`❌ 產生失敗：${message || "未知錯誤"}`, "error");
-        }
-      } catch (error) {
-        showMessage(`❌ 請求失敗：${error.message}\n請確認 Worker 網址是否正確或稍後再試`, "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "產生短網址";
-      }
-    }
-
-    function normalizeBilibiliUrl(rawUrl) {
-      let url = rawUrl.trim();
-      if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url)) url = `https://${url}`;
-      const parsedUrl = new URL(url);
-      if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") throw new Error("網址協定必須為 http 或 https");
-      const hostname = parsedUrl.hostname.toLowerCase();
-      if (hostname !== "bilibili.com" && !hostname.endsWith(".bilibili.com")) throw new Error("網址域名必須為 bilibili.com 或 *.bilibili.com");
-      return parsedUrl.href;
-    }
-
-    function extractB23Url(content) {
-      const match = String(content).match(/https?:\/\/b23\.tv\/[^\s"'<>]+/i);
-      if (!match) return "";
-      try {
-        const parsedUrl = new URL(match[0]);
-        if (parsedUrl.hostname.toLowerCase() !== "b23.tv") return "";
-        return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:" ? parsedUrl.href : "";
-      } catch { return ""; }
-    }
-
-    function getResultElement() {
-      return document.getElementById("shortUrlResult");
-    }
-
-    function showMessage(message, type = "muted") {
-      const result = getResultElement();
-      result.style.display = "block";
-      result.textContent = "";
-      const span = document.createElement("span");
-      span.style.color = type === "error" ? "var(--pink)" : "var(--cyan)";
-      span.style.fontWeight = "700";
-      appendTextWithBreaks(span, message);
-      result.appendChild(span);
-    }
-
-    function appendTextWithBreaks(parent, text) {
-      String(text).split("\n").forEach((line, index) => {
-        if (index > 0) parent.appendChild(document.createElement("br"));
-        parent.appendChild(document.createTextNode(line));
-      });
-    }
-
-    function renderShortUrl(shortUrl, content) {
-      const result = getResultElement();
-      result.style.display = "block";
-      result.textContent = "";
-      const link = document.createElement("a");
-      link.href = shortUrl;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = shortUrl;
-      link.style.color = "var(--cyan)";
-      link.style.fontWeight = "800";
-
-      const copyBtn = document.createElement("button");
-      copyBtn.type = "button";
-      copyBtn.className = "copy-btn";
-      copyBtn.textContent = "📋 複製";
-      copyBtn.addEventListener("click", () => copyText(shortUrl, copyBtn));
-
-      const small = document.createElement("small");
-      small.style.display = "block";
-      small.style.color = "var(--muted)";
-      small.style.marginTop = "8px";
-      small.textContent = `📝 ${content}`;
-
-      result.appendChild(document.createTextNode("✅ 短網址："));
-      result.appendChild(link);
-      result.appendChild(copyBtn);
-      result.appendChild(small);
-    }
-
-    function renderReturnedContent(content) {
-      const result = getResultElement();
-      result.style.display = "block";
-      result.textContent = "";
-      result.appendChild(document.createTextNode(`✅ 回傳內容：${content}`));
-    }
-
-    async function copyText(text, btnEl) {
-      const defaultText = "📋 複製";
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          fallbackCopyText(text);
-        }
-        btnEl.textContent = "✅ 已複製";
-      } catch {
-        btnEl.textContent = "❌ 複製失敗";
-      } finally {
-        window.setTimeout(() => btnEl.textContent = defaultText, 2000);
-      }
-    }
-
-    function fallbackCopyText(text) {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      try { document.execCommand("copy"); } finally { document.body.removeChild(textarea); }
-    }
   </script>
 </body>
 </html>
