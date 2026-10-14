@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Cyber-VTuber 音樂播放器</title>
+  <rect width="64" height="64" rx="16" fill="#0f111a"/>
+  <path d="M12 36v-6a20 20 0 0 1 40 0v6" fill="none" stroke="#00e5ff" stroke-width="6" stroke-linecap="round"/>
+  <rect x="7" y="29" width="10" height="20" rx="5" fill="#00e5ff"/>
+  <rect x="47" y="29" width="10" height="20" rx="5" fill="#00e5ff"/>
+  <path d="M35 44V25l8 4" fill="none" stroke="#ff4081" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="29" cy="46" rx="9" ry="7" fill="#ff4081"/>
+</svg>

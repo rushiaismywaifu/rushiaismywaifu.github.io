@@ -6,7 +6,7 @@
     <meta name="description" content="Cyber-VTuber 音樂播放器:玻璃擬態 UI、Web Audio 動態頻譜視覺化,支援拖曳上傳本地音檔播放。" />
     <meta name="theme-color" content="#0f1123" />
     <title>Cyber-VTuber Music Player 🎧</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -30,6 +30,7 @@
         <div class="track-info">
           <div class="track-title" id="trackTitle">準備播放</div>
           <div class="track-artist" id="trackArtist">選擇或上傳歌曲開始聆聽</div>
+          <p class="playback-status" id="playbackStatus" role="status" aria-live="polite"></p>
         </div>
 
         <!-- 進度條 -->
