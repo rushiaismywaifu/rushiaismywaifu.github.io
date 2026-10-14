@@ -417,6 +417,23 @@
 
     .card:hover .card-footer { color: var(--pink); }
 
+    .ecosystem-repos {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--cyan);
+      font-size: 0.9rem;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .ecosystem-repos:hover { color: var(--pink); }
+
+    #ecosystem .card:focus-visible,
+    .ecosystem-repos:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
     /* 內嵌實驗室面板 */
     .lab-panel {
       background: var(--bg-2);
@@ -710,30 +727,104 @@
       </div>
     </section>
 
-    <!-- 同帳號生態專案 -->
+    <!-- 同帳號生態專案：僅列出其他儲存庫已發布的 GitHub Pages -->
     <section id="ecosystem" class="section-block wrap">
       <div class="section-head">
         <div>
           <h2>🔗 作者生態專案連結</h2>
-          <p>導向 GitHub 同帳號 (rushiaismywaifu) 下的其他獨立 Pages 專案</p>
+          <p>同帳號下、由其他儲存庫獨立維護的 GitHub Pages；點擊卡片於新分頁開啟。</p>
+          <a class="ecosystem-repos" href="https://github.com/rushiaismywaifu?tab=repositories" target="_blank" rel="noopener noreferrer">查看所有 GitHub 儲存庫 ↗</a>
         </div>
       </div>
 
-      <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
-        <a href="/aboutme" target="_blank" rel="noopener" class="card" style="padding: 18px;">
-          <h3 style="font-size: 1rem; margin: 0;">👤 About Me ↗</h3>
+      <div class="grid">
+        <a href="https://rushiaismywaifu.github.io/agentai-landing/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🤖</div>
+              <span class="card-tag">AI Showcase</span>
+            </div>
+            <h3>Agent AI 自主智慧體</h3>
+            <p>介紹 Agent AI 的八項優點、任務生命週期互動示範與導入 FAQ。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
         </a>
-        <a href="/project-1" target="_blank" rel="noopener" class="card" style="padding: 18px;">
-          <h3 style="font-size: 1rem; margin: 0;">🚀 Project-1 ↗</h3>
+        <a href="https://rushiaismywaifu.github.io/byse-full-suite/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🎬</div>
+              <span class="card-tag pink">API Dashboard</span>
+            </div>
+            <h3>Byse Studio 影片工作空間</h3>
+            <p>Byse / Filemoon 影片管理、上傳與播放器產生器；可先探索示範資料，管理真實帳號需設定連線。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
         </a>
-        <a href="/PageTest" target="_blank" rel="noopener" class="card" style="padding: 18px;">
-          <h3 style="font-size: 1rem; margin: 0;">🧪 PageTest ↗</h3>
+        <a href="https://rushiaismywaifu.github.io/reaction-diffusion-wasm/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🌸</div>
+              <span class="card-tag green">Rust × WASM</span>
+            </div>
+            <h3>櫻花演算</h3>
+            <p>Gray-Scott 反應擴散互動模擬，可切換 Rust / WebAssembly 與 JavaScript 引擎，比較即時效能。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
         </a>
-        <a href="/ui_shigure" target="_blank" rel="noopener" class="card" style="padding: 18px;">
-          <h3 style="font-size: 1rem; margin: 0;">🎨 UI Shigure ↗</h3>
+        <a href="https://rushiaismywaifu.github.io/aboutme/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">👤</div>
+              <span class="card-tag">Personal Site</span>
+            </div>
+            <h3>About Me</h3>
+            <p>Rushia 我婆的個人介紹與主題網站。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
         </a>
-        <a href="/timeis" target="_blank" rel="noopener" class="card" style="padding: 18px;">
-          <h3 style="font-size: 1rem; margin: 0;">⏰ Time Is ↗</h3>
+        <a href="https://rushiaismywaifu.github.io/project-1/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🚀</div>
+              <span class="card-tag gold">Web Practice</span>
+            </div>
+            <h3>Project-1</h3>
+            <p>HTML 與 CSS 頁面練習專案。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
+        </a>
+        <a href="https://rushiaismywaifu.github.io/PageTest/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🧪</div>
+              <span class="card-tag">Web Experiment</span>
+            </div>
+            <h3>PageTest</h3>
+            <p>獨立的網頁測試與前端實驗頁面。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
+        </a>
+        <a href="https://rushiaismywaifu.github.io/ui_shigure/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">🎨</div>
+              <span class="card-tag pink">VTuber Page</span>
+            </div>
+            <h3>UI Shigure</h3>
+            <p>時雨羽衣（羽衣馬麻）的專屬主題頁面。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
+        </a>
+        <a href="https://rushiaismywaifu.github.io/timeis/" target="_blank" rel="noopener noreferrer" class="card">
+          <div>
+            <div class="card-top">
+              <div class="card-icon">⏰</div>
+              <span class="card-tag gold">Time Tools</span>
+            </div>
+            <h3>Time Is</h3>
+            <p>即時時鐘、倒數計時器與鬧鐘，集合常用時間小工具。</p>
+          </div>
+          <div class="card-footer">開啟專案 <span aria-hidden="true">↗</span></div>
         </a>
       </div>
     </section>

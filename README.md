@@ -42,12 +42,28 @@
 ---
 
 ### 🔗 4. 同帳號生態系連結
-主導航中含有部分導向作者帳號下其他 GitHub Pages 專案的快捷連結：
-* `About Me` (`/aboutme`)
-* `Project-1` (`/project-1`)
-* `PageTest` (`/PageTest`)
-* `UI Shigure` (`/ui_shigure`)
-* `Time Is` (`/timeis`)
+主頁「作者生態專案連結」收錄同帳號下、由其他儲存庫獨立維護的 GitHub Pages。全部使用完整網址，預覽本站時也能正確開啟外部專案。
+
+| 專案 | 網頁 | 簡介 |
+| --- | --- | --- |
+| Agent AI | [agentai-landing](https://rushiaismywaifu.github.io/agentai-landing/) | 自主智慧體介紹、任務生命週期互動示範與導入 FAQ |
+| Byse Studio | [byse-full-suite](https://rushiaismywaifu.github.io/byse-full-suite/) | 影片管理、上傳與播放器產生器；提供示範模式，真實帳號需設定連線 |
+| 櫻花演算 | [reaction-diffusion-wasm](https://rushiaismywaifu.github.io/reaction-diffusion-wasm/) | Gray-Scott 反應擴散模擬與 WASM / JS 效能比較 |
+| About Me | [aboutme](https://rushiaismywaifu.github.io/aboutme/) | 個人介紹與主題網站 |
+| Project-1 | [project-1](https://rushiaismywaifu.github.io/project-1/) | HTML / CSS 練習 |
+| PageTest | [PageTest](https://rushiaismywaifu.github.io/PageTest/) | 網頁測試與前端實驗 |
+| UI Shigure | [ui_shigure](https://rushiaismywaifu.github.io/ui_shigure/) | 時雨羽衣主題頁面 |
+| Time Is | [timeis](https://rushiaismywaifu.github.io/timeis/) | 時鐘、倒數計時與鬧鐘 |
+
+其他程式庫可由 [完整儲存庫清單](https://github.com/rushiaismywaifu?tab=repositories) 瀏覽，不將尚未發布 Pages 的專案當作線上頁面。
+
+維護入口時，先用 GitHub API 確認公開儲存庫的 `has_pages` 與 Pages 設定中的 `html_url`、發布狀態，再同步更新 `index.html` 與本表格；本站不在瀏覽器端動態呼叫 GitHub API。
+
+首頁連結回歸測試（Python 標準函式庫，無需額外安裝）：
+
+```sh
+python3 -m unittest discover -s tests
+```
 
 ---
 

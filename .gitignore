@@ -1,2 +1,5 @@
 # Local secrets — never commit
 ru.json
+
+# Python test caches
+__pycache__/
