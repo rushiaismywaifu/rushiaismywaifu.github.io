@@ -1,9 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 核心 DOM 元件
   const audio = new Audio();
+  // 必須在指定 src 前啟用 CORS，否則跨域音檔經 Web Audio 處理會被靜音。
+  audio.crossOrigin = "anonymous";
+  audio.preload = "metadata";
   const albumArt = document.getElementById("albumArt");
   const trackTitle = document.getElementById("trackTitle");
   const trackArtist = document.getElementById("trackArtist");
+  const playbackStatus = document.getElementById("playbackStatus");
   const progressBar = document.getElementById("progressBar");
   const progressCurrent = document.getElementById("progressCurrent");
   const currentTimeEl = document.getElementById("currentTime");
@@ -36,6 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentIndex = 0;
   let isPlaying = false;
+  let playRequested = false;
+  let playbackRequest = 0;
   let playMode = "repeat-all"; // repeat-all, repeat-one, shuffle
   const modes = [
     { id: "repeat-all", icon: "🔁", title: "列表循環" },
@@ -46,18 +52,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== Web Audio API 視覺化設定 =====
   let audioCtx, analyser, source;
   function initVisualizer() {
-    if (audioCtx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (audioCtx || !AudioContext || !ctx) return;
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx = new AudioContext();
       analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.connect(audioCtx.destination);
+      // 分析器準備好後才接管媒體輸出，避免初始化失敗造成無聲。
       source = audioCtx.createMediaElementSource(audio);
       source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      analyser.fftSize = 64;
-      drawVisualizer();
     } catch (e) {
-      console.warn("瀏覽器安全策略或跨域限制了 Web Audio API 視覺化", e);
+      console.warn("無法啟用頻譜，改用一般音訊播放", e);
+      analyser = null;
+      if (source) {
+        source.disconnect();
+        source.connect(audioCtx.destination);
+      } else {
+        if (audioCtx) audioCtx.close().catch(() => {});
+        audioCtx = null;
+      }
     }
+    if (analyser) drawVisualizer();
   }
 
   let vizData = null;
@@ -112,11 +128,14 @@ document.addEventListener("DOMContentLoaded", () => {
       li.innerHTML = `
         <span class="item-index">${idx === currentIndex ? "▶" : idx + 1}</span>
         <div class="item-info">
-          <div class="item-title">${track.title}</div>
-          <div class="item-artist">${track.artist}</div>
+          <div class="item-title"></div>
+          <div class="item-artist"></div>
         </div>
         <button class="item-remove" title="移除歌曲">🗑️</button>
       `;
+
+      li.querySelector(".item-title").textContent = track.title;
+      li.querySelector(".item-artist").textContent = track.artist;
 
       // 點擊歌曲直接播放
       li.addEventListener("click", (e) => {
@@ -146,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       URL.revokeObjectURL(playlist[idx].src);
     }
     const removingCurrent = idx === currentIndex;
-    const wasPlaying = isPlaying;
+    const wasPlaying = isPlaying || playRequested;
     playlist.splice(idx, 1);
 
     if (removingCurrent) {
@@ -162,6 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 載入與播放控制 =====
   function loadTrack(idx) {
+    pauseTrack();
+    playbackStatus.textContent = "";
     currentIndex = idx;
     const track = playlist[idx];
     audio.src = track.src;
@@ -176,29 +197,53 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPlaylist();
   }
 
-  function playTrack() {
+  function updatePlaybackUI(playing) {
+    isPlaying = playing;
+    btnPlayPause.textContent = playing ? "⏸️" : "▶️";
+    albumArt.classList.toggle("playing", playing);
+  }
+
+  function showPlaybackError(error) {
+    pauseTrack();
+    playbackStatus.textContent = error.name === "NotAllowedError"
+      ? "瀏覽器阻擋了播放，請再按一次播放按鈕。"
+      : "無法播放這首歌，請檢查網路或音檔格式，或上傳本地音檔。";
+    console.warn("播放失敗:", error);
+  }
+
+  async function playTrack() {
+    const request = ++playbackRequest;
+    playRequested = true;
+    playbackStatus.textContent = "";
     initVisualizer();
-    if (audioCtx && audioCtx.state === "suspended") {
-      audioCtx.resume();
+    try {
+      // 兩者都在使用者操作中啟動；也處理 resume() 被拒絕的情況。
+      const resume = audioCtx && audioCtx.state !== "running"
+        ? audioCtx.resume() : Promise.resolve();
+      await Promise.all([resume, audio.play()]);
+      if (request !== playbackRequest) return;
+      playRequested = false;
+      updatePlaybackUI(!audio.paused);
+    } catch (err) {
+      // 切歌或暫停會取消尚未完成的 play()，不可覆蓋新歌曲的狀態。
+      if (request !== playbackRequest) return;
+      if (err.name === "AbortError") {
+        pauseTrack();
+        return;
+      }
+      showPlaybackError(err);
     }
-    audio.play().then(() => {
-      isPlaying = true;
-      btnPlayPause.textContent = "⏸️";
-      albumArt.classList.add("playing");
-    }).catch(err => {
-      console.error("播放失敗:", err);
-    });
   }
 
   function pauseTrack() {
+    playbackRequest++;
+    playRequested = false;
     audio.pause();
-    isPlaying = false;
-    btnPlayPause.textContent = "▶️";
-    albumArt.classList.remove("playing");
+    updatePlaybackUI(false);
   }
 
   function formatTime(sec) {
-    if (isNaN(sec)) return "0:00";
+    if (!Number.isFinite(sec) || sec < 0) return "0:00";
     const mins = Math.floor(sec / 60);
     const secs = Math.floor(sec % 60);
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
@@ -224,6 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fileInput.addEventListener("change", (e) => {
     handleFiles(e.target.files);
+    fileInput.value = "";
   });
 
   function handleFiles(files) {
@@ -259,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 事件監聽 =====
   btnPlayPause.addEventListener("click", () => {
-    if (isPlaying) {
+    if (isPlaying || playRequested) {
       pauseTrack();
     } else {
       playTrack();
@@ -303,8 +349,17 @@ document.addEventListener("DOMContentLoaded", () => {
     btnMute.textContent = "🔊";
   });
 
+  audio.addEventListener("playing", () => updatePlaybackUI(true));
+  audio.addEventListener("pause", () => updatePlaybackUI(false));
+  audio.addEventListener("error", () => {
+    if (audio.error) showPlaybackError(audio.error);
+  });
+  audio.addEventListener("loadedmetadata", () => {
+    totalTimeEl.textContent = formatTime(audio.duration);
+  });
+
   audio.addEventListener("timeupdate", () => {
-    if (!audio.duration) return;
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
     const progressPercent = (audio.currentTime / audio.duration) * 100;
     progressCurrent.style.width = `${progressPercent}%`;
     currentTimeEl.textContent = formatTime(audio.currentTime);
@@ -312,11 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   progressBar.addEventListener("click", (e) => {
-    if (!audio.duration) return;
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
     const rect = progressBar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const width = rect.width;
-    audio.currentTime = (clickX / width) * audio.duration;
+    if (width > 0) {
+      audio.currentTime = Math.max(0, Math.min(1, clickX / width)) * audio.duration;
+    }
   });
 
   audio.addEventListener("ended", () => {
@@ -334,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 初始化第一首歌
+  // 初始化第一首歌（音量與滑桿預設值一致）
+  audio.volume = Number(volumeSlider.value);
   loadTrack(0);
 });

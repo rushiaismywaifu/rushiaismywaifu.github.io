@@ -149,6 +149,17 @@ canvas#visualizer {
   font-weight: 500;
 }
 
+.playback-status {
+  margin-top: 8px;
+  color: var(--accent-cyan);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.playback-status:empty {
+  display: none;
+}
+
 /* 進度條 */
 .progress-area {
   width: 100%;

@@ -9,6 +9,7 @@
 ## 📌 功能模組與頁面盤點
 
 ### 🏠 1. 主頁面 (`/index.html`)
+* **幽蝶庭園主題**：首頁採用露西婭靈感的墨黑、薄荷綠與象牙白，搭配自繪 SVG 蝴蝶、哥德拱框及襯線標題。樣式位於 `home.css`、裝飾位於 `assets/rushia-emblem.svg`，不影響各子專案。支援手機排版、鍵盤導覽與減少動態偏好；不依賴外部字型或圖片服務。
 * **主頁面導航區塊**：快速前往各個前端子專案與獨立工具網頁（新分頁開啟）。
 * **🧪 表單元件測試**：提供標準 HTML 各類輸入框、核取方塊、單選鈕、下拉選單及文字區域的樣式與互動測試。
 * **🎧 Ayame 音訊播放器**：收錄百鬼綾目（Nakiri Ayame）經典可愛語音片段的即時播放器。
@@ -42,12 +43,38 @@
 ---
 
 ### 🔗 4. 同帳號生態系連結
-主導航中含有部分導向作者帳號下其他 GitHub Pages 專案的快捷連結：
-* `About Me` (`/aboutme`)
-* `Project-1` (`/project-1`)
-* `PageTest` (`/PageTest`)
-* `UI Shigure` (`/ui_shigure`)
-* `Time Is` (`/timeis`)
+主頁「作者生態專案連結」收錄同帳號下、由其他儲存庫獨立維護的 GitHub Pages。全部使用完整網址，預覽本站時也能正確開啟外部專案。
+
+| 專案 | 網頁 | 簡介 |
+| --- | --- | --- |
+| Agent AI | [agentai-landing](https://rushiaismywaifu.github.io/agentai-landing/) | 自主智慧體介紹、任務生命週期互動示範與導入 FAQ |
+| Byse Studio | [byse-full-suite](https://rushiaismywaifu.github.io/byse-full-suite/) | 影片管理、上傳與播放器產生器；提供示範模式，真實帳號需設定連線 |
+| 櫻花演算 | [reaction-diffusion-wasm](https://rushiaismywaifu.github.io/reaction-diffusion-wasm/) | Gray-Scott 反應擴散模擬與 WASM / JS 效能比較 |
+| About Me | [aboutme](https://rushiaismywaifu.github.io/aboutme/) | 個人介紹與主題網站 |
+| Project-1 | [project-1](https://rushiaismywaifu.github.io/project-1/) | HTML / CSS 練習 |
+| PageTest | [PageTest](https://rushiaismywaifu.github.io/PageTest/) | 網頁測試與前端實驗 |
+| UI Shigure | [ui_shigure](https://rushiaismywaifu.github.io/ui_shigure/) | 時雨羽衣主題頁面 |
+| Time Is | [timeis](https://rushiaismywaifu.github.io/timeis/) | 時鐘、倒數計時與鬧鐘 |
+
+其他程式庫可由 [完整儲存庫清單](https://github.com/rushiaismywaifu?tab=repositories) 瀏覽，不將尚未發布 Pages 的專案當作線上頁面。
+
+維護入口時，先用 GitHub API 確認公開儲存庫的 `has_pages` 與 Pages 設定中的 `html_url`、發布狀態，再同步更新 `index.html` 與本表格；本站不在瀏覽器端動態呼叫 GitHub API。
+
+首頁連結回歸測試（Python 標準函式庫，無需額外安裝）：
+
+```sh
+python3 -m unittest discover -s tests
+```
+
+主頁瀏覽器測試共用音樂播放器已有的 Playwright 開發依賴（正式網站仍為純靜態）：
+
+```sh
+npm ci --prefix music-player
+cd music-player && npx playwright install chromium && cd ..
+node --test tests/homepage.browser.cjs
+```
+
+可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及 Bilibili 工具的輸入驗證與模擬回應，不呼叫外部音訊或 Worker。
 
 ---
 
@@ -55,7 +82,9 @@
 
 ```text
 rushiaismywaifu.github.io/
-├── index.html                  # 網站首頁（整合導航、表單測試、語音、B站短網址）
+├── index.html                  # 幽蝶庭園首頁（導航、表單、語音、B站短網址）
+├── home.css                    # 首頁專屬露西婭主題
+├── assets/rushia-emblem.svg     # 自繪哥德蝴蝶裝飾
 ├── 404.html                    # 自訂 404 頁面（GitHub Pages 自動套用）
 ├── robots.txt / sitemap.xml    # 搜尋引擎索引設定
 ├── favicon.ico                 # 網站圖示
