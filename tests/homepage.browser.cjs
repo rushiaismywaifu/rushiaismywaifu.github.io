@@ -40,7 +40,7 @@ async function openPage(options = {}) {
   const page = await browser.newPage(options);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  // All assets are local. Do not depend on production audio or Worker services.
+  // All assets are local. Do not depend on production audio services.
   await page.route('**/*', route => route.request().url().startsWith(`${baseURL}/`)
     ? route.continue() : route.abort());
   await page.goto(baseURL);
@@ -95,22 +95,23 @@ test('default theme uses the mint palette and gentle butterfly animation', async
   }
 });
 
-test('Bilibili validation and result UI still work after the theme change', async () => {
+test('lab retains audio and form controls without the removed short URL feature', async () => {
   const { page, errors } = await openPage({ reducedMotion: 'reduce' });
   try {
-    await page.locator('#genBtn').click();
-    await expect(page.locator('#shortUrlResult')).toContainText('請輸入');
-    await page.locator('#biliUrlInput').fill('https://example.com');
-    await page.locator('#biliUrlInput').press('Enter');
-    await expect(page.locator('#shortUrlResult')).toContainText('域名必須');
-    await page.route('https://soft-boat-f648.csgtung88.workers.dev', route => route.fulfill({
-      json: { code: 0, data: { content: 'https://b23.tv/testLink' } },
-    }));
-    await page.locator('#biliUrlInput').fill('https://www.bilibili.com/video/BVtest');
-    await page.locator('#biliUrlInput').press('Enter');
-    await expect(page.locator('#shortUrlResult a')).toHaveAttribute('href', 'https://b23.tv/testLink');
-    await expect(page.locator('#shortUrlResult .copy-btn')).toBeVisible();
-    await expect(page.locator('#genBtn')).toBeEnabled();
+    await page.locator('.nav-links a[href="#lab"]').click();
+    await expect(page).toHaveURL(`${baseURL}/#lab`);
+    await expect(page.locator('#lab .lab-panel')).toHaveCount(2);
+    await expect(page.locator('#ayameAudio')).toBeVisible();
+    await expect(page.locator('#ayameAudio')).toHaveAttribute('controls', '');
+    await expect(page.locator('#biliUrlInput, #genBtn, #shortUrlResult, .copy-btn')).toHaveCount(0);
+    assert.doesNotMatch(await page.content(), /bilibili|b23\.tv|workers\.dev|generateShortUrl|fallbackCopyText/i);
+    const input = page.getByRole('textbox', { name: '文字輸入框展示' });
+    await input.fill('庭園的新靈感');
+    await expect(input).toHaveValue('庭園的新靈感');
+    const select = page.getByRole('combobox', { name: '主題配色展示' });
+    await select.selectOption({ label: '選項 B：月光象牙' });
+    await expect(select).toHaveValue('選項 B：月光象牙');
+    await page.getByRole('button', { name: '測試按鈕' }).click();
     assert.deepEqual(errors, []);
   } finally {
     await page.close();

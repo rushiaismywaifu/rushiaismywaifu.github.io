@@ -13,7 +13,6 @@
 * **主頁面導航區塊**：快速前往各個前端子專案與獨立工具網頁（新分頁開啟）。
 * **🧪 表單元件測試**：提供標準 HTML 各類輸入框、核取方塊、單選鈕、下拉選單及文字區域的樣式與互動測試。
 * **🎧 Ayame 音訊播放器**：收錄百鬼綾目（Nakiri Ayame）經典可愛語音片段的即時播放器。
-* **🔗 Bilibili 短網址產生器**：能自動過濾與清理 Bilibili 網址追蹤參數，或轉換生成 `b23.tv` 短網址。
 
 ---
 
@@ -74,7 +73,7 @@ cd music-player && npx playwright install chromium && cd ..
 node --test tests/homepage.browser.cjs
 ```
 
-可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及 Bilibili 工具的輸入驗證與模擬回應，不呼叫外部音訊或 Worker。
+可用 `CHROMIUM_EXECUTABLE_PATH` 指定已安裝的 Chromium。測試涵蓋 1440 / 768 / 390 / 320px 排版、入口數量、SVG 載入、鍵盤與錨點導覽、減少動態偏好，以及互動實驗室保留的音訊與表單元件、已移除短網址功能的回歸檢查，不呼叫外部音訊服務。
 
 ---
 
@@ -82,7 +81,7 @@ node --test tests/homepage.browser.cjs
 
 ```text
 rushiaismywaifu.github.io/
-├── index.html                  # 幽蝶庭園首頁（導航、表單、語音、B站短網址）
+├── index.html                  # 幽蝶庭園首頁（導航、表單、語音）
 ├── home.css                    # 首頁專屬露西婭主題
 ├── assets/rushia-emblem.svg     # 自繪哥德蝴蝶裝飾
 ├── 404.html                    # 自訂 404 頁面（GitHub Pages 自動套用）
